@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "301321629117",
+    "project_id": "my-finance-mate",
+    "storage_bucket": "my-finance-mate.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:301321629117:android:cfba74e7b82337b8f376d4",
+        "android_client_info": {
+          "package_name": "com.example.my_finance_mate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "301321629117-16vs78ajniv94k4qv3s4mk7gg545adia.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.my_finance_mate",
+            "certificate_hash": "e1d9bbea638855da70cdf22e233bcca4697ad891"
+          }
+        },
+        {
+          "client_id": "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBV7BkBbt6ARJcxfXYEJ0y1s0T-qGNZaT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "301321629117-36a3tnubj73m6c72gu175ksjlita9kat.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.myFinanceMate"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
