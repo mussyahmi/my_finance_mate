@@ -41,6 +41,7 @@ dependencies:
   google_sign_in: ^6.1.4
   cloud_firestore: ^4.8.5
   device_info_plus: ^9.0.3
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:
