@@ -157,6 +157,9 @@ class _LoginPageState extends State<LoginPage> {
           //* Add the user to the collection with UID as the document ID
           await userRef.doc(authResult.user!.uid).set({
             'created_at': now,
+            'updated_at': now,
+            'deleted_at': null,
+            'version_json': null,
             'email': authResult.user!.email,
             'full_name': authResult.user!.displayName,
             'last_login': now,
@@ -168,6 +171,7 @@ class _LoginPageState extends State<LoginPage> {
           //* User already exists, update last_login and device_info_json
 
           await userRef.doc(authResult.user!.uid).update({
+            'updated_at': now,
             'last_login': now,
             'device_info_json': jsonEncode(deviceInfoMap),
           });
@@ -185,16 +189,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (error) {
       print('Google Sign-In Error: $error');
-    }
-  }
-
-  Future<void> _signOut() async {
-    try {
-      await GoogleSignIn().signOut();
-      await FirebaseAuth.instance.signOut();
-      print('Sign Out Successful');
-    } catch (error) {
-      print('Sign Out Error: $error');
     }
   }
 }

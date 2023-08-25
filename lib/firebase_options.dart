@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '301321629117',
     projectId: 'my-finance-mate',
     storageBucket: 'my-finance-mate.appspot.com',
-    iosClientId: '301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7.apps.googleusercontent.com',
+    iosClientId:
+        '301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7.apps.googleusercontent.com',
     iosBundleId: 'com.example.myFinanceMate',
   );
 }

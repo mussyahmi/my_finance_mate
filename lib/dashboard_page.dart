@@ -18,6 +18,8 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   late final DateTime _currentDate = DateTime.now();
 
+  String? cycleId;
+  String? cycleName;
   String? amountBalance;
   String? amountReceived;
   String? amountSpent;
@@ -33,14 +35,16 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text(cycleName ?? 'Dashboard'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
+                MaterialPageRoute(
+                    builder: (context) => SettingsPage(cycleId: cycleId ?? '')),
               );
             },
           ),
@@ -66,7 +70,9 @@ class _DashboardPageState extends State<DashboardPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddTransactionPage()),
+            MaterialPageRoute(
+                builder: (context) =>
+                    AddTransactionPage(cycleId: cycleId ?? '')),
           );
         },
         child: const Icon(Icons.add),
@@ -104,6 +110,8 @@ class _DashboardPageState extends State<DashboardPage> {
       } else {
         //* Get latest cycle
         setState(() {
+          cycleId = lastCycleDoc.id;
+          cycleName = lastCycleDoc['cycle_name'];
           amountBalance = lastCycleDoc['opening_balance'];
           amountReceived = lastCycleDoc['amount_received'];
           amountSpent = lastCycleDoc['amount_spent'];
