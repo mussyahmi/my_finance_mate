@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'category_list_page.dart';
+import 'subcategory_list_page.dart';
+
 class AddTransactionPage extends StatefulWidget {
   final String cycleId;
   const AddTransactionPage({super.key, required this.cycleId});
@@ -76,7 +79,7 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                 value: selectedType,
                 onChanged: (newValue) {
                   setState(() {
-                    selectedType = newValue!;
+                    selectedType = newValue as String;
                   });
                 },
                 items: ['spent', 'received']
@@ -93,20 +96,49 @@ class AddTransactionPageState extends State<AddTransactionPage> {
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
-                onChanged: (newValue) {
+                onChanged: (newValue) async {
                   setState(() {
-                    selectedCategory = newValue!;
+                    selectedCategory = newValue;
                     selectedSubcategory = null;
                   });
 
-                  _fetchSubcategories(newValue!);
+                  if (newValue == 'add_new') {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryListPage(cycleId: widget.cycleId)),
+                    );
+
+                    setState(() {
+                      selectedCategory = null;
+                      selectedSubcategory = null;
+                    });
+
+                    _fetchCategories();
+                  }
+
+                  _fetchSubcategories(newValue as String);
                 },
-                items: categories.map((category) {
-                  return DropdownMenuItem<String>(
-                    value: category['id'],
-                    child: Text(category['name']),
-                  );
-                }).toList(),
+                items: [
+                  ...categories.map((category) {
+                    return DropdownMenuItem<String>(
+                      value: category['id'],
+                      child: Text(category['name']),
+                    );
+                  }).toList(),
+                  const DropdownMenuItem<String>(
+                    value: 'add_new',
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_circle),
+                        SizedBox(width: 8),
+                        Text('Add New'),
+                      ],
+                    ),
+                  ),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Category',
                 ),
@@ -114,17 +146,50 @@ class AddTransactionPageState extends State<AddTransactionPage> {
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: selectedSubcategory,
-                onChanged: (newValue) {
+                onChanged: (newValue) async {
                   setState(() {
-                    selectedSubcategory = newValue!;
+                    selectedSubcategory = newValue;
                   });
+
+                  if (newValue == 'add_new') {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SubcategoryListPage(
+                              cycleId: widget.cycleId,
+                              categoryId: selectedCategory as String,
+                              categoryName: 'Subcategory List')),
+                    );
+
+                    setState(() {
+                      selectedSubcategory = null;
+                    });
+
+                    _fetchSubcategories(selectedCategory as String);
+
+                    return;
+                  }
                 },
-                items: subcategories.map((subcategory) {
-                  return DropdownMenuItem<String>(
-                    value: subcategory['id'],
-                    child: Text(subcategory['name']),
-                  );
-                }).toList(),
+                items: [
+                  ...subcategories.map((subcategory) {
+                    return DropdownMenuItem<String>(
+                      value: subcategory['id'],
+                      child: Text(subcategory['name']),
+                    );
+                  }).toList(),
+                  if (selectedCategory != null)
+                    const DropdownMenuItem<String>(
+                      value: 'add_new',
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_circle),
+                          SizedBox(width: 8),
+                          Text('Add New'),
+                        ],
+                      ),
+                    ),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Subcategory',
                 ),
@@ -155,7 +220,8 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                   String categoryId = selectedCategory!;
                   String subcategoryId = selectedSubcategory!;
                   String amount = transactionAmountController.text;
-                  String note = transactionNoteController.text;
+                  String note =
+                      transactionNoteController.text.replaceAll('\n', '\\n');
                   DateTime dateTime = selectedDateTime;
 
                   //* Validate the form data (add your own validation logic here)
