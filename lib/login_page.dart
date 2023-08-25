@@ -10,6 +10,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 import 'dashboard_page.dart';
+import 'register_page.dart';
+import 'size_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,50 +21,218 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false; //* Track the loading state
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _isLoading2 = false;
+  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Welcome to My Finance Mate!',
-                style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 20),
-            //* Show a circular progress indicator while loading
-            if (_isLoading) const CircularProgressIndicator(),
-            if (!_isLoading)
-              ElevatedButton(
-                onPressed: () async {
-                  setState(() {
-                    _isLoading = true; //* Set loading state to true
-                  });
+    //* Initialize SizeConfig
+    SizeConfig().init(context);
 
-                  try {
-                    //* Use the context from the Builder widget
-                    await _signInWithGoogle(context);
-                  } finally {
-                    setState(() {
-                      _isLoading = false; //* Set loading state to false
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: SizeConfig.screenHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Welcome to My Finance Mate!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 20)),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: passwordController,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            onPressed: () {
+                              //* Toggle the password visibility when the button is pressed
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (_isLoading || _isLoading2) return;
+
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          try {
+                            await _signInWithEmailAndPassword(
+                              emailController.text.trim(),
+                              passwordController.text.trim(),
+                            );
+                          } finally {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Login'),
+                      ),
+                      const SizedBox(height: 10),
+                      const Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: Colors.black,
+                              height: 36,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text('Or login with'),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: Colors.black,
+                              height: 36,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      //* Show a circular progress indicator while loading
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (_isLoading || _isLoading2) return;
+
+                          setState(() {
+                            _isLoading2 = true; //* Set loading state to true
+                          });
+
+                          try {
+                            //* Use the context from the Builder widget
+                            await _signInWithGoogle(context);
+                          } finally {
+                            setState(() {
+                              _isLoading2 =
+                                  false; //* Set loading state to false
+                            });
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: _isLoading2
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Google'),
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Text('Sign In with Google'),
-              ),
-            // const ElevatedButton(
-            //   onPressed: _signOut,
-            //   child: Text('Sign Out'),
-            // ),
-          ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Dont\'t have an account?'),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const RegisterPage()),
+                          );
+                        },
+                        child: const Text('Register'))
+                  ],
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _signInWithEmailAndPassword(
+      String email, String password) async {
+    if (email.isEmpty || password.isEmpty) {
+      return;
+    }
+
+    try {
+      final UserCredential authResult =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final userRef = FirebaseFirestore.instance.collection('users');
+      final userDoc = await userRef.doc(authResult.user!.uid).get();
+
+      //* Get device information
+      final deviceInfoJson = await _getDeviceInfoJson();
+
+      if (userDoc.exists) {
+        //* User already exists, you can choose to update any information if needed
+        final now = DateTime.now();
+
+        await userRef.doc(authResult.user!.uid).update({
+          'updated_at': now,
+          'last_login': now,
+          'device_info_json': deviceInfoJson,
+        });
+      }
+
+      //* Navigate to the DashboardPage after sign-in
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
+      );
+    } catch (error) {
+      print('Email/Password Sign-In Error: $error');
+      //todo: Handle sign-in errors as needed, such as displaying an error message
+    }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
@@ -87,71 +257,7 @@ class _LoginPageState extends State<LoginPage> {
         final now = DateTime.now();
 
         //* Get device information
-        String deviceInfoJson = '';
-        Map<String, dynamic> deviceInfoMap = {};
-
-        if (Platform.isAndroid) {
-          AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
-
-          deviceInfoMap = {
-            'version': {
-              'baseOS': deviceInfo.version.baseOS,
-              'codename': deviceInfo.version.codename,
-              'incremental': deviceInfo.version.incremental,
-              'previewSdkInt': deviceInfo.version.previewSdkInt,
-              'release': deviceInfo.version.release,
-              'sdkInt': deviceInfo.version.sdkInt,
-              'securityPatch': deviceInfo.version.securityPatch,
-            },
-            'board': deviceInfo.board,
-            'bootloader': deviceInfo.bootloader,
-            'brand': deviceInfo.brand,
-            'device': deviceInfo.device,
-            'display': deviceInfo.display,
-            'fingerprint': deviceInfo.fingerprint,
-            'hardware': deviceInfo.hardware,
-            'host': deviceInfo.host,
-            'id': deviceInfo.id,
-            'manufacturer': deviceInfo.manufacturer,
-            'model': deviceInfo.model,
-            'product': deviceInfo.product,
-            'tags': deviceInfo.tags,
-            'type': deviceInfo.type,
-            'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-            'displayMetrics': {
-              'widthPx': deviceInfo.displayMetrics.widthPx,
-              'heightPx': deviceInfo.displayMetrics.heightPx,
-              'xDpi': deviceInfo.displayMetrics.xDpi,
-              'yDpi': deviceInfo.displayMetrics.yDpi,
-            },
-            'serialNumber': deviceInfo.serialNumber,
-          };
-
-          //* Convert device info to JSON
-          deviceInfoJson = jsonEncode(deviceInfoMap);
-        } else if (Platform.isIOS) {
-          IosDeviceInfo deviceInfo = await DeviceInfoPlugin().iosInfo;
-
-          deviceInfoMap = {
-            'name': deviceInfo.name,
-            'systemName': deviceInfo.systemName,
-            'systemVersion': deviceInfo.systemVersion,
-            'model': deviceInfo.model,
-            'localizedModel': deviceInfo.localizedModel,
-            'identifierForVendor': deviceInfo.identifierForVendor,
-            'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-            'utsname': {
-              'sysname': deviceInfo.utsname.sysname,
-              'nodename': deviceInfo.utsname.nodename,
-              'release': deviceInfo.utsname.release,
-              'version': deviceInfo.utsname.version,
-              'machine': deviceInfo.utsname.machine,
-            },
-          };
-
-          //* Convert device info to JSON
-          deviceInfoJson = jsonEncode(deviceInfoMap);
-        }
+        final deviceInfoJson = await _getDeviceInfoJson();
 
         if (!userDoc.exists) {
           //* Add the user to the collection with UID as the document ID
@@ -173,7 +279,7 @@ class _LoginPageState extends State<LoginPage> {
           await userRef.doc(authResult.user!.uid).update({
             'updated_at': now,
             'last_login': now,
-            'device_info_json': jsonEncode(deviceInfoMap),
+            'device_info_json': deviceInfoJson,
           });
         }
 
@@ -190,5 +296,76 @@ class _LoginPageState extends State<LoginPage> {
     } catch (error) {
       print('Google Sign-In Error: $error');
     }
+  }
+
+  Future<String> _getDeviceInfoJson() async {
+    //* Get device information
+    String deviceInfoJson = '';
+    Map<String, dynamic> deviceInfoMap = {};
+
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
+
+      deviceInfoMap = {
+        'version': {
+          'baseOS': deviceInfo.version.baseOS,
+          'codename': deviceInfo.version.codename,
+          'incremental': deviceInfo.version.incremental,
+          'previewSdkInt': deviceInfo.version.previewSdkInt,
+          'release': deviceInfo.version.release,
+          'sdkInt': deviceInfo.version.sdkInt,
+          'securityPatch': deviceInfo.version.securityPatch,
+        },
+        'board': deviceInfo.board,
+        'bootloader': deviceInfo.bootloader,
+        'brand': deviceInfo.brand,
+        'device': deviceInfo.device,
+        'display': deviceInfo.display,
+        'fingerprint': deviceInfo.fingerprint,
+        'hardware': deviceInfo.hardware,
+        'host': deviceInfo.host,
+        'id': deviceInfo.id,
+        'manufacturer': deviceInfo.manufacturer,
+        'model': deviceInfo.model,
+        'product': deviceInfo.product,
+        'tags': deviceInfo.tags,
+        'type': deviceInfo.type,
+        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
+        'displayMetrics': {
+          'widthPx': deviceInfo.displayMetrics.widthPx,
+          'heightPx': deviceInfo.displayMetrics.heightPx,
+          'xDpi': deviceInfo.displayMetrics.xDpi,
+          'yDpi': deviceInfo.displayMetrics.yDpi,
+        },
+        'serialNumber': deviceInfo.serialNumber,
+      };
+
+      //* Convert device info to JSON
+      deviceInfoJson = jsonEncode(deviceInfoMap);
+    } else if (Platform.isIOS) {
+      IosDeviceInfo deviceInfo = await DeviceInfoPlugin().iosInfo;
+
+      deviceInfoMap = {
+        'name': deviceInfo.name,
+        'systemName': deviceInfo.systemName,
+        'systemVersion': deviceInfo.systemVersion,
+        'model': deviceInfo.model,
+        'localizedModel': deviceInfo.localizedModel,
+        'identifierForVendor': deviceInfo.identifierForVendor,
+        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
+        'utsname': {
+          'sysname': deviceInfo.utsname.sysname,
+          'nodename': deviceInfo.utsname.nodename,
+          'release': deviceInfo.utsname.release,
+          'version': deviceInfo.utsname.version,
+          'machine': deviceInfo.utsname.machine,
+        },
+      };
+
+      //* Convert device info to JSON
+      deviceInfoJson = jsonEncode(deviceInfoMap);
+    }
+
+    return deviceInfoJson;
   }
 }
