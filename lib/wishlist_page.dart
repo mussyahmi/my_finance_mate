@@ -188,9 +188,7 @@ class _WishlistPageState extends State<WishlistPage> {
         return WishlistDialog(
           action: action,
           wish: wish ?? {},
-          onWishlistChanged: () {
-            _fetchWishlist();
-          },
+          onWishlistChanged: _fetchWishlist,
         );
       },
     );

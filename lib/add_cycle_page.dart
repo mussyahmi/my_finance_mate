@@ -92,7 +92,7 @@ class AddCyclePageState extends State<AddCyclePage> {
                   },
                   child: Text(
                     selectedDateRange != null
-                        ? 'Date Range: ${DateFormat('MMM d, y').format(selectedDateRange!.start)} - ${DateFormat('MMM d, y').format(selectedDateRange!.end)}'
+                        ? 'Date Range: ${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.end)}'
                         : 'Select Date Range',
                   ),
                 ),

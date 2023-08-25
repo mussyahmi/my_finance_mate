@@ -41,8 +41,8 @@ class SettingsPageState extends State<SettingsPage> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: ListTile(
-                  title: const Text('Cycle\'s Category List'),
                   leading: const Icon(Icons.category),
+                  title: const Text('Cycle\'s Category List'),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(

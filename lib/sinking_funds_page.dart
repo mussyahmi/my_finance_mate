@@ -191,9 +191,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
         return SinkingFundsDialog(
           action: action,
           fund: fund ?? {},
-          onSinkingFundsChanged: () {
-            _fetchSinkingFunds();
-          },
+          onSinkingFundsChanged: _fetchSinkingFunds,
         );
       },
     );

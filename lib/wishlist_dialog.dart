@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class WishlistDialog extends StatefulWidget {
   final String action;
   final Map wish;
-  final void Function() onWishlistChanged;
+  final Function onWishlistChanged;
 
   const WishlistDialog(
       {Key? key,

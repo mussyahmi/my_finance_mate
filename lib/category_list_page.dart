@@ -223,9 +223,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
           cycleId: widget.cycleId,
           action: action,
           category: category ?? {},
-          onCategoryChanged: (categoryName) {
-            _fetchCategories();
-          },
+          onCategoryChanged: _fetchCategories,
         );
       },
     );

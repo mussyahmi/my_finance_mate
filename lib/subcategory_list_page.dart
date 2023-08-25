@@ -212,9 +212,7 @@ class _SubcategoryListPageState extends State<SubcategoryListPage> {
           categoryId: widget.categoryId,
           action: action,
           subcategory: subcategory ?? {},
-          onSubcategoryChanged: (subcategoryName, subcategoryBudget) {
-            _fetchSubcategories();
-          },
+          onSubcategoryChanged: _fetchSubcategories,
         );
       },
     );

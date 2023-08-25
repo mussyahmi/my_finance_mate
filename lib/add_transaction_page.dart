@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
+import 'dashboard_page.dart';
 import 'subcategory_list_page.dart';
 
 class AddTransactionPage extends StatefulWidget {
@@ -71,7 +72,7 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                   }
                 },
                 child: Text(
-                  'Date Time: ${DateFormat('EEEE, dd MMM yyyy hh:mm aa').format(selectedDateTime)}',
+                  'Date Time: ${DateFormat('EE, dd MMM yyyy hh:mm aa').format(selectedDateTime)}',
                 ),
               ),
               const SizedBox(height: 10),
@@ -258,10 +259,14 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                       'version_json': null,
                     });
 
-                    //* After saving the transaction, you can navigate back to the previous page
                     // ignore: use_build_context_synchronously
-                    Navigator.pop(
-                        context); //* Close the transaction adding page
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const DashboardPage()),
+                      (route) =>
+                          false, //* This line removes all previous routes from the stack
+                    );
                   } catch (e) {
                     //* Handle any errors that occur during the Firestore operation
                     // ignore: avoid_print

@@ -7,8 +7,7 @@ class SubcategoryDialog extends StatefulWidget {
   final String categoryId;
   final String action;
   final Map subcategory;
-  final void Function(String subcategoryName, String subcategoryBudget)
-      onSubcategoryChanged;
+  final Function onSubcategoryChanged;
 
   const SubcategoryDialog(
       {Key? key,
@@ -141,7 +140,7 @@ class SubcategoryDialogState extends State<SubcategoryDialog> {
       }
 
       //* Notify the parent widget about the subcategory addition
-      widget.onSubcategoryChanged(subcategoryName, subcategoryBudget);
+      widget.onSubcategoryChanged();
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       // ignore: avoid_print

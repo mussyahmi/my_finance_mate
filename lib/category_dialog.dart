@@ -6,7 +6,7 @@ class CategoryDialog extends StatefulWidget {
   final String cycleId;
   final String action;
   final Map category;
-  final void Function(String categoryName) onCategoryChanged;
+  final Function onCategoryChanged;
 
   const CategoryDialog(
       {Key? key,
@@ -112,7 +112,7 @@ class CategoryDialogState extends State<CategoryDialog> {
       }
 
       //* Notify the parent widget about the category addition
-      widget.onCategoryChanged(categoryName);
+      widget.onCategoryChanged();
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       // ignore: avoid_print

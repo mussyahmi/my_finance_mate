@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class SinkingFundsDialog extends StatefulWidget {
   final String action;
   final Map fund;
-  final void Function() onSinkingFundsChanged;
+  final Function onSinkingFundsChanged;
 
   const SinkingFundsDialog(
       {Key? key,
