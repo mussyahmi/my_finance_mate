@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -81,83 +83,97 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       title: Text(category['name']),
                       trailing: PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),
-                        onSelected: (value) {
+                        onSelected: (value) async {
                           if (value == 'edit') {
                             //* Handle edit option
                             _showCategoryDialog(context, 'Edit',
                                 category: category);
                           } else if (value == 'delete') {
-                            //* Handle delete option
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Confirm Delete'),
-                                  content: const Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                          'Are you sure you want to delete this category?'),
-                                      SizedBox(height: 20),
-                                      Text(
-                                        'This action will delete all subcategories associated with it as well.',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      )
+                            //* Check if there are transactions associated with this category
+                            final categoryId = category['id'];
+                            final hasTransactions =
+                                await _hasTransactions(categoryId);
+
+                            if (hasTransactions) {
+                              //* If there are transactions, show an error message or handle it accordingly.
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Cannot Delete Category'),
+                                    content: const Text(
+                                        'There are transactions associated with this category. You cannot delete it.'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('OK'),
+                                      ),
                                     ],
-                                  ),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context)
-                                            .pop(); //* Close the dialog
-                                      },
-                                      child: const Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        //* Delete the item from Firestore here
-                                        final categoryId = category['id'];
+                                  );
+                                },
+                              );
+                            } else {
+                              //* If there are no transactions, proceed with the deletion.
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Confirm Delete'),
+                                    content: const Text(
+                                        'Are you sure you want to delete this category?'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          //* Delete the item from Firestore here
+                                          final categoryId = category['id'];
 
-                                        //* Reference to the Firestore document to delete
-                                        final user =
-                                            FirebaseAuth.instance.currentUser;
-                                        if (user == null) {
-                                          //todo: Handle the case where the user is not authenticated
-                                          return;
-                                        }
+                                          //* Reference to the Firestore document to delete
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+                                          if (user == null) {
+                                            //todo: Handle the case where the user is not authenticated
+                                            return;
+                                          }
 
-                                        final userRef = FirebaseFirestore
-                                            .instance
-                                            .collection('users')
-                                            .doc(user.uid);
-                                        final cyclesRef = userRef
-                                            .collection('cycles')
-                                            .doc(widget.cycleId);
-                                        final categoriesRef =
-                                            cyclesRef.collection('categories');
-                                        final categoryRef =
-                                            categoriesRef.doc(categoryId);
+                                          final userRef = FirebaseFirestore
+                                              .instance
+                                              .collection('users')
+                                              .doc(user.uid);
+                                          final cyclesRef = userRef
+                                              .collection('cycles')
+                                              .doc(widget.cycleId);
+                                          final categoriesRef = cyclesRef
+                                              .collection('categories');
+                                          final categoryRef =
+                                              categoriesRef.doc(categoryId);
 
-                                        //* Update the 'deleted_at' field with the current timestamp
-                                        final now = DateTime.now();
-                                        categoryRef.update({'deleted_at': now});
+                                          //* Update the 'deleted_at' field with the current timestamp
+                                          final now = DateTime.now();
+                                          categoryRef
+                                              .update({'deleted_at': now});
 
-                                        _fetchCategories();
+                                          _fetchCategories();
 
-                                        // ignore: use_build_context_synchronously
-                                        Navigator.of(context)
-                                            .pop(); //* Close the dialog
-                                      },
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
                           }
                         },
                         itemBuilder: (context) => <PopupMenuEntry<String>>[
@@ -218,5 +234,22 @@ class _CategoryListPageState extends State<CategoryListPage> {
         );
       },
     );
+  }
+
+  Future<bool> _hasTransactions(String categoryId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return false;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    final transactionsSnapshot =
+        await transactionsRef.where('categoryId', isEqualTo: categoryId).get();
+
+    return transactionsSnapshot.docs.isNotEmpty;
   }
 }
