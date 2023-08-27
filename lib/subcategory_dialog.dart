@@ -114,7 +114,7 @@ class SubcategoryDialogState extends State<SubcategoryDialog> {
             .collection('subcategories')
             .add({
           'name': subcategoryName,
-          'budget': subcategoryBudget,
+          'budget': double.parse(subcategoryBudget).toStringAsFixed(2),
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -134,7 +134,7 @@ class SubcategoryDialogState extends State<SubcategoryDialog> {
             .doc(docId)
             .update({
           'name': subcategoryName,
-          'budget': subcategoryBudget,
+          'budget': double.parse(subcategoryBudget).toStringAsFixed(2),
           'updated_at': now,
         });
       }

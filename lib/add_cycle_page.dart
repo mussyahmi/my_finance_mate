@@ -92,8 +92,9 @@ class AddCyclePageState extends State<AddCyclePage> {
                   },
                   child: Text(
                     selectedDateRange != null
-                        ? 'Date Range: ${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.end)}'
+                        ? 'Date Range:\n${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, dd MMM yyyy').format(selectedDateRange!.end)}'
                         : 'Select Date Range',
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -147,8 +148,12 @@ class AddCyclePageState extends State<AddCyclePage> {
                         'start_date': selectedDateRange!.start,
                         'end_date': adjustedEndDate,
                         'created_at': Timestamp.now(),
-                        'opening_balance': openingBalanceController.text,
-                        'amount_balance': openingBalanceController.text,
+                        'opening_balance':
+                            double.parse(openingBalanceController.text)
+                                .toStringAsFixed(2),
+                        'amount_balance':
+                            double.parse(openingBalanceController.text)
+                                .toStringAsFixed(2),
                         'amount_received': '0.00',
                         'amount_spent': '0.00',
                       });

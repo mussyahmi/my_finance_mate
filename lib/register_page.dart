@@ -20,56 +20,6 @@ class RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _register(String email, String password) async {
-    try {
-      if (email.isEmpty || password.isEmpty) {
-        return;
-      }
-
-      final UserCredential authResult =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      if (authResult.user != null) {
-        //* Check if the user already exists in the Firestore collection
-        final userRef = FirebaseFirestore.instance.collection('users');
-
-        //* Get current timestamp
-        final now = DateTime.now();
-
-        //* Get device information
-        final deviceInfoJson = await _getDeviceInfoJson();
-
-        //* Add the user to the collection with UID as the document ID
-        await userRef.doc(authResult.user!.uid).set({
-          'created_at': now,
-          'updated_at': now,
-          'deleted_at': null,
-          'version_json': null,
-          'email': authResult.user!.email,
-          'full_name': authResult.user!.displayName,
-          'last_login': now,
-          'nickname': authResult.additionalUserInfo!.profile!['given_name'],
-          'photo_url': authResult.user!.photoURL,
-          'device_info_json': deviceInfoJson,
-        });
-
-        //* Navigate to the dashboard or home page upon successful register
-        // ignore: use_build_context_synchronously
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const DashboardPage(),
-          ),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      // ignore: avoid_print
-      print('Email/Password Sign-In Error: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,5 +157,56 @@ class RegisterPageState extends State<RegisterPage> {
     }
 
     return deviceInfoJson;
+  }
+
+  Future<void> _register(String email, String password) async {
+    try {
+      if (email.isEmpty || password.isEmpty) {
+        return;
+      }
+
+      final UserCredential authResult =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (authResult.user != null) {
+        //* Check if the user already exists in the Firestore collection
+        final userRef = FirebaseFirestore.instance.collection('users');
+
+        //* Get current timestamp
+        final now = DateTime.now();
+
+        //* Get device information
+        final deviceInfoJson = await _getDeviceInfoJson();
+
+        //* Add the user to the collection with UID as the document ID
+        await userRef.doc(authResult.user!.uid).set({
+          'created_at': now,
+          'updated_at': now,
+          'deleted_at': null,
+          'version_json': null,
+          'email': authResult.user!.email,
+          'full_name': authResult.user!.displayName,
+          'last_login': now,
+          'nickname': authResult.additionalUserInfo!.profile!['given_name'],
+          'photo_url': authResult.user!.photoURL,
+          'device_info_json': deviceInfoJson,
+        });
+
+        //* Navigate to the dashboard or home page upon successful register
+        // ignore: use_build_context_synchronously
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          (route) =>
+              false, //* This line removes all previous routes from the stack
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // ignore: avoid_print
+      print('Email/Password Sign-In Error: $e');
+    }
   }
 }

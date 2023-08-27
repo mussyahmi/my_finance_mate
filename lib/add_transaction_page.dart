@@ -24,6 +24,7 @@ class AddTransactionPageState extends State<AddTransactionPage> {
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -216,69 +217,33 @@ class AddTransactionPageState extends State<AddTransactionPage> {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
-                  //* Get the values from the form
-                  String type = selectedType;
-                  String categoryId = selectedCategory!;
-                  String subcategoryId = selectedSubcategory!;
-                  String amount = transactionAmountController.text;
-                  String note =
-                      transactionNoteController.text.replaceAll('\n', '\\n');
-                  DateTime dateTime = selectedDateTime;
+                  if (_isLoading) return;
 
-                  //* Validate the form data (add your own validation logic here)
-
-                  //* Get current timestamp
-                  final now = DateTime.now();
-
-                  //* Get the current user
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user == null) {
-                    //todo: Handle the case where the user is not authenticated
-                    return;
-                  }
+                  setState(() {
+                    _isLoading = true;
+                  });
 
                   try {
-                    //* Reference to the Firestore document to add the transaction
-                    final userRef = FirebaseFirestore.instance
-                        .collection('users')
-                        .doc(user.uid);
-                    final transactionsRef = userRef.collection('transactions');
-
-                    //* Create a new transaction document
-                    await transactionsRef.add({
-                      'cycleId': widget.cycleId,
-                      'dateTime': dateTime,
-                      'type': type,
-                      'categoryId': categoryId,
-                      'subcategoryId': subcategoryId,
-                      'amount': amount,
-                      'note': note,
-                      'created_at': now,
-                      'updated_at': now,
-                      'deleted_at': null,
-                      'version_json': null,
+                    await _addTransactionToFirebase();
+                  } finally {
+                    setState(() {
+                      _isLoading = false;
                     });
-
-                    // ignore: use_build_context_synchronously
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const DashboardPage()),
-                      (route) =>
-                          false, //* This line removes all previous routes from the stack
-                    );
-                  } catch (e) {
-                    //* Handle any errors that occur during the Firestore operation
-                    // ignore: avoid_print
-                    print('Error saving transaction: $e');
-                    //* You can show an error message to the user if needed
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Submit'),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Submit'),
               ),
             ],
           ),
@@ -351,5 +316,95 @@ class AddTransactionPageState extends State<AddTransactionPage> {
     setState(() {
       subcategories = fetchedSubcategories;
     });
+  }
+
+  Future<void> _addTransactionToFirebase() async {
+    //* Get the values from the form
+    String type = selectedType;
+    String categoryId = selectedCategory!;
+    String subcategoryId = selectedSubcategory!;
+    String amount = transactionAmountController.text;
+    String note = transactionNoteController.text.replaceAll('\n', '\\n');
+    DateTime dateTime = selectedDateTime;
+
+    //* Validate the form data (add your own validation logic here)
+
+    //* Get current timestamp
+    final now = DateTime.now();
+
+    //* Get the current user
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where the user is not authenticated
+      return;
+    }
+
+    try {
+      //* Reference to the Firestore document to add the transaction
+      final userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final transactionsRef = userRef.collection('transactions');
+
+      //* Create a new transaction document
+      await transactionsRef.add({
+        'cycleId': widget.cycleId,
+        'dateTime': dateTime,
+        'type': type,
+        'categoryId': categoryId,
+        'subcategoryId': subcategoryId,
+        'amount': double.parse(amount).toStringAsFixed(2),
+        'note': note,
+        'created_at': now,
+        'updated_at': now,
+        'deleted_at': null,
+        'version_json': null,
+      });
+
+      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+
+      //* Fetch the current cycle document
+      final cycleDoc = await cyclesRef.get();
+
+      if (cycleDoc.exists) {
+        final cycleData = cycleDoc.data() as Map<String, dynamic>;
+
+        //* Calculate the updated amounts
+        final double cycleOpeningBalance =
+            double.parse(cycleData['opening_balance']);
+        final double cycleAmountReceived =
+            double.parse(cycleData['amount_received']);
+        final double cycleAmountSpent = double.parse(cycleData['amount_spent']);
+
+        final newAmount = double.parse(amount);
+
+        final double updatedAmountBalance = cycleOpeningBalance +
+            cycleAmountReceived -
+            cycleAmountSpent +
+            (type == 'spent' ? -newAmount : newAmount);
+
+        //* Update the cycle document
+        await cyclesRef.update({
+          'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
+              .toStringAsFixed(2),
+          'amount_received':
+              (cycleAmountReceived + (type == 'received' ? newAmount : 0))
+                  .toStringAsFixed(2),
+          'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+        });
+      }
+
+      // ignore: use_build_context_synchronously
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
+        (route) =>
+            false, //* This line removes all previous routes from the stack
+      );
+    } catch (e) {
+      //* Handle any errors that occur during the Firestore operation
+      // ignore: avoid_print
+      print('Error saving transaction: $e');
+      //* You can show an error message to the user if needed
+    }
   }
 }

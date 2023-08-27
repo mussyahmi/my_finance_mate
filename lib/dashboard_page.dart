@@ -276,7 +276,7 @@ class _DashboardPageState extends State<DashboardPage> {
         setState(() {
           cycleId = lastCycleDoc.id;
           cycleName = lastCycleDoc['cycle_name'];
-          amountBalance = lastCycleDoc['opening_balance'];
+          amountBalance = lastCycleDoc['amount_balance'];
           amountReceived = lastCycleDoc['amount_received'];
           amountSpent = lastCycleDoc['amount_spent'];
         });
