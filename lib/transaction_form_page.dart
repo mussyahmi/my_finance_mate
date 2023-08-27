@@ -5,20 +5,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
 import 'dashboard_page.dart';
+import 'transaction.dart' as t;
 
-class AddTransactionPage extends StatefulWidget {
+class TransactionFormPage extends StatefulWidget {
   final String cycleId;
-  const AddTransactionPage({super.key, required this.cycleId});
+  final String action;
+  final t.Transaction? transaction;
+  const TransactionFormPage(
+      {super.key,
+      required this.cycleId,
+      required this.action,
+      this.transaction});
 
   @override
-  AddTransactionPageState createState() => AddTransactionPageState();
+  TransactionFormPageState createState() => TransactionFormPageState();
 }
 
-class AddTransactionPageState extends State<AddTransactionPage> {
+class TransactionFormPageState extends State<TransactionFormPage> {
   String selectedType = 'spent';
   String? selectedCategory;
   List<Map<String, dynamic>> categories = [];
-  List<Map<String, dynamic>> subcategories = [];
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
@@ -27,14 +33,26 @@ class AddTransactionPageState extends State<AddTransactionPage> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    await _fetchCategories();
+
+    if (widget.transaction != null) {
+      selectedType = widget.transaction!.type;
+      selectedCategory = widget.transaction!.categoryId;
+      transactionAmountController.text = widget.transaction!.amount;
+      transactionNoteController.text = widget.transaction!.note;
+      selectedDateTime = widget.transaction!.dateTime;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Transaction'),
+        title: Text('${widget.action} Transaction'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -115,8 +133,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
 
                     _fetchCategories();
                   }
-
-                  _fetchSubcategories(newValue as String);
                 },
                 items: [
                   ...categories.map((category) {
@@ -229,40 +245,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
     });
   }
 
-  Future<void> _fetchSubcategories(String categoryId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-    final categoriesRef = cyclesRef.collection('categories').doc(categoryId);
-    final subcategoriesRef = categoriesRef.collection('subcategories');
-
-    final subcategoriesSnapshot =
-        await subcategoriesRef.where('deleted_at', isNull: true).get();
-
-    final fetchedSubcategories = subcategoriesSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'budget': doc['budget'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
-        .toList();
-
-    //* Sort the list by 'created_at' in ascending order (most recent last)
-    fetchedSubcategories.sort((a, b) =>
-        (a['created_at'] as DateTime).compareTo((b['created_at'] as DateTime)));
-
-    setState(() {
-      subcategories = fetchedSubcategories;
-    });
-  }
-
   Future<void> _addTransactionToFirebase() async {
     //* Get the values from the form
     String type = selectedType;
@@ -289,19 +271,30 @@ class AddTransactionPageState extends State<AddTransactionPage> {
           FirebaseFirestore.instance.collection('users').doc(user.uid);
       final transactionsRef = userRef.collection('transactions');
 
-      //* Create a new transaction document
-      await transactionsRef.add({
-        'cycleId': widget.cycleId,
-        'dateTime': dateTime,
-        'type': type,
-        'categoryId': categoryId,
-        'amount': double.parse(amount).toStringAsFixed(2),
-        'note': note,
-        'created_at': now,
-        'updated_at': now,
-        'deleted_at': null,
-        'version_json': null,
-      });
+      if (widget.action == 'Add') {
+        //* Create a new transaction document
+        await transactionsRef.add({
+          'cycleId': widget.cycleId,
+          'dateTime': dateTime,
+          'type': type,
+          'categoryId': categoryId,
+          'amount': double.parse(amount).toStringAsFixed(2),
+          'note': note,
+          'created_at': now,
+          'updated_at': now,
+          'deleted_at': null,
+          'version_json': null,
+        });
+      } else if (widget.action == 'Edit') {
+        await transactionsRef.doc(widget.transaction!.id).update({
+          'dateTime': dateTime,
+          'type': type,
+          'categoryId': categoryId,
+          'amount': double.parse(amount).toStringAsFixed(2),
+          'note': note,
+          'updated_at': now,
+        });
+      }
 
       final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
 
@@ -315,8 +308,17 @@ class AddTransactionPageState extends State<AddTransactionPage> {
         final double cycleOpeningBalance =
             double.parse(cycleData['opening_balance']);
         final double cycleAmountReceived =
-            double.parse(cycleData['amount_received']);
-        final double cycleAmountSpent = double.parse(cycleData['amount_spent']);
+            double.parse(cycleData['amount_received']) +
+                (widget.transaction != null &&
+                        widget.transaction!.type == 'received'
+                    ? -double.parse(widget.transaction!.amount)
+                    : 0);
+        final double cycleAmountSpent =
+            double.parse(cycleData['amount_spent']) +
+                (widget.transaction != null &&
+                        widget.transaction!.type == 'spent'
+                    ? -double.parse(widget.transaction!.amount)
+                    : 0);
 
         final newAmount = double.parse(amount);
 

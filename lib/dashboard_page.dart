@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:my_finance_mate/size_config.dart';
 
 import 'add_cycle_page.dart';
-import 'add_transaction_page.dart';
+import 'transaction_form_page.dart';
 import 'settings_page.dart';
 import 'transaction.dart' as t;
 
@@ -45,7 +45,8 @@ class _DashboardPageState extends State<DashboardPage> {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    final transactionQuery = await transactionsRef.get();
+    final transactionQuery =
+        await transactionsRef.where('deleted_at', isNull: true).get();
     final transactions = transactionQuery.docs.map((doc) async {
       final data = doc.data();
 
@@ -175,26 +176,85 @@ class _DashboardPageState extends State<DashboardPage> {
                         itemCount: transactions!.length,
                         itemBuilder: (context, index) {
                           final transaction = transactions[index];
-                          return ListTile(
-                            title: Text(
-                              transaction.categoryName,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
+                          return Dismissible(
+                            key: Key(transaction
+                                .id), //* Unique key for each transaction
+                            background: Container(
+                              color: Colors
+                                  .green, //* Background color for edit action
+                              alignment: Alignment.centerLeft,
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                            subtitle: Text(
-                              DateFormat('EE, dd MMM yyyy hh:mm aa')
-                                  .format(transaction.dateTime),
-                              style: const TextStyle(fontSize: 12),
+                            secondaryBackground: Container(
+                              color: Colors
+                                  .red, //* Background color for delete action
+                              alignment: Alignment.centerRight,
+                              child: const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                            trailing: Text(
-                              '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: transaction.type == 'spent'
-                                      ? Colors.red
-                                      : Colors.green),
+                            confirmDismiss: (direction) async {
+                              if (direction == DismissDirection.startToEnd) {
+                                //* Edit action
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TransactionFormPage(
+                                      cycleId: cycleId ?? '',
+                                      action: 'Edit',
+                                      transaction: transaction,
+                                    ),
+                                  ),
+                                );
+
+                                if (result == true) {
+                                  await _fetchTransactions();
+                                  return true;
+                                } else {
+                                  return false;
+                                }
+                              } else if (direction ==
+                                  DismissDirection.endToStart) {
+                                //* Delete action
+                                return await _deleteTransaction(transaction);
+                              }
+
+                              return false;
+                            },
+                            child: ListTile(
+                              title: Text(
+                                transaction.categoryName,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              subtitle: Text(
+                                DateFormat('EE, dd MMM yyyy hh:mm aa')
+                                    .format(transaction.dateTime),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: Text(
+                                '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: transaction.type == 'spent'
+                                        ? Colors.red
+                                        : Colors.green),
+                              ),
+                              onTap: () {
+                                //* Show the transaction summary dialog when tapped
+                                _showTransactionSummaryDialog(transaction);
+                              },
                             ),
-                            onTap: () {},
                           );
                         },
                       ),
@@ -211,7 +271,8 @@ class _DashboardPageState extends State<DashboardPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddTransactionPage(cycleId: cycleId ?? ''),
+              builder: (context) =>
+                  TransactionFormPage(cycleId: cycleId ?? '', action: 'Add'),
             ),
           );
         },
@@ -265,5 +326,87 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context) => const AddCyclePage(isFirstCycle: true)),
       );
     }
+  }
+
+  void _showTransactionSummaryDialog(t.Transaction transaction) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Transaction Summary'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Category: ${transaction.categoryName}'),
+              Text(
+                  'Date: ${DateFormat('EE, dd MMM yyyy hh:mm aa').format(transaction.dateTime)}'),
+              Text('Amount: RM${transaction.amount}'),
+              Text(
+                  'Type: ${transaction.type[0].toUpperCase()}${transaction.type.substring(1)}'),
+              Text('Note:\n${transaction.note.replaceAll('\\n', '\n')}'),
+              //* Add more transaction details as needed
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); //* Close the dialog
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _deleteTransaction(t.Transaction transaction) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content:
+              const Text('Are you sure you want to delete this transaction?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); //* Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                //* Delete the item from Firestore here
+                final transactionId = transaction.id;
+
+                //* Reference to the Firestore document to delete
+                final user = FirebaseAuth.instance.currentUser;
+                if (user == null) {
+                  //todo: Handle the case where the user is not authenticated
+                  return;
+                }
+
+                final userRef = FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid);
+                final transactionRef =
+                    userRef.collection('transactions').doc(transactionId);
+
+                //* Update the 'deleted_at' field with the current timestamp
+                final now = DateTime.now();
+                transactionRef.update({'deleted_at': now});
+
+                _fetchTransactions();
+
+                Navigator.of(context).pop(true); //* Close the dialog
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
