@@ -154,12 +154,20 @@ class _DashboardPageState extends State<DashboardPage> {
                 future: _fetchTransactions(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator(); //* Display a loading indicator
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: CircularProgressIndicator(),
+                    ); //* Display a loading indicator
                   } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text('Error: ${snapshot.error}'),
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text(
-                        'No transactions found.'); //* Display a message for no transactions
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text('No transactions found.'),
+                    ); //* Display a message for no transactions
                   } else {
                     //* Display the list of transactions
                     final transactions = snapshot.data;

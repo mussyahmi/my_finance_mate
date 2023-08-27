@@ -210,10 +210,10 @@ class _LoginPageState extends State<LoginPage> {
       final userRef = FirebaseFirestore.instance.collection('users');
       final userDoc = await userRef.doc(authResult.user!.uid).get();
 
-      //* Get device information
-      final deviceInfoJson = await _getDeviceInfoJson();
-
       if (userDoc.exists) {
+        //* Get device information
+        final deviceInfoJson = await _getDeviceInfoJson();
+
         //* User already exists, you can choose to update any information if needed
         final now = DateTime.now();
 
@@ -222,13 +222,13 @@ class _LoginPageState extends State<LoginPage> {
           'last_login': now,
           'device_info_json': deviceInfoJson,
         });
-      }
 
-      //* Navigate to the DashboardPage after sign-in
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-      );
+        //* Navigate to the DashboardPage after sign-in
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+        );
+      }
     } catch (error) {
       print('Email/Password Sign-In Error: $error');
       //todo: Handle sign-in errors as needed, such as displaying an error message
