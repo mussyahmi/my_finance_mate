@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_dialog.dart';
-import 'subcategory_list_page.dart';
 
 class CategoryListPage extends StatefulWidget {
   final String cycleId;
@@ -42,6 +41,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
         .map((doc) => {
               'id': doc.id,
               'name': doc['name'] as String,
+              'budget': doc['budget'] as String,
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
         .toList();
@@ -185,16 +185,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           ),
                         ],
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SubcategoryListPage(
-                                  cycleId: widget.cycleId,
-                                  categoryId: category['id'],
-                                  categoryName: category['name'])),
-                        );
-                      },
+                      onTap: () {},
                     ),
                   ),
                   const SizedBox(height: 10),

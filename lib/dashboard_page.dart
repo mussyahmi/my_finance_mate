@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:my_finance_mate/size_config.dart';
 
 import 'add_cycle_page.dart';
 import 'add_transaction_page.dart';
@@ -58,18 +59,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
       final categoryName = categoryDoc['name'] as String;
 
-      //* Fetch the subcategory name based on the subcategoryId
-      final subcategoryDoc = await userRef
-          .collection('cycles')
-          .doc(data['cycleId'])
-          .collection('categories')
-          .doc(data['categoryId'])
-          .collection('subcategories')
-          .doc(data['subcategoryId'])
-          .get();
-
-      final subcategoryName = subcategoryDoc['name'] as String;
-
       //* Create a Transaction object with the category name
       return t.Transaction(
         id: doc.id,
@@ -78,8 +67,6 @@ class _DashboardPageState extends State<DashboardPage> {
         type: data['type'] as String,
         categoryId: data['categoryId'],
         categoryName: categoryName,
-        subcategoryId: data['subcategoryId'],
-        subcategoryName: subcategoryName,
         amount: data['amount'] as String,
         note: data['note'] as String,
         //* Add other transaction properties as needed
@@ -96,6 +83,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    //* Initialize SizeConfig
+    SizeConfig().init(context);
+
     return Scaffold(
       appBar: AppBar(
         forceMaterialTransparency: true,
@@ -161,49 +151,35 @@ class _DashboardPageState extends State<DashboardPage> {
                   } else if (snapshot.hasError) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text('Error: ${snapshot.error}'),
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
                     );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
-                      child: Text('No transactions found.'),
+                      child: Text(
+                        'No transactions found.',
+                        textAlign: TextAlign.center,
+                      ),
                     ); //* Display a message for no transactions
                   } else {
                     //* Display the list of transactions
                     final transactions = snapshot.data;
-                    return SizedBox(
-                      height: 300,
+                    return Container(
+                      constraints: BoxConstraints.loose(
+                          Size(SizeConfig.screenWidth!, 300)),
                       child: ListView.builder(
                         shrinkWrap: true,
                         itemCount: transactions!.length,
                         itemBuilder: (context, index) {
                           final transaction = transactions[index];
                           return ListTile(
-                            title: Row(
-                              children: [
-                                Text(
-                                  transaction.subcategoryName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).primaryColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 2),
-                                  child: Text(
-                                    transaction.categoryName,
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontStyle: FontStyle.italic),
-                                  ),
-                                ),
-                              ],
+                            title: Text(
+                              transaction.categoryName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             subtitle: Text(
                               DateFormat('EE, dd MMM yyyy hh:mm aa')

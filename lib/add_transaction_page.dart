@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
 import 'dashboard_page.dart';
-import 'subcategory_list_page.dart';
 
 class AddTransactionPage extends StatefulWidget {
   final String cycleId;
@@ -18,7 +17,6 @@ class AddTransactionPage extends StatefulWidget {
 class AddTransactionPageState extends State<AddTransactionPage> {
   String selectedType = 'spent';
   String? selectedCategory;
-  String? selectedSubcategory;
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> subcategories = [];
   TextEditingController transactionAmountController = TextEditingController();
@@ -101,7 +99,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                 onChanged: (newValue) async {
                   setState(() {
                     selectedCategory = newValue;
-                    selectedSubcategory = null;
                   });
 
                   if (newValue == 'add_new') {
@@ -114,7 +111,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
 
                     setState(() {
                       selectedCategory = null;
-                      selectedSubcategory = null;
                     });
 
                     _fetchCategories();
@@ -143,57 +139,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
                 ],
                 decoration: const InputDecoration(
                   labelText: 'Category',
-                ),
-              ),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: selectedSubcategory,
-                onChanged: (newValue) async {
-                  setState(() {
-                    selectedSubcategory = newValue;
-                  });
-
-                  if (newValue == 'add_new') {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SubcategoryListPage(
-                              cycleId: widget.cycleId,
-                              categoryId: selectedCategory as String,
-                              categoryName: 'Subcategory List')),
-                    );
-
-                    setState(() {
-                      selectedSubcategory = null;
-                    });
-
-                    _fetchSubcategories(selectedCategory as String);
-
-                    return;
-                  }
-                },
-                items: [
-                  ...subcategories.map((subcategory) {
-                    return DropdownMenuItem<String>(
-                      value: subcategory['id'],
-                      child: Text(subcategory['name']),
-                    );
-                  }).toList(),
-                  if (selectedCategory != null)
-                    const DropdownMenuItem<String>(
-                      value: 'add_new',
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add_circle),
-                          SizedBox(width: 8),
-                          Text('Add New'),
-                        ],
-                      ),
-                    ),
-                ],
-                decoration: const InputDecoration(
-                  labelText: 'Subcategory',
                 ),
               ),
               const SizedBox(height: 20),
@@ -322,7 +267,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
     //* Get the values from the form
     String type = selectedType;
     String categoryId = selectedCategory!;
-    String subcategoryId = selectedSubcategory!;
     String amount = transactionAmountController.text;
     String note = transactionNoteController.text.replaceAll('\n', '\\n');
     DateTime dateTime = selectedDateTime;
@@ -351,7 +295,6 @@ class AddTransactionPageState extends State<AddTransactionPage> {
         'dateTime': dateTime,
         'type': type,
         'categoryId': categoryId,
-        'subcategoryId': subcategoryId,
         'amount': double.parse(amount).toStringAsFixed(2),
         'note': note,
         'created_at': now,

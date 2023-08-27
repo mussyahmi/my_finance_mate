@@ -22,6 +22,9 @@ class CategoryDialog extends StatefulWidget {
 
 class CategoryDialogState extends State<CategoryDialog> {
   final TextEditingController _categoryNameController = TextEditingController();
+  final TextEditingController _categoryBudgetController =
+      TextEditingController();
+  bool _isBudgetEnabled = false;
 
   @override
   void initState() {
@@ -29,6 +32,9 @@ class CategoryDialogState extends State<CategoryDialog> {
 
     if (widget.category.isNotEmpty) {
       _categoryNameController.text = widget.category['name'] ?? '';
+      _categoryBudgetController.text = widget.category['budget'] ?? '';
+      _isBudgetEnabled = _categoryBudgetController.text.isNotEmpty &&
+          _categoryBudgetController.text != '0.00';
     }
   }
 
@@ -36,11 +42,43 @@ class CategoryDialogState extends State<CategoryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.action} Category'),
-      content: TextField(
-        controller: _categoryNameController,
-        decoration: const InputDecoration(
-          labelText: 'Name',
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _categoryNameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+            ),
+          ),
+          if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
+            Column(
+              children: [
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _categoryBudgetController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Budget',
+                    prefixText: 'RM ',
+                  ),
+                ),
+              ],
+            ),
+          Row(
+            children: [
+              Checkbox(
+                value: _isBudgetEnabled,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isBudgetEnabled = value ?? false;
+                  });
+                },
+              ),
+              const Text('Set a Budget'),
+            ],
+          ),
+        ],
       ),
       actions: [
         TextButton(
@@ -52,13 +90,18 @@ class CategoryDialogState extends State<CategoryDialog> {
         ElevatedButton(
           onPressed: () {
             final categoryName = _categoryNameController.text;
-            if (categoryName.isNotEmpty) {
-              //* Call the function to update to Firebase
-              updateCategoryToFirebase(categoryName);
+            final categoryBudget = _categoryBudgetController.text;
 
-              //* Close the dialog
-              Navigator.of(context).pop();
+            if (categoryName.isEmpty ||
+                (_isBudgetEnabled && categoryBudget.isEmpty)) {
+              return;
             }
+
+            //* Call the function to update to Firebase
+            updateCategoryToFirebase(categoryName, categoryBudget);
+
+            //* Close the dialog
+            Navigator.of(context).pop();
           },
           child: Text(widget.action),
         ),
@@ -67,7 +110,8 @@ class CategoryDialogState extends State<CategoryDialog> {
   }
 
   //* Function to update category to Firebase Firestore
-  Future<void> updateCategoryToFirebase(String categoryName) async {
+  Future<void> updateCategoryToFirebase(
+      String categoryName, String categoryBudget) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -90,6 +134,8 @@ class CategoryDialogState extends State<CategoryDialog> {
             .collection('categories')
             .add({
           'name': categoryName,
+          'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
+              .toStringAsFixed(2),
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -107,6 +153,8 @@ class CategoryDialogState extends State<CategoryDialog> {
             .doc(docId)
             .update({
           'name': categoryName,
+          'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
+              .toStringAsFixed(2),
           'updated_at': now,
         });
       }

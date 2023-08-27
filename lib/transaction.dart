@@ -5,8 +5,6 @@ class Transaction {
   final String type;
   final String categoryId;
   final String categoryName;
-  final String subcategoryId;
-  final String subcategoryName;
   final String amount;
   final String note;
 
@@ -17,8 +15,6 @@ class Transaction {
     required this.type,
     required this.categoryId,
     required this.categoryName,
-    required this.subcategoryId,
-    required this.subcategoryName,
     required this.amount,
     required this.note,
   });
