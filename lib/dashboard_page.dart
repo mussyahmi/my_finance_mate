@@ -31,7 +31,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     //* Call the function when the DashboardPage is loaded
-    checkCycleAndShowPopup();
+    _checkCycleAndShowPopup();
   }
 
   Future<List<t.Transaction>> _fetchTransactions() async {
@@ -218,7 +218,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                 );
 
                                 if (result == true) {
-                                  await _fetchTransactions();
+                                  _checkCycleAndShowPopup();
+                                  _fetchTransactions();
                                   return true;
                                 } else {
                                   return false;
@@ -238,7 +239,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               subtitle: Text(
-                                DateFormat('EE, dd MMM yyyy hh:mm aa')
+                                DateFormat('EE, d MMM yyyy h:mm aa')
                                     .format(transaction.dateTime),
                                 style: const TextStyle(fontSize: 12),
                               ),
@@ -267,21 +268,26 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>
                   TransactionFormPage(cycleId: cycleId ?? '', action: 'Add'),
             ),
           );
+
+          if (result == true) {
+            _checkCycleAndShowPopup();
+            _fetchTransactions();
+          }
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Future<void> checkCycleAndShowPopup() async {
+  Future<void> _checkCycleAndShowPopup() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated
@@ -338,13 +344,66 @@ class _DashboardPageState extends State<DashboardPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Category: ${transaction.categoryName}'),
-              Text(
-                  'Date: ${DateFormat('EE, dd MMM yyyy hh:mm aa').format(transaction.dateTime)}'),
-              Text('Amount: RM${transaction.amount}'),
-              Text(
-                  'Type: ${transaction.type[0].toUpperCase()}${transaction.type.substring(1)}'),
-              Text('Note:\n${transaction.note.replaceAll('\\n', '\n')}'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Category:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(transaction.categoryName),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Date:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    DateFormat('EE, d MMM yyyy\nh:mm aa')
+                        .format(transaction.dateTime),
+                    textAlign: TextAlign.right,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Amount:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text('RM${transaction.amount}'),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Type:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                      '${transaction.type[0].toUpperCase()}${transaction.type.substring(1)}'),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Note:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(transaction.note.replaceAll('\\n', '\n')),
+                ],
+              ),
               //* Add more transaction details as needed
             ],
           ),
@@ -398,6 +457,41 @@ class _DashboardPageState extends State<DashboardPage> {
                 final now = DateTime.now();
                 transactionRef.update({'deleted_at': now});
 
+                final cyclesRef = userRef.collection('cycles').doc(cycleId);
+
+                //* Fetch the current cycle document
+                final cycleDoc = await cyclesRef.get();
+
+                if (cycleDoc.exists) {
+                  final cycleData = cycleDoc.data() as Map<String, dynamic>;
+
+                  //* Calculate the updated amounts
+                  final double cycleOpeningBalance =
+                      double.parse(cycleData['opening_balance']);
+                  final double cycleAmountReceived =
+                      double.parse(cycleData['amount_received']) +
+                          (transaction.type == 'received'
+                              ? -double.parse(transaction.amount)
+                              : 0);
+                  final double cycleAmountSpent =
+                      double.parse(cycleData['amount_spent']) +
+                          (transaction.type == 'spent'
+                              ? -double.parse(transaction.amount)
+                              : 0);
+
+                  final double updatedAmountBalance = cycleOpeningBalance +
+                      cycleAmountReceived -
+                      cycleAmountSpent;
+
+                  //* Update the cycle document
+                  await cyclesRef.update({
+                    'amount_spent': cycleAmountSpent.toStringAsFixed(2),
+                    'amount_received': cycleAmountReceived.toStringAsFixed(2),
+                    'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+                  });
+                }
+
+                _checkCycleAndShowPopup();
                 _fetchTransactions();
 
                 Navigator.of(context).pop(true); //* Close the dialog

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -70,7 +72,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     lastDate: DateTime(2101), //todo: cycle's end date
                   );
                   if (selectedDate != null) {
-                    // ignore: use_build_context_synchronously
                     final selectedTime = await showTimePicker(
                       context: context,
                       initialTime: TimeOfDay.fromDateTime(selectedDateTime),
@@ -89,7 +90,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   }
                 },
                 child: Text(
-                  'Date Time: ${DateFormat('EE, dd MMM yyyy hh:mm aa').format(selectedDateTime)}',
+                  'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
                 ),
               ),
               const SizedBox(height: 10),
@@ -185,7 +186,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   });
 
                   try {
-                    await _addTransactionToFirebase();
+                    await _updateTransactionToFirebase();
                   } finally {
                     setState(() {
                       _isLoading = false;
@@ -245,7 +246,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     });
   }
 
-  Future<void> _addTransactionToFirebase() async {
+  Future<void> _updateTransactionToFirebase() async {
     //* Get the values from the form
     String type = selectedType;
     String categoryId = selectedCategory!;
@@ -338,13 +339,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       }
 
-      // ignore: use_build_context_synchronously
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-        (route) =>
-            false, //* This line removes all previous routes from the stack
-      );
+      Navigator.of(context).pop(true);
     } catch (e) {
       //* Handle any errors that occur during the Firestore operation
       // ignore: avoid_print
