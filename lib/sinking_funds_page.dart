@@ -57,7 +57,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sinking Funds'),
+        title: const Text('Category List'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(

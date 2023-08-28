@@ -44,7 +44,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('${widget.action} Sinking Funds'),
+      title: Text('${widget.action} Category'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'category_list_page.dart';
 import 'login_page.dart';
-import 'sinking_funds_page.dart';
+import 'type_page.dart';
 import 'wishlist_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -42,36 +41,14 @@ class SettingsPageState extends State<SettingsPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.category),
-                  title: const Text('Cycle\'s Category List'),
+                  title: const Text('Category List'),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              CategoryListPage(cycleId: widget.cycleId)),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: ListTile(
-                  title: const Text('Sinking Funds'),
-                  leading: const Icon(Icons.account_balance_wallet),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SinkingFundsPage()),
+                              TypePage(cycleId: widget.cycleId)),
                     );
                   },
                 ),

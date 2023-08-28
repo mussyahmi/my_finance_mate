@@ -42,10 +42,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
-      selectedCategory = widget.transaction!.categoryId;
       transactionAmountController.text = widget.transaction!.amount;
       transactionNoteController.text = widget.transaction!.note;
       selectedDateTime = widget.transaction!.dateTime;
+
+      await _fetchCategories();
+
+      selectedCategory = widget.transaction!.categoryId;
     }
   }
 
@@ -98,9 +101,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 onChanged: (newValue) {
                   setState(() {
                     selectedType = newValue as String;
+                    selectedCategory = null;
                   });
+
+                  _fetchCategories();
                 },
-                items: ['spent', 'received']
+                items: ['spent', 'received', 'saving']
                     .map((type) => DropdownMenuItem(
                           value: type,
                           child: Text(
@@ -125,6 +131,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       MaterialPageRoute(
                           builder: (context) => CategoryListPage(
                                 cycleId: widget.cycleId,
+                                type: selectedType,
                                 isFromTransactionForm: true,
                               )),
                     );
@@ -224,11 +231,24 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-    final categoriesRef = cyclesRef.collection('categories');
 
-    final categoriesSnapshot =
-        await categoriesRef.where('deleted_at', isNull: true).get();
+    CollectionReference<Map<String, dynamic>> categoriesRef;
+
+    if (selectedType != 'saving') {
+      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+      categoriesRef = cyclesRef.collection('categories');
+    } else {
+      categoriesRef = userRef.collection('sinking_funds');
+    }
+
+    Query<Map<String, dynamic>> query =
+        categoriesRef.where('deleted_at', isNull: true);
+
+    if (selectedType != 'saving') {
+      query = query.where('type', isEqualTo: selectedType);
+    }
+
+    final categoriesSnapshot = await query.get();
 
     final fetchedCategories = categoriesSnapshot.docs
         .map((doc) => {
@@ -318,7 +338,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         final double cycleAmountSpent =
             double.parse(cycleData['amount_spent']) +
                 (widget.transaction != null &&
-                        widget.transaction!.type == 'spent'
+                        (widget.transaction!.type == 'spent' ||
+                            widget.transaction!.type == 'saving')
                     ? -double.parse(widget.transaction!.amount)
                     : 0);
 
@@ -327,11 +348,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         final double updatedAmountBalance = cycleOpeningBalance +
             cycleAmountReceived -
             cycleAmountSpent +
-            (type == 'spent' ? -newAmount : newAmount);
+            ((type == 'spent' || type == 'saving') ? -newAmount : newAmount);
 
         //* Update the cycle document
         await cyclesRef.update({
-          'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
+          'amount_spent': (cycleAmountSpent +
+                  ((type == 'spent' || type == 'saving') ? newAmount : 0))
               .toStringAsFixed(2),
           'amount_received':
               (cycleAmountReceived + (type == 'received' ? newAmount : 0))

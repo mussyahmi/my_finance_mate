@@ -8,10 +8,14 @@ import 'category_dialog.dart';
 
 class CategoryListPage extends StatefulWidget {
   final String cycleId;
+  final String type;
   final bool? isFromTransactionForm;
 
   const CategoryListPage(
-      {super.key, required this.cycleId, this.isFromTransactionForm});
+      {super.key,
+      required this.cycleId,
+      required this.type,
+      this.isFromTransactionForm});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -46,8 +50,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
     final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 
-    final categoriesSnapshot =
-        await categoriesRef.where('deleted_at', isNull: true).get();
+    final categoriesSnapshot = await categoriesRef
+        .where('deleted_at', isNull: true)
+        .where('type', isEqualTo: widget.type)
+        .get();
 
     final fetchedCategories = categoriesSnapshot.docs
         .map((doc) => {
@@ -238,6 +244,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
       builder: (context) {
         return CategoryDialog(
           cycleId: widget.cycleId,
+          type: widget.type,
           action: action,
           category: category ?? {},
           onCategoryChanged: _fetchCategories,

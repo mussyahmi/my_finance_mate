@@ -34,54 +34,6 @@ class _DashboardPageState extends State<DashboardPage> {
     _checkCycleAndShowPopup();
   }
 
-  Future<List<t.Transaction>> _fetchTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return [];
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    final transactionQuery =
-        await transactionsRef.where('deleted_at', isNull: true).get();
-    final transactions = transactionQuery.docs.map((doc) async {
-      final data = doc.data();
-
-      //* Fetch the category name based on the categoryId
-      final categoryDoc = await userRef
-          .collection('cycles')
-          .doc(data['cycleId'])
-          .collection('categories')
-          .doc(data['categoryId'])
-          .get();
-
-      final categoryName = categoryDoc['name'] as String;
-
-      //* Create a Transaction object with the category name
-      return t.Transaction(
-        id: doc.id,
-        cycleId: data['cycleId'],
-        dateTime: (data['dateTime'] as Timestamp).toDate(),
-        type: data['type'] as String,
-        categoryId: data['categoryId'],
-        categoryName: categoryName,
-        amount: data['amount'] as String,
-        note: data['note'] as String,
-        //* Add other transaction properties as needed
-      );
-    }).toList();
-
-    var result = await Future.wait(transactions);
-
-    //* Sort the list by 'created_at' in ascending order (most recent first)
-    result.sort((a, b) => (b.dateTime).compareTo(a.dateTime));
-
-    return result;
-  }
-
   @override
   Widget build(BuildContext context) {
     //* Initialize SizeConfig
@@ -324,10 +276,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                 style: const TextStyle(fontSize: 12),
                               ),
                               trailing: Text(
-                                '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: transaction.type == 'spent'
+                                    color: (transaction.type == 'spent' ||
+                                            transaction.type == 'saving')
                                         ? Colors.red
                                         : Colors.green),
                               ),
@@ -365,6 +318,62 @@ class _DashboardPageState extends State<DashboardPage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<List<t.Transaction>> _fetchTransactions() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where the user is not authenticated.
+      return [];
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    final transactionQuery =
+        await transactionsRef.where('deleted_at', isNull: true).get();
+    final transactions = transactionQuery.docs.map((doc) async {
+      final data = doc.data();
+
+      //* Fetch the category name based on the categoryId
+      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
+      if (data['type'] != 'saving') {
+        categoryDoc = await userRef
+            .collection('cycles')
+            .doc(data['cycleId'])
+            .collection('categories')
+            .doc(data['categoryId'])
+            .get();
+      } else {
+        categoryDoc = await userRef
+            .collection('sinking_funds')
+            .doc(data['categoryId'])
+            .get();
+      }
+
+      final categoryName = categoryDoc['name'] as String;
+
+      //* Create a Transaction object with the category name
+      return t.Transaction(
+        id: doc.id,
+        cycleId: data['cycleId'],
+        dateTime: (data['dateTime'] as Timestamp).toDate(),
+        type: data['type'] as String,
+        categoryId: data['categoryId'],
+        categoryName: categoryName,
+        amount: data['amount'] as String,
+        note: data['note'] as String,
+        //* Add other transaction properties as needed
+      );
+    }).toList();
+
+    var result = await Future.wait(transactions);
+
+    //* Sort the list by 'created_at' in ascending order (most recent first)
+    result.sort((a, b) => (b.dateTime).compareTo(a.dateTime));
+
+    return result;
   }
 
   Future<void> _checkCycleAndShowPopup() async {
@@ -555,7 +564,8 @@ class _DashboardPageState extends State<DashboardPage> {
                               : 0);
                   final double cycleAmountSpent =
                       double.parse(cycleData['amount_spent']) +
-                          (transaction.type == 'spent'
+                          ((transaction.type == 'spent' ||
+                                  transaction.type == 'saving')
                               ? -double.parse(transaction.amount)
                               : 0);
 

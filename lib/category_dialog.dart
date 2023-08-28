@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CategoryDialog extends StatefulWidget {
   final String cycleId;
+  final String type;
   final String action;
   final Map category;
   final Function onCategoryChanged;
@@ -11,6 +12,7 @@ class CategoryDialog extends StatefulWidget {
   const CategoryDialog(
       {Key? key,
       required this.cycleId,
+      required this.type,
       required this.action,
       required this.category,
       required this.onCategoryChanged})
@@ -65,19 +67,20 @@ class CategoryDialogState extends State<CategoryDialog> {
                 ),
               ],
             ),
-          Row(
-            children: [
-              Checkbox(
-                value: _isBudgetEnabled,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isBudgetEnabled = value ?? false;
-                  });
-                },
-              ),
-              const Text('Set a Budget'),
-            ],
-          ),
+          if (widget.type == 'spent')
+            Row(
+              children: [
+                Checkbox(
+                  value: _isBudgetEnabled,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isBudgetEnabled = value ?? false;
+                    });
+                  },
+                ),
+                const Text('Set a Budget'),
+              ],
+            ),
         ],
       ),
       actions: [
@@ -136,6 +139,7 @@ class CategoryDialogState extends State<CategoryDialog> {
           'name': categoryName,
           'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
               .toStringAsFixed(2),
+          'type': widget.type,
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
