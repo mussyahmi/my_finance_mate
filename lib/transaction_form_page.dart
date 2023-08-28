@@ -123,8 +123,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryListPage(cycleId: widget.cycleId)),
+                          builder: (context) => CategoryListPage(
+                                cycleId: widget.cycleId,
+                                isFromTransactionForm: true,
+                              )),
                     );
 
                     setState(() {

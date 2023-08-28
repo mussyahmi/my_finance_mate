@@ -8,8 +8,10 @@ import 'category_dialog.dart';
 
 class CategoryListPage extends StatefulWidget {
   final String cycleId;
+  final bool? isFromTransactionForm;
 
-  const CategoryListPage({super.key, required this.cycleId});
+  const CategoryListPage(
+      {super.key, required this.cycleId, this.isFromTransactionForm});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -21,7 +23,15 @@ class _CategoryListPageState extends State<CategoryListPage> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    await _fetchCategories();
+
+    if (widget.isFromTransactionForm != null) {
+      _showCategoryDialog(context, 'Add');
+    }
   }
 
   Future<void> _fetchCategories() async {
