@@ -60,6 +60,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
               'id': doc.id,
               'name': doc['name'] as String,
               'budget': doc['budget'] as String,
+              'note': doc['note'] as String,
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
         .toList();

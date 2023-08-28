@@ -26,6 +26,7 @@ class CategoryDialogState extends State<CategoryDialog> {
   final TextEditingController _categoryNameController = TextEditingController();
   final TextEditingController _categoryBudgetController =
       TextEditingController();
+  final TextEditingController _categoryNoteController = TextEditingController();
   bool _isBudgetEnabled = false;
 
   @override
@@ -35,6 +36,7 @@ class CategoryDialogState extends State<CategoryDialog> {
     if (widget.category.isNotEmpty) {
       _categoryNameController.text = widget.category['name'] ?? '';
       _categoryBudgetController.text = widget.category['budget'] ?? '';
+      _categoryNoteController.text = widget.category['note'] ?? '';
       _isBudgetEnabled = _categoryBudgetController.text.isNotEmpty &&
           _categoryBudgetController.text != '0.00';
     }
@@ -44,44 +46,56 @@ class CategoryDialogState extends State<CategoryDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.action} Category'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _categoryNameController,
-            decoration: const InputDecoration(
-              labelText: 'Name',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _categoryNameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+              ),
             ),
-          ),
-          if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
-            Column(
-              children: [
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _categoryBudgetController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Budget',
-                    prefixText: 'RM ',
+            if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
+              Column(
+                children: [
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _categoryBudgetController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Budget',
+                      prefixText: 'RM ',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            if (widget.type == 'spent')
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isBudgetEnabled,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _isBudgetEnabled = value ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Set a Budget'),
+                ],
+              ),
+            if (widget.type == 'spent') const SizedBox(height: 10),
+            if (widget.type == 'received') const SizedBox(height: 20),
+            TextField(
+              controller: _categoryNoteController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Note',
+                border: OutlineInputBorder(),
+              ),
             ),
-          if (widget.type == 'spent')
-            Row(
-              children: [
-                Checkbox(
-                  value: _isBudgetEnabled,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _isBudgetEnabled = value ?? false;
-                    });
-                  },
-                ),
-                const Text('Set a Budget'),
-              ],
-            ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -94,6 +108,7 @@ class CategoryDialogState extends State<CategoryDialog> {
           onPressed: () {
             final categoryName = _categoryNameController.text;
             final categoryBudget = _categoryBudgetController.text;
+            final categoryNote = _categoryNoteController.text;
 
             if (categoryName.isEmpty ||
                 (_isBudgetEnabled && categoryBudget.isEmpty)) {
@@ -101,7 +116,8 @@ class CategoryDialogState extends State<CategoryDialog> {
             }
 
             //* Call the function to update to Firebase
-            updateCategoryToFirebase(categoryName, categoryBudget);
+            updateCategoryToFirebase(
+                categoryName, categoryBudget, categoryNote);
 
             //* Close the dialog
             Navigator.of(context).pop();
@@ -114,7 +130,7 @@ class CategoryDialogState extends State<CategoryDialog> {
 
   //* Function to update category to Firebase Firestore
   Future<void> updateCategoryToFirebase(
-      String categoryName, String categoryBudget) async {
+      String categoryName, String categoryBudget, String categoryNote) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -139,7 +155,9 @@ class CategoryDialogState extends State<CategoryDialog> {
           'name': categoryName,
           'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
               .toStringAsFixed(2),
+          'note': categoryNote,
           'type': widget.type,
+          'amount_spent': '0.00',
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -159,6 +177,7 @@ class CategoryDialogState extends State<CategoryDialog> {
           'name': categoryName,
           'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
               .toStringAsFixed(2),
+          'note': categoryNote,
           'updated_at': now,
         });
       }

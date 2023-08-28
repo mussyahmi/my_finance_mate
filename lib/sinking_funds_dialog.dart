@@ -25,6 +25,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
       TextEditingController();
   final TextEditingController _sinkingFundsGoalController =
       TextEditingController();
+  final TextEditingController _sinkingFundsNoteController =
+      TextEditingController();
   bool _isGoalEnabled = false;
 
   @override
@@ -36,6 +38,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
       _sinkingFundsOpeningBalanceController.text =
           widget.fund['opening_balance'] ?? '';
       _sinkingFundsGoalController.text = widget.fund['goal'] ?? '';
+      _sinkingFundsNoteController.text = widget.fund['note'] ?? '';
       _isGoalEnabled = _sinkingFundsGoalController.text.isNotEmpty &&
           _sinkingFundsGoalController.text != '0.00';
     }
@@ -45,56 +48,67 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.action} Category'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _sinkingFundsNameController,
-            decoration: const InputDecoration(
-              labelText: 'Name',
-            ),
-          ),
-          Column(
-            children: [
-              const SizedBox(height: 10),
-              TextField(
-                controller: _sinkingFundsOpeningBalanceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Opening Balance',
-                  prefixText: 'RM ',
-                ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _sinkingFundsNameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
               ),
-            ],
-          ),
-          if (_isGoalEnabled) //* Show goal field only when the checkbox is checked
+            ),
             Column(
               children: [
                 const SizedBox(height: 10),
                 TextField(
-                  controller: _sinkingFundsGoalController,
+                  controller: _sinkingFundsOpeningBalanceController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: 'Goal',
+                    labelText: 'Opening Balance',
                     prefixText: 'RM ',
                   ),
                 ),
               ],
             ),
-          Row(
-            children: [
-              Checkbox(
-                value: _isGoalEnabled,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isGoalEnabled = value ?? false;
-                  });
-                },
+            if (_isGoalEnabled) //* Show goal field only when the checkbox is checked
+              Column(
+                children: [
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _sinkingFundsGoalController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Goal',
+                      prefixText: 'RM ',
+                    ),
+                  ),
+                ],
               ),
-              const Text('Set a Goal'),
-            ],
-          ),
-        ],
+            Row(
+              children: [
+                Checkbox(
+                  value: _isGoalEnabled,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isGoalEnabled = value ?? false;
+                    });
+                  },
+                ),
+                const Text('Set a Goal'),
+              ],
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _sinkingFundsNoteController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Note',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -109,6 +123,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
             final sinkingFundsOpeningBalance =
                 _sinkingFundsOpeningBalanceController.text;
             final sinkingFundsGoal = _sinkingFundsGoalController.text;
+            final sinkingFundsNote = _sinkingFundsNoteController.text;
 
             if (sinkingFundsName.isEmpty ||
                 sinkingFundsOpeningBalance.isEmpty ||
@@ -118,8 +133,11 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
 
             if (sinkingFundsName.isNotEmpty) {
               //* Call the function to update to Firebase
-              updateSinkingFundsToFirebase(sinkingFundsName,
-                  sinkingFundsOpeningBalance, sinkingFundsGoal);
+              updateSinkingFundsToFirebase(
+                  sinkingFundsName,
+                  sinkingFundsOpeningBalance,
+                  sinkingFundsGoal,
+                  sinkingFundsNote);
 
               //* Close the dialog
               Navigator.of(context).pop();
@@ -132,8 +150,11 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
   }
 
   //* Function to update sinking funds to Firebase Firestore
-  Future<void> updateSinkingFundsToFirebase(String sinkingFundsName,
-      String sinkingFundsOpeningBalance, String sinkingFundsGoal) async {
+  Future<void> updateSinkingFundsToFirebase(
+      String sinkingFundsName,
+      String sinkingFundsOpeningBalance,
+      String sinkingFundsGoal,
+      String sinkingFundsNote) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -158,6 +179,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
               double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
           'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
               .toStringAsFixed(2),
+          'note': sinkingFundsNote,
+          'amount_received': '0.00',
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -177,6 +200,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
               double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
           'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
               .toStringAsFixed(2),
+          'note': sinkingFundsNote,
           'updated_at': now,
         });
       }

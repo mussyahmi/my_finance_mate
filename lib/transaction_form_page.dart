@@ -362,6 +362,55 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       }
 
+      if (type == 'spent') {
+        final categoryRef = cyclesRef.collection('categories').doc(categoryId);
+
+        //* Fetch the category document
+        final categoryDoc = await categoryRef.get();
+
+        if (categoryDoc.exists) {
+          final categoryData = categoryDoc.data() as Map<String, dynamic>;
+
+          //* Calculate the updated amounts
+          final double amountSpent =
+              double.parse(categoryData['amount_spent']) +
+                  double.parse(amount) -
+                  (widget.transaction != null
+                      ? double.parse(widget.transaction!.amount)
+                      : 0);
+
+          //* Update the cycle document
+          await categoryRef.update({
+            'amount_spent': amountSpent.toStringAsFixed(2),
+          });
+        }
+      }
+
+      if (type == 'saving') {
+        final sinkingFundsRef =
+            userRef.collection('sinking_funds').doc(categoryId);
+
+        //* Fetch the category document
+        final fundDoc = await sinkingFundsRef.get();
+
+        if (fundDoc.exists) {
+          final fundData = fundDoc.data() as Map<String, dynamic>;
+
+          //* Calculate the updated amounts
+          final double amountReceived =
+              double.parse(fundData['amount_received']) +
+                  double.parse(amount) -
+                  (widget.transaction != null
+                      ? double.parse(widget.transaction!.amount)
+                      : 0);
+
+          //* Update the cycle document
+          await sinkingFundsRef.update({
+            'amount_received': amountReceived.toStringAsFixed(2),
+          });
+        }
+      }
+
       Navigator.of(context).pop(true);
     } catch (e) {
       //* Handle any errors that occur during the Firestore operation

@@ -40,6 +40,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
               'name': doc['name'] as String,
               'opening_balance': doc['opening_balance'] as String,
               'goal': doc['goal'] as String,
+              'note': doc['note'] as String,
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
         .toList();
