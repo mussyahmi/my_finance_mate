@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
-import 'dashboard_page.dart';
 import 'transaction.dart' as t;
 
 class TransactionFormPage extends StatefulWidget {
