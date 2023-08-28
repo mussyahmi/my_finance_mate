@@ -21,6 +21,8 @@ class SinkingFundsDialog extends StatefulWidget {
 class SinkingFundsDialogState extends State<SinkingFundsDialog> {
   final TextEditingController _sinkingFundsNameController =
       TextEditingController();
+  final TextEditingController _sinkingFundsOpeningBalanceController =
+      TextEditingController();
   final TextEditingController _sinkingFundsGoalController =
       TextEditingController();
   bool _isGoalEnabled = false;
@@ -31,6 +33,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
 
     if (widget.fund.isNotEmpty) {
       _sinkingFundsNameController.text = widget.fund['name'] ?? '';
+      _sinkingFundsOpeningBalanceController.text =
+          widget.fund['opening_balance'] ?? '';
       _sinkingFundsGoalController.text = widget.fund['goal'] ?? '';
       _isGoalEnabled = _sinkingFundsGoalController.text.isNotEmpty &&
           _sinkingFundsGoalController.text != '0.00';
@@ -50,10 +54,23 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
               labelText: 'Name',
             ),
           ),
+          Column(
+            children: [
+              const SizedBox(height: 10),
+              TextField(
+                controller: _sinkingFundsOpeningBalanceController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Opening Balance',
+                  prefixText: 'RM ',
+                ),
+              ),
+            ],
+          ),
           if (_isGoalEnabled) //* Show goal field only when the checkbox is checked
             Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _sinkingFundsGoalController,
                   keyboardType: TextInputType.number,
@@ -89,16 +106,20 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
         ElevatedButton(
           onPressed: () {
             final sinkingFundsName = _sinkingFundsNameController.text;
+            final sinkingFundsOpeningBalance =
+                _sinkingFundsOpeningBalanceController.text;
             final sinkingFundsGoal = _sinkingFundsGoalController.text;
 
             if (sinkingFundsName.isEmpty ||
+                sinkingFundsOpeningBalance.isEmpty ||
                 (_isGoalEnabled && sinkingFundsGoal.isEmpty)) {
               return;
             }
 
             if (sinkingFundsName.isNotEmpty) {
               //* Call the function to update to Firebase
-              updateSinkingFundsToFirebase(sinkingFundsName, sinkingFundsGoal);
+              updateSinkingFundsToFirebase(sinkingFundsName,
+                  sinkingFundsOpeningBalance, sinkingFundsGoal);
 
               //* Close the dialog
               Navigator.of(context).pop();
@@ -111,8 +132,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
   }
 
   //* Function to update sinking funds to Firebase Firestore
-  Future<void> updateSinkingFundsToFirebase(
-      String sinkingFundsName, String sinkingFundsGoal) async {
+  Future<void> updateSinkingFundsToFirebase(String sinkingFundsName,
+      String sinkingFundsOpeningBalance, String sinkingFundsGoal) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -133,6 +154,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
             .collection('sinking_funds')
             .add({
           'name': sinkingFundsName,
+          'opening_balance':
+              double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
           'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
               .toStringAsFixed(2),
           'created_at': now,
@@ -150,6 +173,8 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
             .doc(docId)
             .update({
           'name': sinkingFundsName,
+          'opening_balance':
+              double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
           'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
               .toStringAsFixed(2),
           'updated_at': now,

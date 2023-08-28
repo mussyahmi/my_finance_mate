@@ -54,7 +54,7 @@ class CategoryDialogState extends State<CategoryDialog> {
           if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
             Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _categoryBudgetController,
                   keyboardType: TextInputType.number,

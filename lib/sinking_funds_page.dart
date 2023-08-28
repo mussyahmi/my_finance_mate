@@ -38,6 +38,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
         .map((doc) => {
               'id': doc.id,
               'name': doc['name'] as String,
+              'opening_balance': doc['opening_balance'] as String,
               'goal': doc['goal'] as String,
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
