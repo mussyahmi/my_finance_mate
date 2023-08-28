@@ -106,22 +106,102 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Column(
             children: [
-              Text(
-                'Amount Balance: RM$amountBalance',
-                textAlign: TextAlign.center,
+              Card(
+                elevation: 3,
+                margin: const EdgeInsets.all(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Amount Balance',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'RM $amountBalance',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.indigo,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Text(
-                'Amount Received: RM$amountReceived',
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                'Amount Spent: RM$amountSpent',
-                textAlign: TextAlign.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Card(
+                      elevation: 3,
+                      margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Amount Received',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'RM $amountReceived',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Card(
+                      elevation: 3,
+                      margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'Amount Spent',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'RM $amountSpent',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -392,18 +472,18 @@ class _DashboardPageState extends State<DashboardPage> {
                       '${transaction.type[0].toUpperCase()}${transaction.type.substring(1)}'),
                 ],
               ),
-              const SizedBox(height: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Note:',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(transaction.note.replaceAll('\\n', '\n')),
-                ],
-              ),
+              if (transaction.note.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(transaction.note.replaceAll('\\n', '\n')),
+                  ],
+                ),
               //* Add more transaction details as needed
             ],
           ),
