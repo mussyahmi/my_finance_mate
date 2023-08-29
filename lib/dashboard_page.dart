@@ -179,7 +179,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
-                      child: CircularProgressIndicator(),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      ),
                     ); //* Display a loading indicator
                   } else if (snapshot.hasError) {
                     return Padding(
@@ -289,7 +293,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
-                      child: CircularProgressIndicator(),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      ),
                     ); //* Display a loading indicator
                   } else if (snapshot.hasError) {
                     return Padding(
@@ -303,12 +311,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     return const Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
                       child: Text(
-                        'No budgets found.',
+                        'No savings found.',
                         textAlign: TextAlign.center,
                       ),
-                    ); //* Display a message for no budgets
+                    ); //* Display a message for no savings
                   } else {
-                    //* Display the list of budgets
+                    //* Display the list of savings
                     final savings = snapshot.data;
                     return SizedBox(
                       height: 100,
@@ -401,7 +409,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
-                      child: CircularProgressIndicator(),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      ),
                     ); //* Display a loading indicator
                   } else if (snapshot.hasError) {
                     return Padding(
