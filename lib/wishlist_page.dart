@@ -42,9 +42,9 @@ class _WishlistPageState extends State<WishlistPage> {
             })
         .toList();
 
-    //* Sort the list by 'created_at' in ascending order (most recent last)
+    //* Sort the list by 'created_at' in ascending order (most recent first)
     fetchedWishlist.sort((a, b) =>
-        (a['created_at'] as DateTime).compareTo((b['created_at'] as DateTime)));
+        (b['created_at'] as DateTime).compareTo((a['created_at'] as DateTime)));
 
     setState(() {
       wishlist = fetchedWishlist;

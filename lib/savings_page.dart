@@ -47,8 +47,8 @@ class _SavingsPageState extends State<SavingsPage> {
             ))
         .toList();
 
-    //* Sort the list by 'created_at' in ascending order (most recent last)
-    fetchedSavings.sort((a, b) => (a.createdAt).compareTo((b.createdAt)));
+    //* Sort the list by 'created_at' in ascending order (most recent first)
+    fetchedSavings.sort((a, b) => (b.createdAt).compareTo((a.createdAt)));
 
     setState(() {
       savings = fetchedSavings;

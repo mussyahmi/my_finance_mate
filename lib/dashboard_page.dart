@@ -71,7 +71,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Text(
                         'Amount Balance',
@@ -203,71 +202,91 @@ class _DashboardPageState extends State<DashboardPage> {
                     ); //* Display a message for no budgets
                   } else {
                     //* Display the list of budgets
-                    final budgets = snapshot.data;
-                    return SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemCount: budgets!.length,
-                        itemBuilder: (context, index) {
-                          final budget = budgets[index];
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: Card(
-                                child: SizedBox(
-                                  width: 200,
-                                  child: ListTile(
-                                    key: Key(budget.id),
-                                    title: Text(
-                                      budget.name,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
-                                    subtitle: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Column(
+                    final budgets = snapshot.data!;
+                    final amountBalanceAfterBudget =
+                        _getAmountBalanceAfterBudget(budgets);
+
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 100,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            shrinkWrap: true,
+                            itemCount: budgets.length,
+                            itemBuilder: (context, index) {
+                              final budget = budgets[index];
+                              final titleTextWidth = budget.name.length *
+                                  12.0; //* Adjust the multiplier as needed
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: GestureDetector(
+                                  onTap: () {},
+                                  child: Card(
+                                    child: SizedBox(
+                                      width: titleTextWidth > 200
+                                          ? titleTextWidth
+                                          : 200,
+                                      child: ListTile(
+                                        key: Key(budget.id),
+                                        title: Text(
+                                          budget.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
+                                        ),
+                                        subtitle: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.stretch,
                                           children: [
-                                            Text(
-                                              'Spent: RM ${budget.amountSpent}',
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Spent: RM ${budget.amountSpent}',
+                                                ),
+                                                Text(
+                                                  'Balance: RM ${budget.amountBalance()}',
+                                                ),
+                                              ],
                                             ),
-                                            Text(
-                                              'Balance: RM ${budget.amountBalance()}',
+                                            LinearProgressIndicator(
+                                              value:
+                                                  budget.progressPercentage(),
+                                              backgroundColor: Colors.grey[300],
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                budget.progressPercentage() >=
+                                                        1.0
+                                                    ? Colors
+                                                        .red //* Change color when budget is exceeded
+                                                    : Colors
+                                                        .green, //* Change color when budget is not exceeded
+                                              ),
                                             ),
+                                            const SizedBox(height: 30),
                                           ],
                                         ),
-                                        LinearProgressIndicator(
-                                          value: budget.progressPercentage(),
-                                          backgroundColor: Colors.grey[300],
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            budget.progressPercentage() >= 1.0
-                                                ? Colors
-                                                    .red //* Change color when budget is exceeded
-                                                : Colors
-                                                    .green, //* Change color when budget is not exceeded
-                                          ),
-                                        ),
-                                        const SizedBox(height: 30),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     );
                   }
                 },
@@ -897,5 +916,17 @@ class _DashboardPageState extends State<DashboardPage> {
     result.sort((a, b) => (a.createdAt).compareTo(b.createdAt));
 
     return result;
+  }
+
+  String _getAmountBalanceAfterBudget(List<Budget> budgets) {
+    double budgetBalance = double.parse(amountBalance!);
+
+    for (var budget in budgets) {
+      if (budget.budget != '0.00') {
+        budgetBalance -= double.parse(budget.amountBalance());
+      }
+    }
+
+    return budgetBalance.toStringAsFixed(2);
   }
 }

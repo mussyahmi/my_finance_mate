@@ -144,12 +144,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   }
                 },
                 items: [
-                  ...categories.map((category) {
-                    return DropdownMenuItem<String>(
-                      value: category['id'],
-                      child: Text(category['name']),
-                    );
-                  }).toList(),
                   const DropdownMenuItem<String>(
                     value: 'add_new',
                     child: Row(
@@ -161,6 +155,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ],
                     ),
                   ),
+                  ...categories.map((category) {
+                    return DropdownMenuItem<String>(
+                      value: category['id'],
+                      child: Text(category['name']),
+                    );
+                  }).toList(),
                 ],
                 decoration: const InputDecoration(
                   labelText: 'Category',
@@ -258,9 +258,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
             })
         .toList();
 
-    //* Sort the list by 'created_at' in ascending order (most recent last)
+    //* Sort the list by 'created_at' in ascending order (most recent first)
     fetchedCategories.sort((a, b) =>
-        (a['created_at'] as DateTime).compareTo((b['created_at'] as DateTime)));
+        (b['created_at'] as DateTime).compareTo((a['created_at'] as DateTime)));
 
     setState(() {
       categories = fetchedCategories;
