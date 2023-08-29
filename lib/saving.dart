@@ -17,6 +17,13 @@ class Saving {
     required this.createdAt,
   });
 
+  String amountSaved() {
+    final double calculatedAmountSaved =
+        double.parse(openingBalance) + double.parse(amountReceived);
+
+    return calculatedAmountSaved.toStringAsFixed(2);
+  }
+
   String amountBalance() {
     final double calculatedAmountBalance = double.parse(goal) -
         (double.parse(openingBalance) + double.parse(amountReceived));

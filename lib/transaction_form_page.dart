@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
+import 'savings_page.dart';
 import 'transaction.dart' as t;
 
 class TransactionFormPage extends StatefulWidget {
@@ -128,12 +129,19 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   if (newValue == 'add_new') {
                     await Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => CategoryListPage(
-                                cycleId: widget.cycleId,
-                                type: selectedType,
-                                isFromTransactionForm: true,
-                              )),
+                      MaterialPageRoute(builder: (context) {
+                        if (selectedType != 'saving') {
+                          return CategoryListPage(
+                            cycleId: widget.cycleId,
+                            type: selectedType,
+                            isFromTransactionForm: true,
+                          );
+                        } else {
+                          return const SavingsPage(
+                            isFromTransactionForm: true,
+                          );
+                        }
+                      }),
                     );
 
                     setState(() {

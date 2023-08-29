@@ -372,7 +372,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Saved: RM ${saving.amountReceived}',
+                                              'Saved: RM ${saving.amountSaved()}',
                                             ),
                                             if (saving.goal != '0.00')
                                               Text(
@@ -831,6 +831,52 @@ class _DashboardPageState extends State<DashboardPage> {
                     'amount_received': cycleAmountReceived.toStringAsFixed(2),
                     'amount_balance': updatedAmountBalance.toStringAsFixed(2),
                   });
+                }
+
+                if (transaction.type == 'spent') {
+                  final categoryRef = cyclesRef
+                      .collection('categories')
+                      .doc(transaction.categoryId);
+
+                  //* Fetch the category document
+                  final categoryDoc = await categoryRef.get();
+
+                  if (categoryDoc.exists) {
+                    final categoryData =
+                        categoryDoc.data() as Map<String, dynamic>;
+
+                    //* Calculate the updated amounts
+                    final double amountSpent =
+                        double.parse(categoryData['amount_spent']) -
+                            double.parse(transaction.amount);
+
+                    //* Update the cycle document
+                    await categoryRef.update({
+                      'amount_spent': amountSpent.toStringAsFixed(2),
+                    });
+                  }
+                }
+
+                if (transaction.type == 'saving') {
+                  final savingsRef =
+                      userRef.collection('savings').doc(transaction.categoryId);
+
+                  //* Fetch the category document
+                  final savingDoc = await savingsRef.get();
+
+                  if (savingDoc.exists) {
+                    final savingData = savingDoc.data() as Map<String, dynamic>;
+
+                    //* Calculate the updated amounts
+                    final double amountReceived =
+                        double.parse(savingData['amount_received']) -
+                            double.parse(transaction.amount);
+
+                    //* Update the cycle document
+                    await savingsRef.update({
+                      'amount_received': amountReceived.toStringAsFixed(2),
+                    });
+                  }
                 }
 
                 _checkCycleAndShowPopup();

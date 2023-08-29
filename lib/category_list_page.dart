@@ -265,8 +265,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    final transactionsSnapshot =
-        await transactionsRef.where('categoryId', isEqualTo: categoryId).get();
+    final transactionsSnapshot = await transactionsRef
+        .where('categoryId', isEqualTo: categoryId)
+        .where('deleted_at', isNull: true)
+        .get();
 
     return transactionsSnapshot.docs.isNotEmpty;
   }

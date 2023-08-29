@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,7 +8,8 @@ import 'savings_dialog.dart';
 import 'saving.dart';
 
 class SavingsPage extends StatefulWidget {
-  const SavingsPage({super.key});
+  final bool? isFromTransactionForm;
+  const SavingsPage({super.key, this.isFromTransactionForm});
 
   @override
   State<SavingsPage> createState() => _SavingsPageState();
@@ -18,7 +21,15 @@ class _SavingsPageState extends State<SavingsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchSavings();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    await _fetchSavings();
+
+    if (widget.isFromTransactionForm != null) {
+      _showSavingsDialog(context, 'Add');
+    }
   }
 
   Future<void> _fetchSavings() async {
@@ -81,64 +92,92 @@ class _SavingsPageState extends State<SavingsPage> {
                       title: Text(saving.name),
                       trailing: PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),
-                        onSelected: (value) {
+                        onSelected: (value) async {
                           if (value == 'edit') {
                             //* Handle edit option
                             _showSavingsDialog(context, 'Edit', saving: saving);
                           } else if (value == 'delete') {
-                            //* Handle delete option
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('Confirm Delete'),
-                                  content: const Text(
-                                      'Are you sure you want to delete this saving?'),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context)
-                                            .pop(); //* Close the dialog
-                                      },
-                                      child: const Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        //* Delete the item from Firestore here
-                                        final savingId = saving.id;
+                            //* Check if there are transactions associated with this category
+                            final savingId = saving.id;
+                            final hasTransactions =
+                                await _hasTransactions(savingId);
 
-                                        //* Reference to the Firestore document to delete
-                                        final user =
-                                            FirebaseAuth.instance.currentUser;
-                                        if (user == null) {
-                                          //todo: Handle the case where the user is not authenticated
-                                          return;
-                                        }
+                            if (hasTransactions) {
+                              //* If there are transactions, show an error message or handle it accordingly.
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Cannot Delete Category'),
+                                    content: const Text(
+                                        'There are transactions associated with this category. You cannot delete it.'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              //* If there are no transactions, proceed with the deletion.
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Confirm Delete'),
+                                    content: const Text(
+                                        'Are you sure you want to delete this saving?'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          //* Delete the item from Firestore here
+                                          final savingId = saving.id;
 
-                                        final userRef = FirebaseFirestore
-                                            .instance
-                                            .collection('users')
-                                            .doc(user.uid);
-                                        final savingsRef =
-                                            userRef.collection('savings');
-                                        final savingRef =
-                                            savingsRef.doc(savingId);
+                                          //* Reference to the Firestore document to delete
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+                                          if (user == null) {
+                                            //todo: Handle the case where the user is not authenticated
+                                            return;
+                                          }
 
-                                        //* Update the 'deleted_at' field with the current timestamp
-                                        final now = DateTime.now();
-                                        savingRef.update({'deleted_at': now});
+                                          final userRef = FirebaseFirestore
+                                              .instance
+                                              .collection('users')
+                                              .doc(user.uid);
+                                          final savingsRef =
+                                              userRef.collection('savings');
+                                          final savingRef =
+                                              savingsRef.doc(savingId);
 
-                                        _fetchSavings();
+                                          //* Update the 'deleted_at' field with the current timestamp
+                                          final now = DateTime.now();
+                                          savingRef.update({'deleted_at': now});
 
-                                        Navigator.of(context)
-                                            .pop(); //* Close the dialog
-                                      },
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                                          _fetchSavings();
+
+                                          Navigator.of(context)
+                                              .pop(); //* Close the dialog
+                                        },
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
                           }
                         },
                         itemBuilder: (context) => <PopupMenuEntry<String>>[
@@ -198,5 +237,24 @@ class _SavingsPageState extends State<SavingsPage> {
         );
       },
     );
+  }
+
+  Future<bool> _hasTransactions(String savingId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return false;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    final transactionsSnapshot = await transactionsRef
+        .where('categoryId', isEqualTo: savingId)
+        .where('deleted_at', isNull: true)
+        .get();
+
+    return transactionsSnapshot.docs.isNotEmpty;
   }
 }
