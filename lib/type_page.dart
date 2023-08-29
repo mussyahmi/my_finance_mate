@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'category_list_page.dart';
-import 'sinking_funds_page.dart';
+import 'savings_page.dart';
 
 class TypePage extends StatefulWidget {
   final String cycleId;
@@ -92,7 +92,7 @@ class TypePageState extends State<TypePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const SinkingFundsPage()),
+                          builder: (context) => const SavingsPage()),
                     );
                   },
                 ),

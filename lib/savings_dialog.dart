@@ -2,45 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SinkingFundsDialog extends StatefulWidget {
-  final String action;
-  final Map fund;
-  final Function onSinkingFundsChanged;
+import 'saving.dart';
 
-  const SinkingFundsDialog(
+class SavingsDialog extends StatefulWidget {
+  final String action;
+  final Saving? saving;
+  final Function onSavingsChanged;
+
+  const SavingsDialog(
       {Key? key,
       required this.action,
-      required this.fund,
-      required this.onSinkingFundsChanged})
+      this.saving,
+      required this.onSavingsChanged})
       : super(key: key);
 
   @override
-  SinkingFundsDialogState createState() => SinkingFundsDialogState();
+  SavingsDialogState createState() => SavingsDialogState();
 }
 
-class SinkingFundsDialogState extends State<SinkingFundsDialog> {
-  final TextEditingController _sinkingFundsNameController =
+class SavingsDialogState extends State<SavingsDialog> {
+  final TextEditingController _savingsNameController = TextEditingController();
+  final TextEditingController _savingsOpeningBalanceController =
       TextEditingController();
-  final TextEditingController _sinkingFundsOpeningBalanceController =
-      TextEditingController();
-  final TextEditingController _sinkingFundsGoalController =
-      TextEditingController();
-  final TextEditingController _sinkingFundsNoteController =
-      TextEditingController();
+  final TextEditingController _savingsGoalController = TextEditingController();
+  final TextEditingController _savingsNoteController = TextEditingController();
   bool _isGoalEnabled = false;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.fund.isNotEmpty) {
-      _sinkingFundsNameController.text = widget.fund['name'] ?? '';
-      _sinkingFundsOpeningBalanceController.text =
-          widget.fund['opening_balance'] ?? '';
-      _sinkingFundsGoalController.text = widget.fund['goal'] ?? '';
-      _sinkingFundsNoteController.text = widget.fund['note'] ?? '';
-      _isGoalEnabled = _sinkingFundsGoalController.text.isNotEmpty &&
-          _sinkingFundsGoalController.text != '0.00';
+    if (widget.saving != null) {
+      _savingsNameController.text = widget.saving!.name;
+      _savingsOpeningBalanceController.text = widget.saving!.openingBalance;
+      _savingsGoalController.text = widget.saving!.goal;
+      _savingsNoteController.text = widget.saving!.note;
+      _isGoalEnabled = _savingsGoalController.text.isNotEmpty &&
+          _savingsGoalController.text != '0.00';
     }
   }
 
@@ -53,7 +51,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: _sinkingFundsNameController,
+              controller: _savingsNameController,
               decoration: const InputDecoration(
                 labelText: 'Name',
               ),
@@ -62,7 +60,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
               children: [
                 const SizedBox(height: 10),
                 TextField(
-                  controller: _sinkingFundsOpeningBalanceController,
+                  controller: _savingsOpeningBalanceController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Opening Balance',
@@ -76,7 +74,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
                 children: [
                   const SizedBox(height: 10),
                   TextField(
-                    controller: _sinkingFundsGoalController,
+                    controller: _savingsGoalController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Goal',
@@ -100,7 +98,7 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: _sinkingFundsNoteController,
+              controller: _savingsNoteController,
               maxLines: 5,
               decoration: const InputDecoration(
                 labelText: 'Note',
@@ -119,25 +117,21 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            final sinkingFundsName = _sinkingFundsNameController.text;
-            final sinkingFundsOpeningBalance =
-                _sinkingFundsOpeningBalanceController.text;
-            final sinkingFundsGoal = _sinkingFundsGoalController.text;
-            final sinkingFundsNote = _sinkingFundsNoteController.text;
+            final savingsName = _savingsNameController.text;
+            final savingsOpeningBalance = _savingsOpeningBalanceController.text;
+            final savingsGoal = _savingsGoalController.text;
+            final savingsNote = _savingsNoteController.text;
 
-            if (sinkingFundsName.isEmpty ||
-                sinkingFundsOpeningBalance.isEmpty ||
-                (_isGoalEnabled && sinkingFundsGoal.isEmpty)) {
+            if (savingsName.isEmpty ||
+                savingsOpeningBalance.isEmpty ||
+                (_isGoalEnabled && savingsGoal.isEmpty)) {
               return;
             }
 
-            if (sinkingFundsName.isNotEmpty) {
+            if (savingsName.isNotEmpty) {
               //* Call the function to update to Firebase
-              updateSinkingFundsToFirebase(
-                  sinkingFundsName,
-                  sinkingFundsOpeningBalance,
-                  sinkingFundsGoal,
-                  sinkingFundsNote);
+              updateSavingsToFirebase(
+                  savingsName, savingsOpeningBalance, savingsGoal, savingsNote);
 
               //* Close the dialog
               Navigator.of(context).pop();
@@ -149,12 +143,12 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
     );
   }
 
-  //* Function to update sinking funds to Firebase Firestore
-  Future<void> updateSinkingFundsToFirebase(
-      String sinkingFundsName,
-      String sinkingFundsOpeningBalance,
-      String sinkingFundsGoal,
-      String sinkingFundsNote) async {
+  //* Function to update savings to Firebase Firestore
+  Future<void> updateSavingsToFirebase(
+      String savingsName,
+      String savingsOpeningBalance,
+      String savingsGoal,
+      String savingsNote) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -172,14 +166,14 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .collection('sinking_funds')
+            .collection('savings')
             .add({
-          'name': sinkingFundsName,
+          'name': savingsName,
           'opening_balance':
-              double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
-          'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
+              double.parse(savingsOpeningBalance).toStringAsFixed(2),
+          'goal': double.parse(_isGoalEnabled ? savingsGoal : '0.00')
               .toStringAsFixed(2),
-          'note': sinkingFundsNote,
+          'note': savingsNote,
           'amount_received': '0.00',
           'created_at': now,
           'updated_at': now,
@@ -188,35 +182,35 @@ class SinkingFundsDialogState extends State<SinkingFundsDialog> {
         });
       } else if (widget.action == 'Edit') {
         final docId =
-            widget.fund['id']; //* Get the ID of the sinking funds item to edit
+            widget.saving!.id; //* Get the ID of the savings item to edit
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
-            .collection('sinking_funds')
+            .collection('savings')
             .doc(docId)
             .update({
-          'name': sinkingFundsName,
+          'name': savingsName,
           'opening_balance':
-              double.parse(sinkingFundsOpeningBalance).toStringAsFixed(2),
-          'goal': double.parse(_isGoalEnabled ? sinkingFundsGoal : '0.00')
+              double.parse(savingsOpeningBalance).toStringAsFixed(2),
+          'goal': double.parse(_isGoalEnabled ? savingsGoal : '0.00')
               .toStringAsFixed(2),
-          'note': sinkingFundsNote,
+          'note': savingsNote,
           'updated_at': now,
         });
       }
 
-      //* Notify the parent widget about the sinking funds addition
-      widget.onSinkingFundsChanged();
+      //* Notify the parent widget about the savings addition
+      widget.onSavingsChanged();
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       // ignore: avoid_print
-      print('Error updating sinking funds: $e');
+      print('Error updating savings: $e');
     }
   }
 
   @override
   void dispose() {
-    _sinkingFundsNameController.dispose();
+    _savingsNameController.dispose();
     super.dispose();
   }
 }

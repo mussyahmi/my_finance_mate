@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:my_finance_mate/size_config.dart';
 
+import 'budget.dart';
+import 'saving.dart';
+import 'size_config.dart';
 import 'add_cycle_page.dart';
 import 'transaction_form_page.dart';
 import 'settings_page.dart';
@@ -57,10 +59,11 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Column(
+      body: SizedBox(
+        height: SizeConfig.screenHeight,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
                 elevation: 3,
@@ -155,10 +158,229 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ],
               ),
-            ],
-          ),
-          Column(
-            children: [
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Budget List',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    TextButton(onPressed: () {}, child: const Text('View All'))
+                  ],
+                ),
+              ),
+              FutureBuilder<List<Budget>>(
+                future: _fetchBudgets(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: CircularProgressIndicator(),
+                    ); //* Display a loading indicator
+                  } else if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: SelectableText(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'No budgets found.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ); //* Display a message for no budgets
+                  } else {
+                    //* Display the list of budgets
+                    final budgets = snapshot.data;
+                    return SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: budgets!.length,
+                        itemBuilder: (context, index) {
+                          final budget = budgets[index];
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Card(
+                                child: SizedBox(
+                                  width: 200,
+                                  child: ListTile(
+                                    key: Key(budget.id),
+                                    title: Text(
+                                      budget.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    subtitle: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Spent: RM ${budget.amountSpent}',
+                                            ),
+                                            Text(
+                                              'Balance: RM ${budget.amountBalance()}',
+                                            ),
+                                          ],
+                                        ),
+                                        LinearProgressIndicator(
+                                          value: budget.progressPercentage(),
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            budget.progressPercentage() >= 1.0
+                                                ? Colors
+                                                    .red //* Change color when budget is exceeded
+                                                : Colors
+                                                    .green, //* Change color when budget is not exceeded
+                                          ),
+                                        ),
+                                        const SizedBox(height: 30),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Saving List',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    TextButton(onPressed: () {}, child: const Text('View All'))
+                  ],
+                ),
+              ),
+              FutureBuilder<List<Saving>>(
+                future: _fetchSavings(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: CircularProgressIndicator(),
+                    ); //* Display a loading indicator
+                  } else if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: SelectableText(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'No budgets found.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ); //* Display a message for no budgets
+                  } else {
+                    //* Display the list of budgets
+                    final savings = snapshot.data;
+                    return SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemCount: savings!.length,
+                        itemBuilder: (context, index) {
+                          final saving = savings[index];
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Card(
+                                child: SizedBox(
+                                  width: 200,
+                                  child: ListTile(
+                                    key: Key(saving.id),
+                                    title: Text(
+                                      saving.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    subtitle: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Saved: RM ${saving.amountReceived}',
+                                            ),
+                                            if (saving.goal != '0.00')
+                                              Text(
+                                                'Balance: RM ${saving.amountBalance()}',
+                                              ),
+                                          ],
+                                        ),
+                                        if (saving.goal != '0.00')
+                                          LinearProgressIndicator(
+                                            value: saving.progressPercentage(),
+                                            backgroundColor: Colors.grey[300],
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              saving.progressPercentage() >= 1.0
+                                                  ? Colors
+                                                      .red //* Change color when budget is exceeded
+                                                  : Colors
+                                                      .green, //* Change color when budget is not exceeded
+                                            ),
+                                          ),
+                                        const SizedBox(height: 30),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -184,7 +406,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   } else if (snapshot.hasError) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
+                      child: SelectableText(
                         'Error: ${snapshot.error}',
                         textAlign: TextAlign.center,
                       ),
@@ -296,9 +518,10 @@ class _DashboardPageState extends State<DashboardPage> {
                   }
                 },
               ),
+              const SizedBox(height: 80),
             ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -346,10 +569,8 @@ class _DashboardPageState extends State<DashboardPage> {
             .doc(data['categoryId'])
             .get();
       } else {
-        categoryDoc = await userRef
-            .collection('sinking_funds')
-            .doc(data['categoryId'])
-            .get();
+        categoryDoc =
+            await userRef.collection('savings').doc(data['categoryId']).get();
       }
 
       final categoryName = categoryDoc['name'] as String;
@@ -592,5 +813,77 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       },
     );
+  }
+
+  Future<List<Budget>> _fetchBudgets() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where the user is not authenticated.
+      return [];
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final cyclesRef = userRef.collection('cycles').doc(cycleId);
+    final categoriesRef = cyclesRef.collection('categories');
+
+    final categoryQuery = await categoriesRef
+        .where('deleted_at', isNull: true)
+        .where('type', isEqualTo: 'spent')
+        .where('budget', isNotEqualTo: '0.00')
+        .get();
+    final categories = categoryQuery.docs.map((doc) async {
+      final data = doc.data();
+
+      return Budget(
+        id: doc.id,
+        name: data['name'],
+        budget: data['budget'],
+        amountSpent: data['amount_spent'],
+        createdAt: (data['created_at'] as Timestamp).toDate(),
+      );
+    }).toList();
+
+    var result = await Future.wait(categories);
+
+    //* Sort the list by 'created_at' in ascending order (most recent last)
+    result.sort((a, b) => (a.createdAt).compareTo(b.createdAt));
+
+    return result;
+  }
+
+  Future<List<Saving>> _fetchSavings() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where the user is not authenticated.
+      return [];
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final savingsRef = userRef.collection('savings');
+
+    final savingsQuery =
+        await savingsRef.where('deleted_at', isNull: true).get();
+    final savings = savingsQuery.docs.map((doc) async {
+      final data = doc.data();
+
+      return Saving(
+        id: doc.id,
+        name: data['name'],
+        goal: data['goal'],
+        amountReceived: data['amount_received'],
+        openingBalance: data['opening_balance'],
+        note: data['note'],
+        createdAt: (data['created_at'] as Timestamp).toDate(),
+      );
+    }).toList();
+
+    var result = await Future.wait(savings);
+
+    //* Sort the list by 'created_at' in ascending order (most recent last)
+    result.sort((a, b) => (a.createdAt).compareTo(b.createdAt));
+
+    return result;
   }
 }

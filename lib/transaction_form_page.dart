@@ -238,7 +238,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
       categoriesRef = cyclesRef.collection('categories');
     } else {
-      categoriesRef = userRef.collection('sinking_funds');
+      categoriesRef = userRef.collection('savings');
     }
 
     Query<Map<String, dynamic>> query =
@@ -387,25 +387,24 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       }
 
       if (type == 'saving') {
-        final sinkingFundsRef =
-            userRef.collection('sinking_funds').doc(categoryId);
+        final savingsRef = userRef.collection('savings').doc(categoryId);
 
         //* Fetch the category document
-        final fundDoc = await sinkingFundsRef.get();
+        final savingDoc = await savingsRef.get();
 
-        if (fundDoc.exists) {
-          final fundData = fundDoc.data() as Map<String, dynamic>;
+        if (savingDoc.exists) {
+          final savingData = savingDoc.data() as Map<String, dynamic>;
 
           //* Calculate the updated amounts
           final double amountReceived =
-              double.parse(fundData['amount_received']) +
+              double.parse(savingData['amount_received']) +
                   double.parse(amount) -
                   (widget.transaction != null
                       ? double.parse(widget.transaction!.amount)
                       : 0);
 
           //* Update the cycle document
-          await sinkingFundsRef.update({
+          await savingsRef.update({
             'amount_received': amountReceived.toStringAsFixed(2),
           });
         }

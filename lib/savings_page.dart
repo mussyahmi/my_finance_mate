@@ -2,25 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'sinking_funds_dialog.dart';
+import 'savings_dialog.dart';
+import 'saving.dart';
 
-class SinkingFundsPage extends StatefulWidget {
-  const SinkingFundsPage({super.key});
+class SavingsPage extends StatefulWidget {
+  const SavingsPage({super.key});
 
   @override
-  State<SinkingFundsPage> createState() => _SinkingFundsPageState();
+  State<SavingsPage> createState() => _SavingsPageState();
 }
 
-class _SinkingFundsPageState extends State<SinkingFundsPage> {
-  List<Map<String, dynamic>> sinkingFunds = [];
+class _SavingsPageState extends State<SavingsPage> {
+  List<Saving> savings = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchSinkingFunds();
+    _fetchSavings();
   }
 
-  Future<void> _fetchSinkingFunds() async {
+  Future<void> _fetchSavings() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated
@@ -29,28 +30,28 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final sinkingFundsRef = userRef.collection('sinking_funds');
+    final savingsRef = userRef.collection('savings');
 
-    final sinkingFundsSnapshot =
-        await sinkingFundsRef.where('deleted_at', isNull: true).get();
+    final savingsSnapshot =
+        await savingsRef.where('deleted_at', isNull: true).get();
 
-    final fetchedSinkingFunds = sinkingFundsSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'opening_balance': doc['opening_balance'] as String,
-              'goal': doc['goal'] as String,
-              'note': doc['note'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
+    final fetchedSavings = savingsSnapshot.docs
+        .map((doc) => Saving(
+              id: doc.id,
+              name: doc['name'],
+              goal: doc['goal'],
+              amountReceived: doc['amount_received'],
+              openingBalance: doc['opening_balance'],
+              note: doc['note'],
+              createdAt: (doc['created_at'] as Timestamp).toDate(),
+            ))
         .toList();
 
     //* Sort the list by 'created_at' in ascending order (most recent last)
-    fetchedSinkingFunds.sort((a, b) =>
-        (a['created_at'] as DateTime).compareTo((b['created_at'] as DateTime)));
+    fetchedSavings.sort((a, b) => (a.createdAt).compareTo((b.createdAt)));
 
     setState(() {
-      sinkingFunds = fetchedSinkingFunds;
+      savings = fetchedSavings;
     });
   }
 
@@ -65,7 +66,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            children: sinkingFunds.map((fund) {
+            children: savings.map((saving) {
               return Column(
                 children: [
                   Container(
@@ -77,14 +78,13 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: ListTile(
-                      title: Text(fund['name']),
+                      title: Text(saving.name),
                       trailing: PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),
                         onSelected: (value) {
                           if (value == 'edit') {
                             //* Handle edit option
-                            _showSinkingFundsDialog(context, 'Edit',
-                                fund: fund);
+                            _showSavingsDialog(context, 'Edit', saving: saving);
                           } else if (value == 'delete') {
                             //* Handle delete option
                             showDialog(
@@ -93,7 +93,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
                                 return AlertDialog(
                                   title: const Text('Confirm Delete'),
                                   content: const Text(
-                                      'Are you sure you want to delete this fund?'),
+                                      'Are you sure you want to delete this saving?'),
                                   actions: <Widget>[
                                     TextButton(
                                       onPressed: () {
@@ -105,7 +105,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
                                     ElevatedButton(
                                       onPressed: () {
                                         //* Delete the item from Firestore here
-                                        final fundId = fund['id'];
+                                        final savingId = saving.id;
 
                                         //* Reference to the Firestore document to delete
                                         final user =
@@ -119,16 +119,16 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
                                             .instance
                                             .collection('users')
                                             .doc(user.uid);
-                                        final sinkingFundsRef =
-                                            userRef.collection('sinking_funds');
-                                        final fundRef =
-                                            sinkingFundsRef.doc(fundId);
+                                        final savingsRef =
+                                            userRef.collection('savings');
+                                        final savingRef =
+                                            savingsRef.doc(savingId);
 
                                         //* Update the 'deleted_at' field with the current timestamp
                                         final now = DateTime.now();
-                                        fundRef.update({'deleted_at': now});
+                                        savingRef.update({'deleted_at': now});
 
-                                        _fetchSinkingFunds();
+                                        _fetchSavings();
 
                                         Navigator.of(context)
                                             .pop(); //* Close the dialog
@@ -178,7 +178,7 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showSinkingFundsDialog(context, 'Add');
+          _showSavingsDialog(context, 'Add');
         },
         child: const Icon(Icons.add),
       ),
@@ -186,15 +186,15 @@ class _SinkingFundsPageState extends State<SinkingFundsPage> {
   }
 
   //* Function to show the add category dialog
-  void _showSinkingFundsDialog(BuildContext context, String action,
-      {Map? fund}) {
+  void _showSavingsDialog(BuildContext context, String action,
+      {Saving? saving}) {
     showDialog(
       context: context,
       builder: (context) {
-        return SinkingFundsDialog(
+        return SavingsDialog(
           action: action,
-          fund: fund ?? {},
-          onSinkingFundsChanged: _fetchSinkingFunds,
+          saving: saving,
+          onSavingsChanged: _fetchSavings,
         );
       },
     );
