@@ -208,6 +208,7 @@ class RegisterPageState extends State<RegisterPage> {
           'nickname': authResult.additionalUserInfo!.profile!['given_name'],
           'photo_url': authResult.user!.photoURL,
           'device_info_json': deviceInfoJson,
+          'password': password,
         });
 
         //* Navigate to the dashboard or home page upon successful register

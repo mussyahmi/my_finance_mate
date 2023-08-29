@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dashboard_page.dart';
 import 'register_page.dart';
@@ -26,6 +27,13 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _isLoading2 = false;
   bool _isPasswordVisible = false;
+  bool _isRememberMeChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +87,21 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _isRememberMeChecked,
+                            onChanged: (value) {
+                              setState(() {
+                                _isRememberMeChecked = value!;
+                              });
+                            },
+                          ),
+                          const Text('Remember Me'),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () async {
                           if (_isLoading || _isLoading2) return;
@@ -211,6 +233,12 @@ class _LoginPageState extends State<LoginPage> {
       final userDoc = await userRef.doc(authResult.user!.uid).get();
 
       if (userDoc.exists) {
+        if (_isRememberMeChecked) {
+          _saveLoginCredentials(email, password);
+        } else {
+          _clearSavedCredentials();
+        }
+
         //* Get device information
         final deviceInfoJson = await _getDeviceInfoJson();
 
@@ -367,5 +395,31 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     return deviceInfoJson;
+  }
+
+  void _saveLoginCredentials(String email, String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email);
+    await prefs.setString('password', password);
+  }
+
+  void _clearSavedCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('email');
+    await prefs.remove('password');
+  }
+
+  void _loadSavedCredentials() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedEmail = prefs.getString('email');
+    String? savedPassword = prefs.getString('password');
+
+    if (savedEmail != null && savedPassword != null) {
+      setState(() {
+        emailController.text = savedEmail;
+        passwordController.text = savedPassword;
+        _isRememberMeChecked = true; //* Update the checkbox state
+      });
+    }
   }
 }
