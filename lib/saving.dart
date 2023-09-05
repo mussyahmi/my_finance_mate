@@ -5,7 +5,7 @@ class Saving {
   final String amountReceived;
   final String openingBalance;
   final String note;
-  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Saving({
     required this.id,
@@ -14,7 +14,7 @@ class Saving {
     required this.amountReceived,
     required this.openingBalance,
     required this.note,
-    required this.createdAt,
+    required this.updatedAt,
   });
 
   String amountSaved() {

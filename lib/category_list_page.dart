@@ -65,9 +65,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
             })
         .toList();
 
-    //* Sort the list by 'created_at' in ascending order (most recent first)
-    fetchedCategories.sort((a, b) =>
-        (b['created_at'] as DateTime).compareTo((a['created_at'] as DateTime)));
+    //* Sort the list by alphabetical in ascending order (most recent first)
+    fetchedCategories
+        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
     setState(() {
       categories = fetchedCategories;

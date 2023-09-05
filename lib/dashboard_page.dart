@@ -28,6 +28,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String? amountBalance;
   String? amountReceived;
   String? amountSpent;
+  bool _isAmountVisible = false;
 
   @override
   void initState() {
@@ -65,32 +66,39 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                elevation: 3,
-                margin: const EdgeInsets.all(16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Amount Balance',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isAmountVisible = !_isAmountVisible;
+                  });
+                },
+                child: Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.all(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Amount Balance',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'RM $amountBalance',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          color: Colors.indigo,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 8),
+                        Text(
+                          !_isAmountVisible ? 'RM ****' : 'RM $amountBalance',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            color: Colors.indigo,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -98,59 +106,77 @@ class _DashboardPageState extends State<DashboardPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
-                    child: Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Amount Received',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isAmountVisible = !_isAmountVisible;
+                        });
+                      },
+                      child: Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Amount Received',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'RM $amountReceived',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
+                              const SizedBox(height: 8),
+                              Text(
+                                !_isAmountVisible
+                                    ? 'RM ****'
+                                    : 'RM $amountReceived',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                   Expanded(
-                    child: Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Amount Spent',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isAmountVisible = !_isAmountVisible;
+                        });
+                      },
+                      child: Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Amount Spent',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'RM $amountSpent',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
+                              const SizedBox(height: 8),
+                              Text(
+                                !_isAmountVisible
+                                    ? 'RM ****'
+                                    : 'RM $amountSpent',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -917,14 +943,14 @@ class _DashboardPageState extends State<DashboardPage> {
         name: data['name'],
         budget: data['budget'],
         amountSpent: data['amount_spent'],
-        createdAt: (data['created_at'] as Timestamp).toDate(),
+        updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );
     }).toList();
 
     var result = await Future.wait(categories);
 
-    //* Sort the list by 'created_at' in ascending order (most recent last)
-    result.sort((a, b) => (a.createdAt).compareTo(b.createdAt));
+    //* Sort the list by 'updated_at' in descending order (most recent first)
+    result.sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
 
     return result;
   }
@@ -952,14 +978,14 @@ class _DashboardPageState extends State<DashboardPage> {
         amountReceived: data['amount_received'],
         openingBalance: data['opening_balance'],
         note: data['note'],
-        createdAt: (data['created_at'] as Timestamp).toDate(),
+        updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );
     }).toList();
 
     var result = await Future.wait(savings);
 
-    //* Sort the list by 'created_at' in ascending order (most recent last)
-    result.sort((a, b) => (a.createdAt).compareTo(b.createdAt));
+    //* Sort the list by 'updated_at' in descending order (most recent first)
+    result.sort((a, b) => (a.updatedAt).compareTo(b.updatedAt));
 
     return result;
   }

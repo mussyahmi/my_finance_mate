@@ -3,14 +3,14 @@ class Budget {
   final String name;
   final String budget;
   final String amountSpent;
-  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Budget({
     required this.id,
     required this.name,
     required this.budget,
     required this.amountSpent,
-    required this.createdAt,
+    required this.updatedAt,
   });
 
   String amountBalance() {
