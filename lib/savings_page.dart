@@ -54,7 +54,7 @@ class _SavingsPageState extends State<SavingsPage> {
               amountReceived: doc['amount_received'],
               openingBalance: doc['opening_balance'],
               note: doc['note'],
-              createdAt: (doc['created_at'] as Timestamp).toDate(),
+              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
             ))
         .toList();
 
