@@ -563,6 +563,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 );
 
                                 if (result == true) {
+                                  _checkCycleAndShowPopup();
                                   setState(() {});
                                   return true;
                                 } else {
@@ -571,8 +572,16 @@ class _DashboardPageState extends State<DashboardPage> {
                               } else if (direction ==
                                   DismissDirection.endToStart) {
                                 //* Delete action
-                                return await transaction
+                                final result = await transaction
                                     .deleteTransaction(context);
+
+                                if (result == true) {
+                                  _checkCycleAndShowPopup();
+                                  setState(() {});
+                                  return true;
+                                } else {
+                                  return false;
+                                }
                               }
 
                               return false;
@@ -626,6 +635,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
 
           if (result == true) {
+            _checkCycleAndShowPopup();
             setState(() {});
           }
         },
