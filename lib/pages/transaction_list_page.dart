@@ -62,7 +62,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
                       selectedCategoryId = null;
                     });
                     _fetchCategories();
-                    fetchFilteredTransactions();
                   },
                   items: ['spent', 'received', 'saving'].map((type) {
                     return DropdownMenuItem(
@@ -82,7 +81,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     setState(() {
                       selectedCategoryId = newValue;
                     });
-                    fetchFilteredTransactions();
                   },
                   items: categories.map((category) {
                     return DropdownMenuItem<String>(
@@ -177,7 +175,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             );
 
                             if (result == true) {
-                              fetchFilteredTransactions();
+                              setState(() {});
                               return true;
                             } else {
                               return false;
@@ -186,8 +184,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             //* Delete action
                             bool result =
                                 await transaction.deleteTransaction(context);
-
-                            fetchFilteredTransactions();
 
                             return result;
                           }

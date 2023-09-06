@@ -563,8 +563,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 );
 
                                 if (result == true) {
-                                  _checkCycleAndShowPopup();
-                                  _fetchTransactions();
+                                  setState(() {});
                                   return true;
                                 } else {
                                   return false;
@@ -627,8 +626,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
 
           if (result == true) {
-            _checkCycleAndShowPopup();
-            _fetchTransactions();
+            setState(() {});
           }
         },
         child: const Icon(Icons.add),
