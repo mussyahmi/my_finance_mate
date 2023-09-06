@@ -7,32 +7,100 @@ import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 
 class TransactionListPage extends StatefulWidget {
-  final String? selectedType;
-  final String? selectedCategoryId;
+  final String cycleId;
+  final String? type;
+  final String? categoryId;
   const TransactionListPage(
-      {super.key, this.selectedType, this.selectedCategoryId});
+      {super.key, required this.cycleId, this.type, this.categoryId});
 
   @override
   State<TransactionListPage> createState() => _TransactionListPageState();
 }
 
 class _TransactionListPageState extends State<TransactionListPage> {
+  String? selectedType;
+  String? selectedCategoryId;
+  List<Map<String, dynamic>> categories = [];
   late List<t.Transaction> filteredTransactions;
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    selectedType = widget.type;
+    selectedCategoryId = widget.categoryId;
+
+    await _fetchCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: const Text('Transaction List'),
         centerTitle: true,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          //* Filters (Dropdowns)
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            child: Column(
+              children: [
+                //* Type Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedType,
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedType = newValue as String;
+                      selectedCategoryId = null;
+                    });
+                    _fetchCategories();
+                    fetchFilteredTransactions();
+                  },
+                  items: ['spent', 'received', 'saving'].map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child:
+                          Text('${type[0].toUpperCase()}${type.substring(1)}'),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(
+                    labelText: 'Type',
+                  ),
+                ),
+                //* Category Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectedCategoryId,
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedCategoryId = newValue;
+                    });
+                    fetchFilteredTransactions();
+                  },
+                  items: categories.map((category) {
+                    return DropdownMenuItem<String>(
+                      value: category['id'],
+                      child: Text(category['name']),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          //* Transaction List
           Expanded(
             child: FutureBuilder<List<t.Transaction>>(
-              future: fetchFilteredTransactions(
-                  widget.selectedType, widget.selectedCategoryId),
+              future: fetchFilteredTransactions(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -109,8 +177,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             );
 
                             if (result == true) {
-                              fetchFilteredTransactions(widget.selectedType,
-                                  widget.selectedCategoryId);
+                              fetchFilteredTransactions();
                               return true;
                             } else {
                               return false;
@@ -120,8 +187,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             bool result =
                                 await transaction.deleteTransaction(context);
 
-                            fetchFilteredTransactions(
-                                widget.selectedType, widget.selectedCategoryId);
+                            fetchFilteredTransactions();
 
                             return result;
                           }
@@ -165,8 +231,52 @@ class _TransactionListPageState extends State<TransactionListPage> {
     );
   }
 
-  Future<List<t.Transaction>> fetchFilteredTransactions(
-      String? type, String? categoryId) async {
+  Future<void> _fetchCategories() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    CollectionReference<Map<String, dynamic>> categoriesRef;
+
+    if (selectedType != 'saving') {
+      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+      categoriesRef = cyclesRef.collection('categories');
+    } else {
+      categoriesRef = userRef.collection('savings');
+    }
+
+    Query<Map<String, dynamic>> query =
+        categoriesRef.where('deleted_at', isNull: true);
+
+    if (selectedType != 'saving') {
+      query = query.where('type', isEqualTo: selectedType);
+    }
+
+    final categoriesSnapshot = await query.get();
+
+    final fetchedCategories = categoriesSnapshot.docs
+        .map((doc) => {
+              'id': doc.id,
+              'name': doc['name'] as String,
+              'created_at': (doc['created_at'] as Timestamp).toDate()
+            })
+        .toList();
+
+    //* Sort the list by alphabetical in ascending order (most recent first)
+    fetchedCategories
+        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+
+    setState(() {
+      categories = fetchedCategories;
+    });
+  }
+
+  Future<List<t.Transaction>> fetchFilteredTransactions() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where the user is not authenticated.
@@ -180,12 +290,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
     Query<Map<String, dynamic>> query =
         transactionsRef.where('deleted_at', isNull: true);
 
-    if (type != null) {
-      query = query.where('type', isEqualTo: type);
+    if (selectedType != null) {
+      query = query.where('type', isEqualTo: selectedType);
     }
 
-    if (categoryId != null) {
-      query = query.where('categoryId', isEqualTo: categoryId);
+    if (selectedCategoryId != null) {
+      query = query.where('categoryId', isEqualTo: selectedCategoryId);
     }
 
     final querySnapshot = await query.get();

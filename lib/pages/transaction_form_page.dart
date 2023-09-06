@@ -25,7 +25,7 @@ class TransactionFormPage extends StatefulWidget {
 
 class TransactionFormPageState extends State<TransactionFormPage> {
   String selectedType = 'spent';
-  String? selectedCategory;
+  String? selectedCategoryId;
   List<Map<String, dynamic>> categories = [];
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
@@ -49,7 +49,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       await _fetchCategories();
 
-      selectedCategory = widget.transaction!.categoryId;
+      selectedCategoryId = widget.transaction!.categoryId;
     }
   }
 
@@ -102,7 +102,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 onChanged: (newValue) {
                   setState(() {
                     selectedType = newValue as String;
-                    selectedCategory = null;
+                    selectedCategoryId = null;
                   });
 
                   _fetchCategories();
@@ -120,10 +120,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                value: selectedCategoryId,
                 onChanged: (newValue) async {
                   setState(() {
-                    selectedCategory = newValue;
+                    selectedCategoryId = newValue;
                   });
 
                   if (newValue == 'add_new') {
@@ -145,7 +145,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     );
 
                     setState(() {
-                      selectedCategory = null;
+                      selectedCategoryId = null;
                     });
 
                     _fetchCategories();
@@ -278,7 +278,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   Future<void> _updateTransactionToFirebase() async {
     //* Get the values from the form
     String type = selectedType;
-    String categoryId = selectedCategory!;
+    String categoryId = selectedCategoryId!;
     String amount = transactionAmountController.text;
     String note = transactionNoteController.text.replaceAll('\n', '\\n');
     DateTime dateTime = selectedDateTime;

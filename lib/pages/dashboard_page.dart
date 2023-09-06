@@ -112,8 +112,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TransactionListPage(
-                              selectedType: 'received',
+                            builder: (context) => TransactionListPage(
+                              cycleId: cycleId ?? '',
+                              type: 'received',
                             ),
                           ),
                         );
@@ -155,8 +156,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TransactionListPage(
-                              selectedType: 'spent',
+                            builder: (context) => TransactionListPage(
+                              cycleId: cycleId ?? '',
+                              type: 'spent',
                             ),
                           ),
                         );
@@ -265,8 +267,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             TransactionListPage(
-                                                selectedType: 'spent',
-                                                selectedCategoryId: budget.id),
+                                                cycleId: cycleId ?? '',
+                                                type: 'spent',
+                                                categoryId: budget.id),
                                       ),
                                     );
                                   },
@@ -470,7 +473,8 @@ class _DashboardPageState extends State<DashboardPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const TransactionListPage(),
+                              builder: (context) =>
+                                  TransactionListPage(cycleId: cycleId ?? ''),
                             ),
                           );
                         },

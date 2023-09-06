@@ -224,8 +224,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionListPage(
-                                selectedType: widget.type,
-                                selectedCategoryId: category['id']),
+                                cycleId: widget.cycleId,
+                                type: widget.type,
+                                categoryId: category['id']),
                           ),
                         );
                       },
