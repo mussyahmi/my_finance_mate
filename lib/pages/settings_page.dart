@@ -132,10 +132,7 @@ class SettingsPageState extends State<SettingsPage> {
                   _signOut();
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => LoginPage(
-                              savedThemeMode: savedThemeMode,
-                            )),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                     (route) =>
                         false, //* This line removes all previous routes from the stack
                   );

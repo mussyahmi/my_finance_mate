@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
         title: 'My Finance Mate',
         theme: theme,
         darkTheme: darkTheme,
-        home: LoginPage(savedThemeMode: widget.savedThemeMode),
+        home: const LoginPage(),
       ),
     );
   }

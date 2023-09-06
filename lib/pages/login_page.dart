@@ -9,15 +9,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:adaptive_theme/adaptive_theme.dart';
 
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
 
 class LoginPage extends StatefulWidget {
-  final AdaptiveThemeMode? savedThemeMode;
-  const LoginPage({super.key, required this.savedThemeMode});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -138,27 +136,21 @@ class _LoginPageState extends State<LoginPage> {
                             : const Text('Login'),
                       ),
                       const SizedBox(height: 10),
-                      Row(
+                      const Row(
                         children: [
                           Expanded(
                             child: Divider(
-                              color: widget.savedThemeMode ==
-                                      AdaptiveThemeMode.light
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: Colors.grey,
                               height: 36,
                             ),
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text('Or login with'),
                           ),
                           Expanded(
                             child: Divider(
-                              color: widget.savedThemeMode ==
-                                      AdaptiveThemeMode.light
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: Colors.grey,
                               height: 36,
                             ),
                           ),
