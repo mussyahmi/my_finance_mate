@@ -94,7 +94,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 24,
-                            color: Colors.indigo,
+                            color: Colors.blueAccent,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
