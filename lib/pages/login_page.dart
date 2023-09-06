@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dashboard_page.dart';
 import 'register_page.dart';
-import 'size_config.dart';
+import '../size_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

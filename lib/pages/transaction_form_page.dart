@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'category_list_page.dart';
 import 'savings_page.dart';
-import 'transaction.dart' as t;
+import '../models/transaction.dart' as t;
 
 class TransactionFormPage extends StatefulWidget {
   final String cycleId;

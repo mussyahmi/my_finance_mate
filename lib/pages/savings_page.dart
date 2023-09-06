@@ -4,25 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'category_dialog.dart';
+import '../widgets/savings_dialog.dart';
+import '../models/saving.dart';
 
-class CategoryListPage extends StatefulWidget {
-  final String cycleId;
-  final String type;
+class SavingsPage extends StatefulWidget {
   final bool? isFromTransactionForm;
-
-  const CategoryListPage(
-      {super.key,
-      required this.cycleId,
-      required this.type,
-      this.isFromTransactionForm});
+  const SavingsPage({super.key, this.isFromTransactionForm});
 
   @override
-  State<CategoryListPage> createState() => _CategoryListPageState();
+  State<SavingsPage> createState() => _SavingsPageState();
 }
 
-class _CategoryListPageState extends State<CategoryListPage> {
-  List<Map<String, dynamic>> categories = [];
+class _SavingsPageState extends State<SavingsPage> {
+  List<Saving> savings = [];
 
   @override
   void initState() {
@@ -31,14 +25,14 @@ class _CategoryListPageState extends State<CategoryListPage> {
   }
 
   Future<void> initAsync() async {
-    await _fetchCategories();
+    await _fetchSavings();
 
     if (widget.isFromTransactionForm != null) {
-      _showCategoryDialog(context, 'Add');
+      _showSavingsDialog(context, 'Add');
     }
   }
 
-  Future<void> _fetchCategories() async {
+  Future<void> _fetchSavings() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated
@@ -47,30 +41,28 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-    final categoriesRef = cyclesRef.collection('categories');
+    final savingsRef = userRef.collection('savings');
 
-    final categoriesSnapshot = await categoriesRef
-        .where('deleted_at', isNull: true)
-        .where('type', isEqualTo: widget.type)
-        .get();
+    final savingsSnapshot =
+        await savingsRef.where('deleted_at', isNull: true).get();
 
-    final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'budget': doc['budget'] as String,
-              'note': doc['note'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
+    final fetchedSavings = savingsSnapshot.docs
+        .map((doc) => Saving(
+              id: doc.id,
+              name: doc['name'],
+              goal: doc['goal'],
+              amountReceived: doc['amount_received'],
+              openingBalance: doc['opening_balance'],
+              note: doc['note'],
+              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
+            ))
         .toList();
 
     //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories
-        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+    fetchedSavings.sort((a, b) => (a.name).compareTo(b.name));
 
     setState(() {
-      categories = fetchedCategories;
+      savings = fetchedSavings;
     });
   }
 
@@ -85,7 +77,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            children: categories.map((category) {
+            children: savings.map((saving) {
               return Column(
                 children: [
                   Container(
@@ -97,19 +89,18 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: ListTile(
-                      title: Text(category['name']),
+                      title: Text(saving.name),
                       trailing: PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),
                         onSelected: (value) async {
                           if (value == 'edit') {
                             //* Handle edit option
-                            _showCategoryDialog(context, 'Edit',
-                                category: category);
+                            _showSavingsDialog(context, 'Edit', saving: saving);
                           } else if (value == 'delete') {
                             //* Check if there are transactions associated with this category
-                            final categoryId = category['id'];
+                            final savingId = saving.id;
                             final hasTransactions =
-                                await _hasTransactions(categoryId);
+                                await _hasTransactions(savingId);
 
                             if (hasTransactions) {
                               //* If there are transactions, show an error message or handle it accordingly.
@@ -140,7 +131,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                   return AlertDialog(
                                     title: const Text('Confirm Delete'),
                                     content: const Text(
-                                        'Are you sure you want to delete this category?'),
+                                        'Are you sure you want to delete this saving?'),
                                     actions: <Widget>[
                                       TextButton(
                                         onPressed: () {
@@ -150,9 +141,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                         child: const Text('Cancel'),
                                       ),
                                       ElevatedButton(
-                                        onPressed: () async {
+                                        onPressed: () {
                                           //* Delete the item from Firestore here
-                                          final categoryId = category['id'];
+                                          final savingId = saving.id;
 
                                           //* Reference to the Firestore document to delete
                                           final user =
@@ -166,20 +157,16 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                               .instance
                                               .collection('users')
                                               .doc(user.uid);
-                                          final cyclesRef = userRef
-                                              .collection('cycles')
-                                              .doc(widget.cycleId);
-                                          final categoriesRef = cyclesRef
-                                              .collection('categories');
-                                          final categoryRef =
-                                              categoriesRef.doc(categoryId);
+                                          final savingsRef =
+                                              userRef.collection('savings');
+                                          final savingRef =
+                                              savingsRef.doc(savingId);
 
                                           //* Update the 'deleted_at' field with the current timestamp
                                           final now = DateTime.now();
-                                          categoryRef
-                                              .update({'deleted_at': now});
+                                          savingRef.update({'deleted_at': now});
 
-                                          _fetchCategories();
+                                          _fetchSavings();
 
                                           Navigator.of(context)
                                               .pop(); //* Close the dialog
@@ -230,7 +217,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showCategoryDialog(context, 'Add');
+          _showSavingsDialog(context, 'Add');
         },
         child: const Icon(Icons.add),
       ),
@@ -238,23 +225,21 @@ class _CategoryListPageState extends State<CategoryListPage> {
   }
 
   //* Function to show the add category dialog
-  void _showCategoryDialog(BuildContext context, String action,
-      {Map? category}) {
+  void _showSavingsDialog(BuildContext context, String action,
+      {Saving? saving}) {
     showDialog(
       context: context,
       builder: (context) {
-        return CategoryDialog(
-          cycleId: widget.cycleId,
-          type: widget.type,
+        return SavingsDialog(
           action: action,
-          category: category ?? {},
-          onCategoryChanged: _fetchCategories,
+          saving: saving,
+          onSavingsChanged: _fetchSavings,
         );
       },
     );
   }
 
-  Future<bool> _hasTransactions(String categoryId) async {
+  Future<bool> _hasTransactions(String savingId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated
@@ -266,7 +251,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
     final transactionsRef = userRef.collection('transactions');
 
     final transactionsSnapshot = await transactionsRef
-        .where('categoryId', isEqualTo: categoryId)
+        .where('categoryId', isEqualTo: savingId)
         .where('deleted_at', isNull: true)
         .get();
 

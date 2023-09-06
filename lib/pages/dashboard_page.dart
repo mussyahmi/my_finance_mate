@@ -5,13 +5,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-import 'budget.dart';
-import 'saving.dart';
-import 'size_config.dart';
+import '../models/budget.dart';
+import '../models/saving.dart';
+import '../size_config.dart';
 import 'add_cycle_page.dart';
 import 'transaction_form_page.dart';
 import 'settings_page.dart';
-import 'transaction.dart' as t;
+import '../models/transaction.dart' as t;
+import 'transaction_list_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -108,9 +109,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _isAmountVisible = !_isAmountVisible;
-                        });
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TransactionListPage(
+                              selectedType: 'received',
+                            ),
+                          ),
+                        );
                       },
                       child: Card(
                         elevation: 3,
@@ -146,9 +152,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _isAmountVisible = !_isAmountVisible;
-                        });
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TransactionListPage(
+                              selectedType: 'spent',
+                            ),
+                          ),
+                        );
                       },
                       child: Card(
                         elevation: 3,
@@ -248,7 +259,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: GestureDetector(
-                                  onTap: () {},
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionListPage(
+                                                selectedType: 'spent',
+                                                selectedCategoryId: budget.id),
+                                      ),
+                                    );
+                                  },
                                   child: Card(
                                     child: SizedBox(
                                       width: titleTextWidth > 200
@@ -444,7 +465,16 @@ class _DashboardPageState extends State<DashboardPage> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
-                    TextButton(onPressed: () {}, child: const Text('View All'))
+                    TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TransactionListPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('View All'))
                   ],
                 ),
               ),
@@ -521,7 +551,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => TransactionFormPage(
-                                      cycleId: cycleId ?? '',
+                                      cycleId: transaction.cycleId,
                                       action: 'Edit',
                                       transaction: transaction,
                                     ),
@@ -538,7 +568,8 @@ class _DashboardPageState extends State<DashboardPage> {
                               } else if (direction ==
                                   DismissDirection.endToStart) {
                                 //* Delete action
-                                return await _deleteTransaction(transaction);
+                                return await transaction
+                                    .deleteTransaction(context);
                               }
 
                               return false;
@@ -565,7 +596,8 @@ class _DashboardPageState extends State<DashboardPage> {
                               ),
                               onTap: () {
                                 //* Show the transaction summary dialog when tapped
-                                _showTransactionSummaryDialog(transaction);
+                                transaction
+                                    .showTransactionSummaryDialog(context);
                               },
                             ),
                           );
@@ -699,223 +731,6 @@ class _DashboardPageState extends State<DashboardPage> {
             builder: (context) => const AddCyclePage(isFirstCycle: true)),
       );
     }
-  }
-
-  void _showTransactionSummaryDialog(t.Transaction transaction) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Transaction Summary'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Category:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(transaction.categoryName),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Date:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    DateFormat('EE, d MMM yyyy\nh:mm aa')
-                        .format(transaction.dateTime),
-                    textAlign: TextAlign.right,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Amount:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('RM${transaction.amount}'),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Type:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                      '${transaction.type[0].toUpperCase()}${transaction.type.substring(1)}'),
-                ],
-              ),
-              if (transaction.note.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Note:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(transaction.note.replaceAll('\\n', '\n')),
-                  ],
-                ),
-              //* Add more transaction details as needed
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); //* Close the dialog
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool> _deleteTransaction(t.Transaction transaction) async {
-    return await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content:
-              const Text('Are you sure you want to delete this transaction?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); //* Close the dialog
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                //* Delete the item from Firestore here
-                final transactionId = transaction.id;
-
-                //* Reference to the Firestore document to delete
-                final user = FirebaseAuth.instance.currentUser;
-                if (user == null) {
-                  //todo: Handle the case where the user is not authenticated
-                  return;
-                }
-
-                final userRef = FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user.uid);
-                final transactionRef =
-                    userRef.collection('transactions').doc(transactionId);
-
-                //* Update the 'deleted_at' field with the current timestamp
-                final now = DateTime.now();
-                transactionRef.update({'deleted_at': now});
-
-                final cyclesRef = userRef.collection('cycles').doc(cycleId);
-
-                //* Fetch the current cycle document
-                final cycleDoc = await cyclesRef.get();
-
-                if (cycleDoc.exists) {
-                  final cycleData = cycleDoc.data() as Map<String, dynamic>;
-
-                  //* Calculate the updated amounts
-                  final double cycleOpeningBalance =
-                      double.parse(cycleData['opening_balance']);
-                  final double cycleAmountReceived =
-                      double.parse(cycleData['amount_received']) +
-                          (transaction.type == 'received'
-                              ? -double.parse(transaction.amount)
-                              : 0);
-                  final double cycleAmountSpent =
-                      double.parse(cycleData['amount_spent']) +
-                          ((transaction.type == 'spent' ||
-                                  transaction.type == 'saving')
-                              ? -double.parse(transaction.amount)
-                              : 0);
-
-                  final double updatedAmountBalance = cycleOpeningBalance +
-                      cycleAmountReceived -
-                      cycleAmountSpent;
-
-                  //* Update the cycle document
-                  await cyclesRef.update({
-                    'amount_spent': cycleAmountSpent.toStringAsFixed(2),
-                    'amount_received': cycleAmountReceived.toStringAsFixed(2),
-                    'amount_balance': updatedAmountBalance.toStringAsFixed(2),
-                  });
-                }
-
-                if (transaction.type == 'spent') {
-                  final categoryRef = cyclesRef
-                      .collection('categories')
-                      .doc(transaction.categoryId);
-
-                  //* Fetch the category document
-                  final categoryDoc = await categoryRef.get();
-
-                  if (categoryDoc.exists) {
-                    final categoryData =
-                        categoryDoc.data() as Map<String, dynamic>;
-
-                    //* Calculate the updated amounts
-                    final double amountSpent =
-                        double.parse(categoryData['amount_spent']) -
-                            double.parse(transaction.amount);
-
-                    //* Update the cycle document
-                    await categoryRef.update({
-                      'amount_spent': amountSpent.toStringAsFixed(2),
-                    });
-                  }
-                }
-
-                if (transaction.type == 'saving') {
-                  final savingsRef =
-                      userRef.collection('savings').doc(transaction.categoryId);
-
-                  //* Fetch the category document
-                  final savingDoc = await savingsRef.get();
-
-                  if (savingDoc.exists) {
-                    final savingData = savingDoc.data() as Map<String, dynamic>;
-
-                    //* Calculate the updated amounts
-                    final double amountReceived =
-                        double.parse(savingData['amount_received']) -
-                            double.parse(transaction.amount);
-
-                    //* Update the cycle document
-                    await savingsRef.update({
-                      'amount_received': amountReceived.toStringAsFixed(2),
-                    });
-                  }
-                }
-
-                _checkCycleAndShowPopup();
-                _fetchTransactions();
-
-                Navigator.of(context).pop(true); //* Close the dialog
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<List<Budget>> _fetchBudgets() async {
