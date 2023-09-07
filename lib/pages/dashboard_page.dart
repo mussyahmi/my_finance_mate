@@ -195,20 +195,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Budget List',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    TextButton(onPressed: () {}, child: const Text('View All'))
-                  ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Budget List',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
+              const SizedBox(height: 10),
               FutureBuilder<List<Budget>>(
                 future: _fetchBudgets(),
                 builder: (context, snapshot) {
@@ -343,20 +337,14 @@ class _DashboardPageState extends State<DashboardPage> {
                 },
               ),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Saving List',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    TextButton(onPressed: () {}, child: const Text('View All'))
-                  ],
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Saving List',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
+              const SizedBox(height: 10),
               FutureBuilder<List<Saving>>(
                 future: _fetchSavings(),
                 builder: (context, snapshot) {
