@@ -77,144 +77,149 @@ class _SavingsPageState extends State<SavingsPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            children: savings.map((saving) {
-              return Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                        width: 1.0,
+            children: [
+              ...savings.map((saving) {
+                return Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: ListTile(
-                      title: Text(saving.name),
-                      trailing: PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            //* Handle edit option
-                            _showSavingsDialog(context, 'Edit', saving: saving);
-                          } else if (value == 'delete') {
-                            //* Check if there are transactions associated with this category
-                            final savingId = saving.id;
-                            final hasTransactions =
-                                await _hasTransactions(savingId);
+                      child: ListTile(
+                        title: Text(saving.name),
+                        trailing: PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_horiz),
+                          onSelected: (value) async {
+                            if (value == 'edit') {
+                              //* Handle edit option
+                              _showSavingsDialog(context, 'Edit',
+                                  saving: saving);
+                            } else if (value == 'delete') {
+                              //* Check if there are transactions associated with this category
+                              final savingId = saving.id;
+                              final hasTransactions =
+                                  await _hasTransactions(savingId);
 
-                            if (hasTransactions) {
-                              //* If there are transactions, show an error message or handle it accordingly.
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Cannot Delete Category'),
-                                    content: const Text(
-                                        'There are transactions associated with this category. You cannot delete it.'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('OK'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            } else {
-                              //* If there are no transactions, proceed with the deletion.
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Confirm Delete'),
-                                    content: const Text(
-                                        'Are you sure you want to delete this saving?'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          //* Delete the item from Firestore here
-                                          final savingId = saving.id;
+                              if (hasTransactions) {
+                                //* If there are transactions, show an error message or handle it accordingly.
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title:
+                                          const Text('Cannot Delete Category'),
+                                      content: const Text(
+                                          'There are transactions associated with this category. You cannot delete it.'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                //* If there are no transactions, proceed with the deletion.
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Confirm Delete'),
+                                      content: const Text(
+                                          'Are you sure you want to delete this saving?'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            //* Delete the item from Firestore here
+                                            final savingId = saving.id;
 
-                                          //* Reference to the Firestore document to delete
-                                          final user =
-                                              FirebaseAuth.instance.currentUser;
-                                          if (user == null) {
-                                            //todo: Handle the case where the user is not authenticated
-                                            return;
-                                          }
+                                            //* Reference to the Firestore document to delete
+                                            final user = FirebaseAuth
+                                                .instance.currentUser;
+                                            if (user == null) {
+                                              //todo: Handle the case where the user is not authenticated
+                                              return;
+                                            }
 
-                                          final userRef = FirebaseFirestore
-                                              .instance
-                                              .collection('users')
-                                              .doc(user.uid);
-                                          final savingsRef =
-                                              userRef.collection('savings');
-                                          final savingRef =
-                                              savingsRef.doc(savingId);
+                                            final userRef = FirebaseFirestore
+                                                .instance
+                                                .collection('users')
+                                                .doc(user.uid);
+                                            final savingsRef =
+                                                userRef.collection('savings');
+                                            final savingRef =
+                                                savingsRef.doc(savingId);
 
-                                          //* Update the 'deleted_at' field with the current timestamp
-                                          final now = DateTime.now();
-                                          savingRef.update({
-                                            'updated_at': now,
-                                            'deleted_at': now,
-                                          });
+                                            //* Update the 'deleted_at' field with the current timestamp
+                                            final now = DateTime.now();
+                                            savingRef.update({
+                                              'updated_at': now,
+                                              'deleted_at': now,
+                                            });
 
-                                          _fetchSavings();
+                                            _fetchSavings();
 
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('Delete'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
                             }
-                          }
-                        },
-                        itemBuilder: (context) => <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: ListTile(
-                              leading: Icon(Icons.edit),
-                              title: Text('Edit'),
-                              dense: true,
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.delete,
-                                color: Colors.red,
+                          },
+                          itemBuilder: (context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: ListTile(
+                                leading: Icon(Icons.edit),
+                                title: Text('Edit'),
+                                dense: true,
                               ),
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              dense: true,
                             ),
-                          ),
-                        ],
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                title: Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                dense: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        onTap: () {},
                       ),
-                      onTap: () {},
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              );
-            }).toList(),
+                    const SizedBox(height: 10),
+                  ],
+                );
+              }).toList(),
+              const SizedBox(height: 80),
+            ],
           ),
         ),
       ),

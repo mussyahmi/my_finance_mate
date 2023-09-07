@@ -52,6 +52,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ElevatedButton(
                   onPressed: () async {

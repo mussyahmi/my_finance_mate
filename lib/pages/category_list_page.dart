@@ -86,158 +86,164 @@ class _CategoryListPageState extends State<CategoryListPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            children: categories.map((category) {
-              return Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey,
-                        width: 1.0,
+            children: [
+              ...categories.map((category) {
+                return Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: ListTile(
-                      title: Text(category['name']),
-                      trailing: PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            //* Handle edit option
-                            _showCategoryDialog(context, 'Edit',
-                                category: category);
-                          } else if (value == 'delete') {
-                            //* Check if there are transactions associated with this category
-                            final categoryId = category['id'];
-                            final hasTransactions =
-                                await _hasTransactions(categoryId);
+                      child: ListTile(
+                        title: Text(category['name']),
+                        trailing: PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.more_horiz,
+                          ),
+                          onSelected: (value) async {
+                            if (value == 'edit') {
+                              //* Handle edit option
+                              _showCategoryDialog(context, 'Edit',
+                                  category: category);
+                            } else if (value == 'delete') {
+                              //* Check if there are transactions associated with this category
+                              final categoryId = category['id'];
+                              final hasTransactions =
+                                  await _hasTransactions(categoryId);
 
-                            if (hasTransactions) {
-                              //* If there are transactions, show an error message or handle it accordingly.
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Cannot Delete Category'),
-                                    content: const Text(
-                                        'There are transactions associated with this category. You cannot delete it.'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('OK'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            } else {
-                              //* If there are no transactions, proceed with the deletion.
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Confirm Delete'),
-                                    content: const Text(
-                                        'Are you sure you want to delete this category?'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          //* Delete the item from Firestore here
-                                          final categoryId = category['id'];
+                              if (hasTransactions) {
+                                //* If there are transactions, show an error message or handle it accordingly.
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title:
+                                          const Text('Cannot Delete Category'),
+                                      content: const Text(
+                                          'There are transactions associated with this category. You cannot delete it.'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                //* If there are no transactions, proceed with the deletion.
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Confirm Delete'),
+                                      content: const Text(
+                                          'Are you sure you want to delete this category?'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            //* Delete the item from Firestore here
+                                            final categoryId = category['id'];
 
-                                          //* Reference to the Firestore document to delete
-                                          final user =
-                                              FirebaseAuth.instance.currentUser;
-                                          if (user == null) {
-                                            //todo: Handle the case where the user is not authenticated
-                                            return;
-                                          }
+                                            //* Reference to the Firestore document to delete
+                                            final user = FirebaseAuth
+                                                .instance.currentUser;
+                                            if (user == null) {
+                                              //todo: Handle the case where the user is not authenticated
+                                              return;
+                                            }
 
-                                          final userRef = FirebaseFirestore
-                                              .instance
-                                              .collection('users')
-                                              .doc(user.uid);
-                                          final cyclesRef = userRef
-                                              .collection('cycles')
-                                              .doc(widget.cycleId);
-                                          final categoriesRef = cyclesRef
-                                              .collection('categories');
-                                          final categoryRef =
-                                              categoriesRef.doc(categoryId);
+                                            final userRef = FirebaseFirestore
+                                                .instance
+                                                .collection('users')
+                                                .doc(user.uid);
+                                            final cyclesRef = userRef
+                                                .collection('cycles')
+                                                .doc(widget.cycleId);
+                                            final categoriesRef = cyclesRef
+                                                .collection('categories');
+                                            final categoryRef =
+                                                categoriesRef.doc(categoryId);
 
-                                          //* Update the 'deleted_at' field with the current timestamp
-                                          final now = DateTime.now();
-                                          categoryRef.update({
-                                            'updated_at': now,
-                                            'deleted_at': now,
-                                          });
+                                            //* Update the 'deleted_at' field with the current timestamp
+                                            final now = DateTime.now();
+                                            categoryRef.update({
+                                              'updated_at': now,
+                                              'deleted_at': now,
+                                            });
 
-                                          _fetchCategories();
+                                            _fetchCategories();
 
-                                          Navigator.of(context)
-                                              .pop(); //* Close the dialog
-                                        },
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
+                                            Navigator.of(context)
+                                                .pop(); //* Close the dialog
+                                          },
+                                          child: const Text('Delete'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
                             }
-                          }
+                          },
+                          itemBuilder: (context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: ListTile(
+                                leading: Icon(Icons.edit),
+                                title: Text('Edit'),
+                                dense: true,
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                title: Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                dense: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TransactionListPage(
+                                  cycleId: widget.cycleId,
+                                  type: widget.type,
+                                  categoryId: category['id']),
+                            ),
+                          );
                         },
-                        itemBuilder: (context) => <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: ListTile(
-                              leading: Icon(Icons.edit),
-                              title: Text('Edit'),
-                              dense: true,
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                              ),
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              dense: true,
-                            ),
-                          ),
-                        ],
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                                cycleId: widget.cycleId,
-                                type: widget.type,
-                                categoryId: category['id']),
-                          ),
-                        );
-                      },
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              );
-            }).toList(),
+                    const SizedBox(height: 10),
+                  ],
+                );
+              }).toList(),
+              const SizedBox(height: 80),
+            ],
           ),
         ),
       ),
