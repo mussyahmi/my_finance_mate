@@ -254,7 +254,7 @@ class _SavingsPageState extends State<SavingsPage> {
     final transactionsRef = userRef.collection('transactions');
 
     final transactionsSnapshot = await transactionsRef
-        .where('categoryId', isEqualTo: savingId)
+        .where('category_id', isEqualTo: savingId)
         .where('deleted_at', isNull: true)
         .get();
 

@@ -279,7 +279,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
     final transactionsRef = userRef.collection('transactions');
 
     final transactionsSnapshot = await transactionsRef
-        .where('categoryId', isEqualTo: categoryId)
+        .where('category_id', isEqualTo: categoryId)
         .where('deleted_at', isNull: true)
         .get();
 

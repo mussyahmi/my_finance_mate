@@ -663,13 +663,13 @@ class _DashboardPageState extends State<DashboardPage> {
       if (data['type'] != 'saving') {
         categoryDoc = await userRef
             .collection('cycles')
-            .doc(data['cycleId'])
+            .doc(data['cycle_id'])
             .collection('categories')
-            .doc(data['categoryId'])
+            .doc(data['category_id'])
             .get();
       } else {
         categoryDoc =
-            await userRef.collection('savings').doc(data['categoryId']).get();
+            await userRef.collection('savings').doc(data['category_id']).get();
       }
 
       final categoryName = categoryDoc['name'] as String;
@@ -677,10 +677,10 @@ class _DashboardPageState extends State<DashboardPage> {
       //* Create a Transaction object with the category name
       return t.Transaction(
         id: doc.id,
-        cycleId: data['cycleId'],
-        dateTime: (data['dateTime'] as Timestamp).toDate(),
+        cycleId: data['cycle_id'],
+        dateTime: (data['date_time'] as Timestamp).toDate(),
         type: data['type'] as String,
-        categoryId: data['categoryId'],
+        categoryId: data['category_id'],
         categoryName: categoryName,
         amount: data['amount'] as String,
         note: data['note'] as String,

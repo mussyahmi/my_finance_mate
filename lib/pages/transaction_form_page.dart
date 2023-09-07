@@ -305,10 +305,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       if (widget.action == 'Add') {
         //* Create a new transaction document
         await transactionsRef.add({
-          'cycleId': widget.cycleId,
-          'dateTime': dateTime,
+          'cycle_id': widget.cycleId,
+          'date_time': dateTime,
           'type': type,
-          'categoryId': categoryId,
+          'category_id': categoryId,
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'created_at': now,
@@ -318,9 +318,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       } else if (widget.action == 'Edit') {
         await transactionsRef.doc(widget.transaction!.id).update({
-          'dateTime': dateTime,
+          'date_time': dateTime,
           'type': type,
-          'categoryId': categoryId,
+          'category_id': categoryId,
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,

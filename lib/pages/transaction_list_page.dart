@@ -377,15 +377,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
     Query<Map<String, dynamic>> query = transactionsRef
         .where('deleted_at', isNull: true)
-        .where('dateTime', isGreaterThanOrEqualTo: selectedDateRange!.start)
-        .where('dateTime', isLessThanOrEqualTo: selectedDateRange!.end);
+        .where('date_time', isGreaterThanOrEqualTo: selectedDateRange!.start)
+        .where('date_time', isLessThanOrEqualTo: selectedDateRange!.end);
 
     if (selectedType != null) {
       query = query.where('type', isEqualTo: selectedType);
     }
 
     if (selectedCategoryId != null) {
-      query = query.where('categoryId', isEqualTo: selectedCategoryId);
+      query = query.where('category_id', isEqualTo: selectedCategoryId);
     }
 
     final querySnapshot = await query.get();
@@ -397,13 +397,13 @@ class _TransactionListPageState extends State<TransactionListPage> {
       if (data['type'] != 'saving') {
         categoryDoc = await userRef
             .collection('cycles')
-            .doc(data['cycleId'])
+            .doc(data['cycle_id'])
             .collection('categories')
-            .doc(data['categoryId'])
+            .doc(data['category_id'])
             .get();
       } else {
         categoryDoc =
-            await userRef.collection('savings').doc(data['categoryId']).get();
+            await userRef.collection('savings').doc(data['category_id']).get();
       }
 
       final categoryName = categoryDoc['name'] as String;
@@ -411,10 +411,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
       //* Map data to your Transaction class
       return t.Transaction(
         id: doc.id,
-        cycleId: data['cycleId'],
-        dateTime: (data['dateTime'] as Timestamp).toDate(),
+        cycleId: data['cycle_id'],
+        dateTime: (data['date_time'] as Timestamp).toDate(),
         type: data['type'] as String,
-        categoryId: data['categoryId'],
+        categoryId: data['category_id'],
         categoryName: categoryName,
         amount: data['amount'] as String,
         note: data['note'] as String,
