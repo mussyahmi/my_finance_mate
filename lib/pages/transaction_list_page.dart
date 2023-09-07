@@ -18,6 +18,7 @@ class TransactionListPage extends StatefulWidget {
 }
 
 class _TransactionListPageState extends State<TransactionListPage> {
+  DateTimeRange? selectedDateRange;
   String? selectedType;
   String? selectedCategoryId;
   List<Map<String, dynamic>> categories = [];
@@ -32,6 +33,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
     selectedType = widget.type;
     selectedCategoryId = widget.categoryId;
 
+    await _fetchCycle();
     await _fetchCategories();
   }
 
@@ -51,6 +53,29 @@ class _TransactionListPageState extends State<TransactionListPage> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    final pickedDateRange = await showDateRangePicker(
+                      context: context,
+                      initialDateRange: selectedDateRange,
+                      firstDate:
+                          DateTime.now().subtract(const Duration(days: 365)),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+
+                    if (pickedDateRange != null) {
+                      setState(() {
+                        selectedDateRange = pickedDateRange;
+                      });
+                    }
+                  },
+                  child: Text(
+                    selectedDateRange != null
+                        ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                        : 'Select Date Range',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 //* Type Dropdown
                 DropdownButtonFormField<String>(
                   value: selectedType,
@@ -249,10 +274,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               child: Text(
                                 'Total: RM${total.toStringAsFixed(2)}',
                                 textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
                               ),
                             ),
                           ],
@@ -266,6 +292,31 @@ class _TransactionListPageState extends State<TransactionListPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _fetchCycle() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final cyclesRef = userRef.collection('cycles');
+
+    final lastCycleQuery =
+        cyclesRef.orderBy('cycle_no', descending: true).limit(1);
+    final lastCycleSnapshot = await lastCycleQuery.get();
+
+    final lastCycleDoc = lastCycleSnapshot.docs.first;
+
+    setState(() {
+      selectedDateRange = DateTimeRange(
+        start: (lastCycleDoc['start_date'] as Timestamp).toDate(),
+        end: (lastCycleDoc['end_date'] as Timestamp).toDate(),
+      );
+    });
   }
 
   Future<void> _fetchCategories() async {
@@ -324,8 +375,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    Query<Map<String, dynamic>> query =
-        transactionsRef.where('deleted_at', isNull: true);
+    Query<Map<String, dynamic>> query = transactionsRef
+        .where('deleted_at', isNull: true)
+        .where('dateTime', isGreaterThanOrEqualTo: selectedDateRange!.start)
+        .where('dateTime', isLessThanOrEqualTo: selectedDateRange!.end);
 
     if (selectedType != null) {
       query = query.where('type', isEqualTo: selectedType);

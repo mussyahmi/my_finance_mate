@@ -22,8 +22,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  late final DateTime _currentDate = DateTime.now();
-
   String? cycleId;
   String? cycleName;
   String? amountBalance;
@@ -35,7 +33,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     //* Call the function when the DashboardPage is loaded
-    _checkCycleAndShowPopup();
+    _fetchCycle();
   }
 
   @override
@@ -92,9 +90,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         Text(
                           !_isAmountVisible ? 'RM ****' : 'RM $amountBalance',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
-                            color: Colors.blueAccent,
+                            color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -563,7 +561,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 );
 
                                 if (result == true) {
-                                  _checkCycleAndShowPopup();
+                                  _fetchCycle();
                                   setState(() {});
                                   return true;
                                 } else {
@@ -576,7 +574,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     .deleteTransaction(context);
 
                                 if (result == true) {
-                                  _checkCycleAndShowPopup();
+                                  _fetchCycle();
                                   setState(() {});
                                   return true;
                                 } else {
@@ -635,7 +633,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
 
           if (result == true) {
-            _checkCycleAndShowPopup();
+            _fetchCycle();
             setState(() {});
           }
         },
@@ -698,7 +696,9 @@ class _DashboardPageState extends State<DashboardPage> {
     return result;
   }
 
-  Future<void> _checkCycleAndShowPopup() async {
+  Future<void> _fetchCycle() async {
+    final DateTime currentDate = DateTime.now();
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated
@@ -718,7 +718,7 @@ class _DashboardPageState extends State<DashboardPage> {
       final endDateTimestamp = lastCycleDoc['end_date'] as Timestamp;
       final endDate = endDateTimestamp.toDate();
 
-      if (endDate.isBefore(_currentDate)) {
+      if (endDate.isBefore(currentDate)) {
         //* Last cycle has ended, redirect to add cycle page
         await Navigator.push(
           context,
