@@ -303,6 +303,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                               ],
                                             ),
                                             LinearProgressIndicator(
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                      Radius.circular(8.0)),
                                               value:
                                                   budget.progressPercentage(),
                                               backgroundColor: Colors.grey[300],
@@ -430,6 +433,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                         if (saving.goal != '0.00')
                                           LinearProgressIndicator(
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(8.0)),
                                             value: saving.progressPercentage(),
                                             backgroundColor: Colors.grey[300],
                                             valueColor:
