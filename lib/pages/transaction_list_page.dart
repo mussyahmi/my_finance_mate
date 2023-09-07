@@ -376,10 +376,14 @@ class _TransactionListPageState extends State<TransactionListPage> {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    Query<Map<String, dynamic>> query = transactionsRef
-        .where('deleted_at', isNull: true)
-        .where('date_time', isGreaterThanOrEqualTo: selectedDateRange!.start)
-        .where('date_time', isLessThanOrEqualTo: selectedDateRange!.end);
+    Query<Map<String, dynamic>> query =
+        transactionsRef.where('deleted_at', isNull: true);
+
+    if (selectedDateRange != null) {
+      query = query
+          .where('date_time', isGreaterThanOrEqualTo: selectedDateRange!.start)
+          .where('date_time', isLessThanOrEqualTo: selectedDateRange!.end);
+    }
 
     if (selectedType != null) {
       query = query.where('type', isEqualTo: selectedType);
