@@ -121,7 +121,10 @@ class _WishlistPageState extends State<WishlistPage> {
 
                                         //* Update the 'deleted_at' field with the current timestamp
                                         final now = DateTime.now();
-                                        wishRef.update({'deleted_at': now});
+                                        wishRef.update({
+                                          'updated_at': now,
+                                          'deleted_at': now,
+                                        });
 
                                         _fetchWishlist();
 

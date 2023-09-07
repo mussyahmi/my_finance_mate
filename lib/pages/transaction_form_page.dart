@@ -368,6 +368,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
               (cycleAmountReceived + (type == 'received' ? newAmount : 0))
                   .toStringAsFixed(2),
           'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+          'updated_at': now,
         });
       }
 
@@ -391,6 +392,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           //* Update the cycle document
           await categoryRef.update({
             'amount_spent': amountSpent.toStringAsFixed(2),
+            'updated_at': now,
           });
         }
       }
@@ -415,6 +417,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           //* Update the cycle document
           await savingsRef.update({
             'amount_received': amountReceived.toStringAsFixed(2),
+            'updated_at': now,
           });
         }
       }

@@ -177,8 +177,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
                                           //* Update the 'deleted_at' field with the current timestamp
                                           final now = DateTime.now();
-                                          categoryRef
-                                              .update({'deleted_at': now});
+                                          categoryRef.update({
+                                            'updated_at': now,
+                                            'deleted_at': now,
+                                          });
 
                                           _fetchCategories();
 

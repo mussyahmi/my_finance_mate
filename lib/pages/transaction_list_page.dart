@@ -21,7 +21,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
   String? selectedType;
   String? selectedCategoryId;
   List<Map<String, dynamic>> categories = [];
-  late List<t.Transaction> filteredTransactions;
 
   @override
   void initState() {
@@ -49,8 +48,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
         children: [
           //* Filters (Dropdowns)
           Padding(
-            padding:
-                const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
                 //* Type Dropdown
@@ -95,6 +93,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
               ],
             ),
           ),
+          const Divider(
+            color: Colors.grey,
+            height: 36,
+          ),
           //* Transaction List
           Expanded(
             child: FutureBuilder<List<t.Transaction>>(
@@ -128,95 +130,134 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 } else {
                   //* Display the list of transactions
                   final transactions = snapshot.data;
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: transactions!.length,
-                    itemBuilder: (context, index) {
-                      final transaction = transactions[index];
-                      return Dismissible(
-                        key: Key(
-                            transaction.id), //* Unique key for each transaction
-                        background: Container(
-                          color:
-                              Colors.green, //* Background color for edit action
-                          alignment: Alignment.centerLeft,
-                          child: const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        secondaryBackground: Container(
-                          color:
-                              Colors.red, //* Background color for delete action
-                          alignment: Alignment.centerRight,
-                          child: const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        confirmDismiss: (direction) async {
-                          if (direction == DismissDirection.startToEnd) {
-                            //* Edit action
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TransactionFormPage(
-                                  cycleId: transaction.cycleId,
-                                  action: 'Edit',
-                                  transaction: transaction,
+                  double total = 0;
+
+                  if (selectedType != 'saving' && selectedCategoryId != null) {
+                    for (var transaction in transactions!) {
+                      total += double.parse(transaction.amount);
+                    }
+                  }
+
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: transactions!.length,
+                          itemBuilder: (context, index) {
+                            final transaction = transactions[index];
+                            return Dismissible(
+                              key: Key(transaction
+                                  .id), //* Unique key for each transaction
+                              background: Container(
+                                color: Colors
+                                    .green, //* Background color for edit action
+                                alignment: Alignment.centerLeft,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
+                              secondaryBackground: Container(
+                                color: Colors
+                                    .red, //* Background color for delete action
+                                alignment: Alignment.centerRight,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              confirmDismiss: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  //* Edit action
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TransactionFormPage(
+                                        cycleId: transaction.cycleId,
+                                        action: 'Edit',
+                                        transaction: transaction,
+                                      ),
+                                    ),
+                                  );
+
+                                  if (result == true) {
+                                    setState(() {});
+                                    return true;
+                                  } else {
+                                    return false;
+                                  }
+                                } else if (direction ==
+                                    DismissDirection.endToStart) {
+                                  //* Delete action
+                                  bool result = await transaction
+                                      .deleteTransaction(context);
+
+                                  return result;
+                                }
+
+                                return false;
+                              },
+                              child: ListTile(
+                                title: Text(
+                                  transaction.categoryName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle: Text(
+                                  DateFormat('EE, d MMM yyyy h:mm aa')
+                                      .format(transaction.dateTime),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                trailing: Text(
+                                  '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: (transaction.type == 'spent' ||
+                                              transaction.type == 'saving')
+                                          ? Colors.red
+                                          : Colors.green),
+                                ),
+                                onTap: () {
+                                  //* Show the transaction summary dialog when tapped
+                                  transaction
+                                      .showTransactionSummaryDialog(context);
+                                },
+                              ),
                             );
-
-                            if (result == true) {
-                              setState(() {});
-                              return true;
-                            } else {
-                              return false;
-                            }
-                          } else if (direction == DismissDirection.endToStart) {
-                            //* Delete action
-                            bool result =
-                                await transaction.deleteTransaction(context);
-
-                            return result;
-                          }
-
-                          return false;
-                        },
-                        child: ListTile(
-                          title: Text(
-                            transaction.categoryName,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          subtitle: Text(
-                            DateFormat('EE, d MMM yyyy h:mm aa')
-                                .format(transaction.dateTime),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          trailing: Text(
-                            '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: (transaction.type == 'spent' ||
-                                        transaction.type == 'saving')
-                                    ? Colors.red
-                                    : Colors.green),
-                          ),
-                          onTap: () {
-                            //* Show the transaction summary dialog when tapped
-                            transaction.showTransactionSummaryDialog(context);
                           },
                         ),
-                      );
-                    },
+                      ),
+                      if (selectedType != 'saving' &&
+                          selectedCategoryId != null)
+                        Column(
+                          children: [
+                            const Divider(
+                              color: Colors.grey,
+                              height: 36,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 16.0, right: 16.0, bottom: 16.0),
+                              child: Text(
+                                'Total: RM${total.toStringAsFixed(2)}',
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   );
                 }
               },

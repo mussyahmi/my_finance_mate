@@ -137,6 +137,9 @@ class AddCyclePageState extends State<AddCyclePage> {
                         return;
                       }
 
+                      //* Get current timestamp
+                      final now = DateTime.now();
+
                       //* Create the new cycle document
                       await FirebaseFirestore.instance
                           .collection('users')
@@ -147,7 +150,9 @@ class AddCyclePageState extends State<AddCyclePage> {
                         'cycle_name': cycleNameController.text,
                         'start_date': selectedDateRange!.start,
                         'end_date': adjustedEndDate,
-                        'created_at': Timestamp.now(),
+                        'created_at': now,
+                        'updated_at': now,
+                        'deleted_at': null,
                         'opening_balance':
                             double.parse(openingBalanceController.text)
                                 .toStringAsFixed(2),

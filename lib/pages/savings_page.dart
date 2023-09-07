@@ -164,7 +164,10 @@ class _SavingsPageState extends State<SavingsPage> {
 
                                           //* Update the 'deleted_at' field with the current timestamp
                                           final now = DateTime.now();
-                                          savingRef.update({'deleted_at': now});
+                                          savingRef.update({
+                                            'updated_at': now,
+                                            'deleted_at': now,
+                                          });
 
                                           _fetchSavings();
 

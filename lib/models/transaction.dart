@@ -143,7 +143,10 @@ class Transaction {
 
                 //* Update the 'deleted_at' field with the current timestamp
                 final now = DateTime.now();
-                transactionRef.update({'deleted_at': now});
+                transactionRef.update({
+                  'updated_at': now,
+                  'deleted_at': now,
+                });
 
                 final cyclesRef = userRef.collection('cycles').doc(cycleId);
 
@@ -174,6 +177,7 @@ class Transaction {
                     'amount_spent': cycleAmountSpent.toStringAsFixed(2),
                     'amount_received': cycleAmountReceived.toStringAsFixed(2),
                     'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+                    'updated_at': now,
                   });
                 }
 
@@ -196,6 +200,7 @@ class Transaction {
                     //* Update the cycle document
                     await categoryRef.update({
                       'amount_spent': amountSpent.toStringAsFixed(2),
+                      'updated_at': now,
                     });
                   }
                 }
@@ -218,6 +223,7 @@ class Transaction {
                     //* Update the cycle document
                     await savingsRef.update({
                       'amount_received': amountReceived.toStringAsFixed(2),
+                      'updated_at': now,
                     });
                   }
                 }
