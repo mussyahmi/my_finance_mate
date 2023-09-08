@@ -44,7 +44,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
       transactionAmountController.text = widget.transaction!.amount;
-      transactionNoteController.text = widget.transaction!.note;
+      transactionNoteController.text =
+          widget.transaction!.note.replaceAll('\\n', '\n');
       selectedDateTime = widget.transaction!.dateTime;
 
       await _fetchCategories();

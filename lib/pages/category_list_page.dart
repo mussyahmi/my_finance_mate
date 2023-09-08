@@ -226,6 +226,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           ],
                         ),
                         onTap: () {
+                          showCategorySummaryDialog(category['name'],
+                              category['budget'], category['note']);
+                        },
+                        onLongPress: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -290,5 +294,69 @@ class _CategoryListPageState extends State<CategoryListPage> {
         .get();
 
     return transactionsSnapshot.docs.isNotEmpty;
+  }
+
+  void showCategorySummaryDialog(String name, String budget, String note) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Category Summary'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Name:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(name),
+                ],
+              ),
+              if (budget.isNotEmpty && budget != '0.00')
+                Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Budget:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text('RM$budget'),
+                      ],
+                    ),
+                  ],
+                ),
+              if (note.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(note.replaceAll('\\n', '\n')),
+                  ],
+                ),
+              //* Add more transaction details as needed
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); //* Close the dialog
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

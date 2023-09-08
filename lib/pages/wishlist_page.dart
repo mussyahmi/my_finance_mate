@@ -38,6 +38,7 @@ class _WishlistPageState extends State<WishlistPage> {
         .map((doc) => {
               'id': doc.id,
               'name': doc['name'] as String,
+              'note': doc['note'] as String,
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
         .toList();
@@ -166,7 +167,9 @@ class _WishlistPageState extends State<WishlistPage> {
                             ),
                           ],
                         ),
-                        onTap: () {},
+                        onTap: () {
+                          showWishlistSummaryDialog(wish['name'], wish['note']);
+                        },
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -196,6 +199,54 @@ class _WishlistPageState extends State<WishlistPage> {
           action: action,
           wish: wish ?? {},
           onWishlistChanged: _fetchWishlist,
+        );
+      },
+    );
+  }
+
+  void showWishlistSummaryDialog(String name, String note) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Wishlist Summary'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Name:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(name),
+                ],
+              ),
+              if (note.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(note.replaceAll('\\n', '\n')),
+                  ],
+                ),
+              //* Add more wishlist details as needed
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); //* Close the dialog
+              },
+              child: const Text('Close'),
+            ),
+          ],
         );
       },
     );

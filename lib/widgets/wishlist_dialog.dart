@@ -20,6 +20,7 @@ class WishlistDialog extends StatefulWidget {
 
 class WishlistDialogState extends State<WishlistDialog> {
   final TextEditingController _wishlistNameController = TextEditingController();
+  final TextEditingController _wishlistNoteController = TextEditingController();
 
   @override
   void initState() {
@@ -27,6 +28,7 @@ class WishlistDialogState extends State<WishlistDialog> {
 
     if (widget.wish.isNotEmpty) {
       _wishlistNameController.text = widget.wish['name'] ?? '';
+      _wishlistNoteController.text = widget.wish['note'] ?? '';
     }
   }
 
@@ -34,11 +36,25 @@ class WishlistDialogState extends State<WishlistDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.action} Wishlist'),
-      content: TextField(
-        controller: _wishlistNameController,
-        decoration: const InputDecoration(
-          labelText: 'Name',
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _wishlistNameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _wishlistNoteController,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Note',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
       ),
       actions: [
         TextButton(
@@ -50,9 +66,11 @@ class WishlistDialogState extends State<WishlistDialog> {
         ElevatedButton(
           onPressed: () {
             final wishlistName = _wishlistNameController.text;
+            final wishlistNote = _wishlistNoteController.text;
+
             if (wishlistName.isNotEmpty) {
               //* Call the function to update to Firebase
-              updateWishlistToFirebase(wishlistName);
+              updateWishlistToFirebase(wishlistName, wishlistNote);
 
               //* Close the dialog
               Navigator.of(context).pop();
@@ -65,7 +83,8 @@ class WishlistDialogState extends State<WishlistDialog> {
   }
 
   //* Function to update wishlist to Firebase Firestore
-  Future<void> updateWishlistToFirebase(String wishlistName) async {
+  Future<void> updateWishlistToFirebase(
+      String wishlistName, String wishlistNote) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
@@ -86,6 +105,7 @@ class WishlistDialogState extends State<WishlistDialog> {
             .collection('wishlist')
             .add({
           'name': wishlistName,
+          'note': wishlistNote,
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -101,6 +121,7 @@ class WishlistDialogState extends State<WishlistDialog> {
             .doc(docId)
             .update({
           'name': wishlistName,
+          'note': wishlistNote,
           'updated_at': now,
         });
       }
