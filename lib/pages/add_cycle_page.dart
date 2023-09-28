@@ -19,6 +19,7 @@ class AddCyclePageState extends State<AddCyclePage> {
   TextEditingController openingBalanceController = TextEditingController();
   DateTimeRange? selectedDateRange;
 
+  String? lastCycleId;
   String? lastCycleBalance;
   int lastCycleNo = 0;
 
@@ -49,6 +50,7 @@ class AddCyclePageState extends State<AddCyclePage> {
     if (lastCycleSnapshot.docs.isNotEmpty) {
       final lastCycleDoc = lastCycleSnapshot.docs.first;
       setState(() {
+        lastCycleId = lastCycleDoc.id;
         lastCycleBalance =
             openingBalanceController.text = lastCycleDoc['amount_balance'];
         lastCycleNo = lastCycleDoc['cycle_no'];
@@ -141,7 +143,7 @@ class AddCyclePageState extends State<AddCyclePage> {
                       final now = DateTime.now();
 
                       //* Create the new cycle document
-                      await FirebaseFirestore.instance
+                      final newCycleDoc = await FirebaseFirestore.instance
                           .collection('users')
                           .doc(user.uid)
                           .collection('cycles')
@@ -162,6 +164,8 @@ class AddCyclePageState extends State<AddCyclePage> {
                         'amount_received': '0.00',
                         'amount_spent': '0.00',
                       });
+
+                      await copyCategoriesFromLastCycle(user, newCycleDoc.id);
 
                       // ignore: use_build_context_synchronously
                       Navigator.pushAndRemoveUntil(
@@ -185,5 +189,27 @@ class AddCyclePageState extends State<AddCyclePage> {
         ),
       ),
     );
+  }
+
+  Future<void> copyCategoriesFromLastCycle(User user, String newCycleId) async {
+    final categoriesRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(lastCycleId)
+        .collection('categories');
+
+    final newCycleRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(newCycleId);
+
+    final categoriesSnapshot = await categoriesRef.get();
+
+    for (var doc in categoriesSnapshot.docs) {
+      final categoryData = doc.data();
+      await newCycleRef.collection('categories').add(categoryData);
+    }
   }
 }
