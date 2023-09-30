@@ -5,8 +5,10 @@ import 'package:photo_view/photo_view.dart';
 
 class ImageViewPage extends StatelessWidget {
   final dynamic imageSource;
+  final String type;
 
-  const ImageViewPage({super.key, required this.imageSource});
+  const ImageViewPage(
+      {super.key, required this.imageSource, required this.type});
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +26,12 @@ class ImageViewPage extends StatelessWidget {
   }
 
   ImageProvider _getImageProvider() {
-    if (imageSource is String) {
+    if (type == 'url') {
       //* If imageSource is a String, treat it as a URL
       return NetworkImage(imageSource);
-    } else if (imageSource is File) {
+    } else if (type == 'local') {
       //* If imageSource is a File, treat it as a local file path
-      return FileImage(imageSource);
+      return FileImage(File(imageSource));
     }
 
     throw ArgumentError('Invalid image source type');

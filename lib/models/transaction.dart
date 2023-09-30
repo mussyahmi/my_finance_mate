@@ -127,6 +127,7 @@ class Transaction {
                                         MaterialPageRoute(
                                           builder: (context) => ImageViewPage(
                                             imageSource: files[index],
+                                            type: 'url',
                                           ),
                                         ),
                                       );

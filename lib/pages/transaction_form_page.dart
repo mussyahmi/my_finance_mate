@@ -225,7 +225,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                       builder: (context) => ImageViewPage(
                                         imageSource: files[index] is String
                                             ? files[index]
-                                            : files[index].path!,
+                                            : files[index].path,
+                                        type: files[index] is String
+                                            ? 'url'
+                                            : 'local',
                                       ),
                                     ),
                                   );
