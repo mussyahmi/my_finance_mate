@@ -1,11 +1,17 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
+import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'category_list_page.dart';
+import 'image_view_page.dart';
 import 'savings_page.dart';
 import '../models/transaction.dart' as t;
 
@@ -31,6 +37,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
   bool _isLoading = false;
+  List<dynamic> files = [];
+  List<dynamic> filesToDelete = [];
 
   @override
   void initState() {
@@ -47,6 +55,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       transactionNoteController.text =
           widget.transaction!.note.replaceAll('\\n', '\n');
       selectedDateTime = widget.transaction!.dateTime;
+      files = widget.transaction!.files;
 
       await _fetchCategories();
 
@@ -193,6 +202,121 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              const SizedBox(height: 20),
+              const Text('Attachment:'),
+              if (files.isNotEmpty)
+                Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (var index = 0; index < files.length; index++)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  //* Open a new screen with the larger image
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ImageViewPage(
+                                        imageSource: files[index] is String
+                                            ? files[index]
+                                            : files[index].path!,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Stack(
+                                  children: [
+                                    if (files[index] is String)
+                                      Image.network(
+                                        files[index],
+                                        height:
+                                            100, //* Adjust the height as needed
+                                        fit: BoxFit.contain,
+                                      )
+                                    else
+                                      Image.file(
+                                        File(files[index].path!),
+                                        height:
+                                            100, //* Adjust the height as needed
+                                        fit: BoxFit.contain,
+                                      ),
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          if (files[index] is String) {
+                                            setState(() {
+                                              filesToDelete = [
+                                                ...filesToDelete,
+                                                files[index]
+                                              ];
+                                            });
+                                          }
+
+                                          setState(() {
+                                            files.removeAt(index);
+                                          });
+                                        },
+                                        child: Container(
+                                          color: Colors.red,
+                                          child: const Icon(Icons.close),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  final result = await FilePicker.platform
+                      .pickFiles(allowMultiple: true, type: FileType.image);
+                  if (result != null) {
+                    for (var file in result.files) {
+                      //* Check if file size is less than or equal to 5MB (5 * 1024 * 1024 bytes)
+                      if (file.size <= 5 * 1024 * 1024) {
+                        setState(() {
+                          files = [...files, file];
+                        });
+                      } else {
+                        //* Notify user about the file size limit
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('File Size Limit Exceeded'),
+                              content: Text(
+                                  'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    }
+                  }
+                },
+                child: const Text('Add Attachment'),
+              ),
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
@@ -303,6 +427,32 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           FirebaseFirestore.instance.collection('users').doc(user.uid);
       final transactionsRef = userRef.collection('transactions');
 
+      List downloadURLs = [];
+
+      for (var file in files) {
+        if (file is! String) {
+          //* Generate a unique file name
+          String fileName =
+              '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
+
+          Reference storageReference = FirebaseStorage.instance
+              .ref()
+              .child('${user.uid}/transactions/$fileName');
+
+          UploadTask uploadTask = storageReference.putFile(File(file.path!));
+
+          await uploadTask.whenComplete(() async {
+            print('File Uploaded');
+            String downloadURL = await storageReference.getDownloadURL();
+            print('Download URL: $downloadURL');
+            downloadURLs = [...downloadURLs, downloadURL];
+          });
+        } else {
+          //* for existing file
+          downloadURLs = [...downloadURLs, file];
+        }
+      }
+
       if (widget.action == 'Add') {
         //* Create a new transaction document
         await transactionsRef.add({
@@ -316,6 +466,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'updated_at': now,
           'deleted_at': null,
           'version_json': null,
+          'files': downloadURLs,
         });
       } else if (widget.action == 'Edit') {
         await transactionsRef.doc(widget.transaction!.id).update({
@@ -325,7 +476,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,
+          'files': downloadURLs,
         });
+
+        for (var fileToDelete in filesToDelete) {
+          t.Transaction.deleteFile(Uri.decodeComponent(
+              t.Transaction.extractPathFromUrl(fileToDelete)));
+        }
       }
 
       final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
@@ -426,7 +583,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       Navigator.of(context).pop(true);
     } catch (e) {
       //* Handle any errors that occur during the Firestore operation
-      // ignore: avoid_print
       print('Error saving transaction: $e');
       //* You can show an error message to the user if needed
     }

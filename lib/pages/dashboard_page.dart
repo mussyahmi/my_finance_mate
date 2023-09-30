@@ -79,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: Column(
                       children: [
                         const Text(
-                          'Amount Balance',
+                          'Available Balance',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,
@@ -125,7 +125,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Column(
                             children: [
                               const Text(
-                                'Amount Received',
+                                'Received',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Column(
                             children: [
                               const Text(
-                                'Amount Spent',
+                                'Spent',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _DashboardPageState extends State<DashboardPage> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  'Budget List',
+                  'Forecast Budget',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
@@ -308,9 +308,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 budget.progressPercentage() >=
                                                         1.0
                                                     ? Colors
-                                                        .red //* Change color when budget is exceeded
+                                                        .green //* Change color when budget is exceeded
                                                     : Colors
-                                                        .green, //* Change color when budget is not exceeded
+                                                        .red, //* Change color when budget is not exceeded
                                               ),
                                             ),
                                             const SizedBox(height: 30),
@@ -376,75 +376,83 @@ class _DashboardPageState extends State<DashboardPage> {
                   } else {
                     //* Display the list of savings
                     final savings = snapshot.data;
-                    return SizedBox(
-                      height: 100,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemCount: savings!.length,
-                        itemBuilder: (context, index) {
-                          final saving = savings[index];
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: Card(
-                                child: SizedBox(
-                                  width: 200,
-                                  child: ListTile(
-                                    key: Key(saving.id),
-                                    title: Text(
-                                      saving.name,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
-                                    subtitle: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Column(
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 100,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            shrinkWrap: true,
+                            itemCount: savings!.length,
+                            itemBuilder: (context, index) {
+                              final saving = savings[index];
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: GestureDetector(
+                                  onTap: () {},
+                                  child: Card(
+                                    child: SizedBox(
+                                      width: 200,
+                                      child: ListTile(
+                                        key: Key(saving.id),
+                                        title: Text(
+                                          saving.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
+                                        ),
+                                        subtitle: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.stretch,
                                           children: [
-                                            Text(
-                                              'Saved: RM ${saving.amountSaved()}',
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Saved: RM ${saving.amountSaved()}',
+                                                ),
+                                                if (saving.goal != '0.00')
+                                                  Text(
+                                                    'Balance: RM ${saving.amountBalance()}',
+                                                  ),
+                                              ],
                                             ),
                                             if (saving.goal != '0.00')
-                                              Text(
-                                                'Balance: RM ${saving.amountBalance()}',
+                                              LinearProgressIndicator(
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                        Radius.circular(8.0)),
+                                                value:
+                                                    saving.progressPercentage(),
+                                                backgroundColor:
+                                                    Colors.grey[300],
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(
+                                                  saving.progressPercentage() >=
+                                                          1.0
+                                                      ? Colors
+                                                          .red //* Change color when budget is exceeded
+                                                      : Colors
+                                                          .green, //* Change color when budget is not exceeded
+                                                ),
                                               ),
+                                            const SizedBox(height: 30),
                                           ],
                                         ),
-                                        if (saving.goal != '0.00')
-                                          LinearProgressIndicator(
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(8.0)),
-                                            value: saving.progressPercentage(),
-                                            backgroundColor: Colors.grey[300],
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              saving.progressPercentage() >= 1.0
-                                                  ? Colors
-                                                      .red //* Change color when budget is exceeded
-                                                  : Colors
-                                                      .green, //* Change color when budget is not exceeded
-                                            ),
-                                          ),
-                                        const SizedBox(height: 30),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     );
                   }
                 },
@@ -678,6 +686,7 @@ class _DashboardPageState extends State<DashboardPage> {
         categoryName: categoryName,
         amount: data['amount'] as String,
         note: data['note'] as String,
+        files: data['files'] != null ? data['files'] as List : [],
         //* Add other transaction properties as needed
       );
     }).toList();

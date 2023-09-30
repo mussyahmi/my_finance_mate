@@ -423,6 +423,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
         categoryName: categoryName,
         amount: data['amount'] as String,
         note: data['note'] as String,
+        files: data['files'] != null ? data['files'] as List : [],
         //* Add other transaction properties as needed
       );
     }).toList();

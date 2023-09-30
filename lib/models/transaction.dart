@@ -1,7 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
+
+import '../pages/image_view_page.dart';
 
 class Transaction {
   final String id;
@@ -12,6 +17,7 @@ class Transaction {
   final String categoryName;
   final String amount;
   final String note;
+  final List files;
 
   Transaction({
     required this.id,
@@ -22,6 +28,7 @@ class Transaction {
     required this.categoryName,
     required this.amount,
     required this.note,
+    required this.files,
   });
 
   void showTransactionSummaryDialog(BuildContext context) {
@@ -92,6 +99,53 @@ class Transaction {
                     Text(note.replaceAll('\\n', '\n')),
                   ],
                 ),
+              if (files.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Attachment:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (var index = 0; index < files.length; index++)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      //* Open a new screen with the larger image
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ImageViewPage(
+                                            imageSource: files[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Image.network(
+                                      files[index],
+                                      height:
+                                          100, //* Adjust the height as needed
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               //* Add more transaction details as needed
             ],
           ),
@@ -141,9 +195,21 @@ class Transaction {
                 final transactionRef =
                     userRef.collection('transactions').doc(transactionId);
 
+                //* Fetch the transaction document
+                final transactionDoc = await transactionRef.get();
+
+                final data = transactionDoc.data();
+                final files =
+                    data!['files'] != null ? data['files'] as List : [];
+
+                for (var file in files) {
+                  deleteFile(Uri.decodeComponent(extractPathFromUrl(file)));
+                }
+
                 //* Update the 'deleted_at' field with the current timestamp
                 final now = DateTime.now();
                 transactionRef.update({
+                  'files': [],
                   'updated_at': now,
                   'deleted_at': now,
                 });
@@ -237,5 +303,24 @@ class Transaction {
         );
       },
     );
+  }
+
+  static String extractPathFromUrl(String url) {
+    Uri uri = Uri.parse(url);
+    List<String> parts = uri.path.split('o/');
+
+    //* Removing the first empty part and joining the rest
+    return parts.sublist(1).join('/');
+  }
+
+  static void deleteFile(String filePath) async {
+    Reference storageReference = FirebaseStorage.instance.ref().child(filePath);
+
+    try {
+      await storageReference.delete();
+      print('File deleted successfully.');
+    } catch (e) {
+      print('Error deleting file: $e');
+    }
   }
 }
