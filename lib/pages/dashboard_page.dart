@@ -27,6 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String? amountBalance;
   String? amountReceived;
   String? amountSpent;
+  String? openingBalance;
   bool _isAmountVisible = false;
 
   @override
@@ -94,6 +95,14 @@ class _DashboardPageState extends State<DashboardPage> {
                             fontSize: 24,
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM $openingBalance'}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
                         ),
                       ],
@@ -752,6 +761,7 @@ class _DashboardPageState extends State<DashboardPage> {
           amountBalance = lastCycleDoc['amount_balance'];
           amountReceived = lastCycleDoc['amount_received'];
           amountSpent = lastCycleDoc['amount_spent'];
+          openingBalance = lastCycleDoc['opening_balance'];
         });
       }
     } else {
