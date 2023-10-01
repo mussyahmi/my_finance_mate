@@ -669,8 +669,10 @@ class _DashboardPageState extends State<DashboardPage> {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    final transactionQuery =
-        await transactionsRef.where('deleted_at', isNull: true).get();
+    final transactionQuery = await transactionsRef
+        .where('deleted_at', isNull: true)
+        .limit(10) //* Limit to 10 items
+        .get();
     final transactions = transactionQuery.docs.map((doc) async {
       final data = doc.data();
 
