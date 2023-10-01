@@ -680,6 +680,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final transactionQuery = await transactionsRef
         .where('deleted_at', isNull: true)
+        .orderBy('date_time',
+            descending: true) //* Sort by dateTime in descending order
         .limit(10) //* Limit to 10 items
         .get();
     final transactions = transactionQuery.docs.map((doc) async {
