@@ -201,6 +201,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   labelText: 'Note',
                   border: OutlineInputBorder(),
                 ),
+                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 20),
               const Text('Attachment:'),

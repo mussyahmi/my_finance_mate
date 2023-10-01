@@ -237,10 +237,24 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16),
                                 ),
-                                subtitle: Text(
-                                  DateFormat('EE, d MMM yyyy h:mm aa')
-                                      .format(transaction.dateTime),
-                                  style: const TextStyle(fontSize: 12),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      DateFormat('EE, d MMM yyyy h:mm aa')
+                                          .format(transaction.dateTime),
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      transaction.note.split('\\n')[0],
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                                 trailing: Text(
                                   '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
