@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-import '../models/budget.dart';
+import '../models/category.dart';
 import '../models/saving.dart';
 import '../size_config.dart';
 import 'add_cycle_page.dart';
@@ -212,7 +212,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              FutureBuilder<List<Budget>>(
+              FutureBuilder<List<Category>>(
                 future: _fetchBudgets(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -279,52 +279,76 @@ class _DashboardPageState extends State<DashboardPage> {
                                       width: titleTextWidth > 200
                                           ? titleTextWidth
                                           : 200,
-                                      child: ListTile(
-                                        key: Key(budget.id),
-                                        title: Text(
-                                          budget.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16),
-                                        ),
-                                        subtitle: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            Column(
+                                      child: Stack(
+                                        children: [
+                                          ListTile(
+                                            key: Key(budget.id),
+                                            title: Text(
+                                              budget.name,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                            ),
+                                            subtitle: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                                  CrossAxisAlignment.stretch,
                                               children: [
-                                                Text(
-                                                  'Spent: RM ${budget.amountSpent}',
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Spent: RM ${budget.amountSpent}',
+                                                    ),
+                                                    Text(
+                                                      'Balance: RM ${budget.amountBalance()}',
+                                                    ),
+                                                  ],
                                                 ),
-                                                Text(
-                                                  'Balance: RM ${budget.amountBalance()}',
+                                                LinearProgressIndicator(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(8.0)),
+                                                  value: budget
+                                                      .progressPercentage(),
+                                                  backgroundColor:
+                                                      Colors.grey[300],
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                          Color>(
+                                                    budget.progressPercentage() >=
+                                                            1.0
+                                                        ? Colors
+                                                            .green //* Change color when budget is exceeded
+                                                        : Colors
+                                                            .red, //* Change color when budget is not exceeded
+                                                  ),
                                                 ),
+                                                const SizedBox(height: 30),
                                               ],
                                             ),
-                                            LinearProgressIndicator(
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(8.0)),
-                                              value:
-                                                  budget.progressPercentage(),
-                                              backgroundColor: Colors.grey[300],
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                budget.progressPercentage() >=
-                                                        1.0
-                                                    ? Colors
-                                                        .green //* Change color when budget is exceeded
-                                                    : Colors
-                                                        .red, //* Change color when budget is not exceeded
+                                          ),
+                                          Positioned(
+                                            top:
+                                                8, //* Adjust the value to position the icon as needed
+                                            right:
+                                                8, //* Adjust the value to position the icon as needed
+                                            child: GestureDetector(
+                                              onTap: () => budget
+                                                  .showCategorySummaryDialog(
+                                                      context),
+                                              child: Icon(
+                                                Icons.info,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary, //* Change the color as needed
                                               ),
                                             ),
-                                            const SizedBox(height: 30),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -776,7 +800,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  Future<List<Budget>> _fetchBudgets() async {
+  Future<List<Category>> _fetchBudgets() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where the user is not authenticated.
@@ -796,11 +820,14 @@ class _DashboardPageState extends State<DashboardPage> {
     final categories = categoryQuery.docs.map((doc) async {
       final data = doc.data();
 
-      return Budget(
+      return Category(
         id: doc.id,
         name: data['name'],
+        type: data['type'],
+        note: data['note'],
         budget: data['budget'],
         amountSpent: data['amount_spent'],
+        createdAt: (data['created_at'] as Timestamp).toDate(),
         updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );
     }).toList();
@@ -848,7 +875,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return result;
   }
 
-  String _getAmountBalanceAfterBudget(List<Budget> budgets) {
+  String _getAmountBalanceAfterBudget(List<Category> budgets) {
     double budgetBalance = double.parse(amountBalance!);
 
     for (var budget in budgets) {

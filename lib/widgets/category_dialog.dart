@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/category.dart';
 
 class CategoryDialog extends StatefulWidget {
   final String cycleId;
   final String type;
   final String action;
-  final Map category;
+  final Category? category;
   final Function onCategoryChanged;
 
   const CategoryDialog(
@@ -33,10 +34,10 @@ class CategoryDialogState extends State<CategoryDialog> {
   void initState() {
     super.initState();
 
-    if (widget.category.isNotEmpty) {
-      _categoryNameController.text = widget.category['name'] ?? '';
-      _categoryBudgetController.text = widget.category['budget'] ?? '';
-      _categoryNoteController.text = widget.category['note'] ?? '';
+    if (widget.category != null) {
+      _categoryNameController.text = widget.category?.name ?? '';
+      _categoryBudgetController.text = widget.category?.budget ?? '';
+      _categoryNoteController.text = widget.category?.note ?? '';
       _isBudgetEnabled = _categoryBudgetController.text.isNotEmpty &&
           _categoryBudgetController.text != '0.00';
     }
@@ -165,7 +166,7 @@ class CategoryDialogState extends State<CategoryDialog> {
         });
       } else if (widget.action == 'Edit') {
         final docId =
-            widget.category['id']; //* Get the ID of the category item to edit
+            widget.category!.id; //* Get the ID of the category item to edit
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/category_dialog.dart';
+import '../models/category.dart';
 import 'transaction_list_page.dart';
 
 class CategoryListPage extends StatefulWidget {
@@ -23,7 +24,7 @@ class CategoryListPage extends StatefulWidget {
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
-  List<Map<String, dynamic>> categories = [];
+  List<Category> categories = [];
 
   @override
   void initState() {
@@ -57,18 +58,20 @@ class _CategoryListPageState extends State<CategoryListPage> {
         .get();
 
     final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'budget': doc['budget'] as String,
-              'note': doc['note'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
+        .map((doc) => Category(
+              id: doc.id,
+              name: doc['name'],
+              type: doc['type'],
+              note: doc['note'],
+              budget: doc['budget'],
+              amountSpent: doc['amount_spent'],
+              createdAt: (doc['created_at'] as Timestamp).toDate(),
+              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
+            ))
         .toList();
 
     //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories
-        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+    fetchedCategories.sort((a, b) => (a.name).compareTo(b.name));
 
     setState(() {
       categories = fetchedCategories;
@@ -99,7 +102,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: ListTile(
-                        title: Text(category['name']),
+                        title: Text(category.name),
                         trailing: PopupMenuButton<String>(
                           icon: const Icon(
                             Icons.more_horiz,
@@ -111,9 +114,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                   category: category);
                             } else if (value == 'delete') {
                               //* Check if there are transactions associated with this category
-                              final categoryId = category['id'];
                               final hasTransactions =
-                                  await _hasTransactions(categoryId);
+                                  await category.hasTransactions();
 
                               if (hasTransactions) {
                                 //* If there are transactions, show an error message or handle it accordingly.
@@ -157,7 +159,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                         ElevatedButton(
                                           onPressed: () async {
                                             //* Delete the item from Firestore here
-                                            final categoryId = category['id'];
+                                            final categoryId = category.id;
 
                                             //* Reference to the Firestore document to delete
                                             final user = FirebaseAuth
@@ -226,8 +228,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           ],
                         ),
                         onTap: () {
-                          showCategorySummaryDialog(category['name'],
-                              category['budget'], category['note']);
+                          category.showCategorySummaryDialog(context);
                         },
                         onLongPress: () {
                           Navigator.push(
@@ -236,7 +237,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                               builder: (context) => TransactionListPage(
                                   cycleId: widget.cycleId,
                                   type: widget.type,
-                                  categoryId: category['id']),
+                                  categoryId: category.id),
                             ),
                           );
                         },
@@ -262,7 +263,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
   //* Function to show the add category dialog
   void _showCategoryDialog(BuildContext context, String action,
-      {Map? category}) {
+      {Category? category}) {
     showDialog(
       context: context,
       builder: (context) {
@@ -270,91 +271,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
           cycleId: widget.cycleId,
           type: widget.type,
           action: action,
-          category: category ?? {},
+          category: category,
           onCategoryChanged: _fetchCategories,
-        );
-      },
-    );
-  }
-
-  Future<bool> _hasTransactions(String categoryId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return false;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    final transactionsSnapshot = await transactionsRef
-        .where('category_id', isEqualTo: categoryId)
-        .where('deleted_at', isNull: true)
-        .get();
-
-    return transactionsSnapshot.docs.isNotEmpty;
-  }
-
-  void showCategorySummaryDialog(String name, String budget, String note) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Category Summary'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Name:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(name),
-                ],
-              ),
-              if (budget.isNotEmpty && budget != '0.00')
-                Column(
-                  children: [
-                    const SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Budget:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text('RM$budget'),
-                      ],
-                    ),
-                  ],
-                ),
-              if (note.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Note:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(note.replaceAll('\\n', '\n')),
-                  ],
-                ),
-              //* Add more transaction details as needed
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); //* Close the dialog
-              },
-              child: const Text('Close'),
-            ),
-          ],
         );
       },
     );
