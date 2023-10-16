@@ -853,7 +853,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     for (var budget in budgets) {
       if (budget.budget != '0.00') {
-        budgetBalance -= double.parse(budget.amountBalance());
+        budgetBalance -= double.parse(budget.amountBalance()).abs();
       }
     }
 
