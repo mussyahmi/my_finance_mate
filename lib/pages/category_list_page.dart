@@ -237,7 +237,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                               builder: (context) => TransactionListPage(
                                   cycleId: widget.cycleId,
                                   type: widget.type,
-                                  categoryId: category.id),
+                                  categoryName: category.name),
                             ),
                           );
                         },

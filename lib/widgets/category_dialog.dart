@@ -181,6 +181,25 @@ class CategoryDialogState extends State<CategoryDialog> {
           'note': categoryNote,
           'updated_at': now,
         });
+
+        //* If the category name is modified, propagate the change to all associated transactions
+        if (widget.category!.name != categoryName) {
+          final transactionsRef = FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .collection('transactions');
+
+          final querySnapshot = await transactionsRef
+              .where('category_id', isEqualTo: docId)
+              .where('deleted_at', isNull: true)
+              .get();
+
+          for (var doc in querySnapshot.docs) {
+            await transactionsRef
+                .doc(doc.id)
+                .update({'category_name': categoryName});
+          }
+        }
       }
 
       //* Notify the parent widget about the category addition

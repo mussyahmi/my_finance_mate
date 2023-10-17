@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -113,5 +115,39 @@ class Category {
         .get();
 
     return transactionsSnapshot.docs.isNotEmpty;
+  }
+
+  static Future<void> updateCategoryNameForAllTransactions() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //* Handle the case where the user is not authenticated.
+      return;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    final querySnapshot = await transactionsRef.get();
+
+    print('initiate updateCategoryNameForAllTransactions');
+
+    for (var doc in querySnapshot.docs) {
+      final data = doc.data();
+
+      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
+      categoryDoc = await userRef
+          .collection('cycles')
+          .doc(data['cycle_id'])
+          .collection('categories')
+          .doc(data['category_id'])
+          .get();
+
+      final categoryName = categoryDoc['name'] as String;
+
+      await transactionsRef.doc(doc.id).update({'category_name': categoryName});
+    }
+
+    print('done updateCategoryNameForAllTransactions');
   }
 }

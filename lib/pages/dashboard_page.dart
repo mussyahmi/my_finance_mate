@@ -270,7 +270,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             TransactionListPage(
                                                 cycleId: cycleId ?? '',
                                                 type: 'spent',
-                                                categoryId: budget.id),
+                                                categoryName: budget.name),
                                       ),
                                     );
                                   },

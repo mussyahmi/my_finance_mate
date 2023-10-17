@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:my_finance_mate/models/category.dart';
 
 import 'category_list_page.dart';
 import 'image_view_page.dart';
@@ -32,7 +33,7 @@ class TransactionFormPage extends StatefulWidget {
 class TransactionFormPageState extends State<TransactionFormPage> {
   String selectedType = 'spent';
   String? selectedCategoryId;
-  List<Map<String, dynamic>> categories = [];
+  List<Category> categories = [];
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
@@ -175,8 +176,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   ),
                   ...categories.map((category) {
                     return DropdownMenuItem<String>(
-                      value: category['id'],
-                      child: Text(category['name']),
+                      value: category.id,
+                      child: Text(category.name),
                     );
                   }).toList(),
                 ],
@@ -389,16 +390,20 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     final categoriesSnapshot = await query.get();
 
     final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
+        .map((doc) => Category(
+              id: doc.id,
+              name: doc['name'],
+              type: doc['type'],
+              note: doc['note'],
+              budget: doc['budget'],
+              amountSpent: doc['amount_spent'],
+              createdAt: (doc['created_at'] as Timestamp).toDate(),
+              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
+            ))
         .toList();
 
     //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories
-        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+    fetchedCategories.sort((a, b) => (a.name).compareTo(b.name));
 
     setState(() {
       categories = fetchedCategories;
@@ -464,6 +469,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'date_time': dateTime,
           'type': type,
           'category_id': categoryId,
+          'category_name': categories
+              .firstWhere((category) => category.id == categoryId)
+              .name,
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'created_at': now,
@@ -477,6 +485,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'date_time': dateTime,
           'type': type,
           'category_id': categoryId,
+          'category_name': categories
+              .firstWhere((category) => category.id == categoryId)
+              .name,
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,

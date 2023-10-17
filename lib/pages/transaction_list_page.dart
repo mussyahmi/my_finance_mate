@@ -3,15 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
+import '../models/category.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 
 class TransactionListPage extends StatefulWidget {
   final String cycleId;
   final String? type;
-  final String? categoryId;
+  final String? categoryName;
   const TransactionListPage(
-      {super.key, required this.cycleId, this.type, this.categoryId});
+      {super.key, required this.cycleId, this.type, this.categoryName});
 
   @override
   State<TransactionListPage> createState() => _TransactionListPageState();
@@ -20,8 +21,8 @@ class TransactionListPage extends StatefulWidget {
 class _TransactionListPageState extends State<TransactionListPage> {
   DateTimeRange? selectedDateRange;
   String? selectedType;
-  String? selectedCategoryId;
-  List<Map<String, dynamic>> categories = [];
+  String? selectedCategoryName;
+  List<Category> categories = [];
 
   @override
   void initState() {
@@ -31,10 +32,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
   Future<void> initAsync() async {
     selectedType = widget.type;
-    selectedCategoryId = widget.categoryId;
+    selectedCategoryName = widget.categoryName;
 
     await _fetchCycle();
     await _fetchCategories();
+    //* await Category.updateCategoryNameForAllTransactions();
   }
 
   @override
@@ -83,7 +85,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   onChanged: (newValue) {
                     setState(() {
                       selectedType = newValue as String;
-                      selectedCategoryId = null;
+                      selectedCategoryName = null;
                     });
                     _fetchCategories();
                   },
@@ -100,16 +102,16 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 ),
                 //* Category Dropdown
                 DropdownButtonFormField<String>(
-                  value: selectedCategoryId,
+                  value: selectedCategoryName,
                   onChanged: (newValue) {
                     setState(() {
-                      selectedCategoryId = newValue;
+                      selectedCategoryName = newValue;
                     });
                   },
                   items: categories.map((category) {
                     return DropdownMenuItem<String>(
-                      value: category['id'],
-                      child: Text(category['name']),
+                      value: category.name,
+                      child: Text(category.name),
                     );
                   }).toList(),
                   decoration: const InputDecoration(
@@ -158,9 +160,14 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   final transactions = snapshot.data;
                   double total = 0;
 
-                  if (selectedType != 'saving' && selectedCategoryId != null) {
+                  if (selectedType != 'saving' &&
+                      selectedCategoryName != null) {
                     for (var transaction in transactions!) {
-                      total += double.parse(transaction.amount);
+                      if (transaction.type == 'spent') {
+                        total -= double.parse(transaction.amount);
+                      } else {
+                        total += double.parse(transaction.amount);
+                      }
                     }
                   }
 
@@ -276,7 +283,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         ),
                       ),
                       if (selectedType != 'saving' &&
-                          selectedCategoryId != null)
+                          selectedCategoryName != null)
                         Column(
                           children: [
                             const Divider(
@@ -287,7 +294,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               padding: const EdgeInsets.only(
                                   left: 16.0, right: 16.0, bottom: 16.0),
                               child: Text(
-                                'Total: RM${total.toStringAsFixed(2)}',
+                                'Total: ${total < 0 ? '-' : ''}RM${total.abs().toStringAsFixed(2)}',
                                 textAlign: TextAlign.end,
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -362,20 +369,34 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
     final categoriesSnapshot = await query.get();
 
-    final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => {
-              'id': doc.id,
-              'name': doc['name'] as String,
-              'created_at': (doc['created_at'] as Timestamp).toDate()
-            })
-        .toList();
+    final Set<String> uniqueCategoryNames = {};
+    final List<Category> filteredCategories = [];
+
+    for (var doc in categoriesSnapshot.docs) {
+      final categoryName = doc['name'] as String;
+      if (!uniqueCategoryNames.contains(categoryName)) {
+        uniqueCategoryNames.add(categoryName);
+
+        final category = Category(
+          id: doc.id,
+          name: categoryName,
+          type: doc['type'],
+          note: doc['note'],
+          budget: doc['budget'],
+          amountSpent: doc['amount_spent'],
+          createdAt: (doc['created_at'] as Timestamp).toDate(),
+          updatedAt: (doc['updated_at'] as Timestamp).toDate(),
+        );
+
+        filteredCategories.add(category);
+      }
+    }
 
     //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories
-        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+    filteredCategories.sort((a, b) => (a.name).compareTo(b.name));
 
     setState(() {
-      categories = fetchedCategories;
+      categories = filteredCategories;
     });
   }
 
@@ -403,8 +424,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
       query = query.where('type', isEqualTo: selectedType);
     }
 
-    if (selectedCategoryId != null) {
-      query = query.where('category_id', isEqualTo: selectedCategoryId);
+    if (selectedCategoryName != null) {
+      query = query.where('category_name', isEqualTo: selectedCategoryName);
     }
 
     final querySnapshot = await query.get();
