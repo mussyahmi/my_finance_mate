@@ -41,37 +41,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-    final categoriesRef = cyclesRef.collection('categories');
-
-    final categoriesSnapshot = await categoriesRef
-        .where('deleted_at', isNull: true)
-        .where('type', isEqualTo: widget.type)
-        .get();
-
-    final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => Category(
-              id: doc.id,
-              name: doc['name'],
-              type: doc['type'],
-              note: doc['note'],
-              budget: doc['budget'],
-              amountSpent: doc['amount_spent'],
-              createdAt: (doc['created_at'] as Timestamp).toDate(),
-              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
-            ))
-        .toList();
-
-    //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories.sort((a, b) => (a.name).compareTo(b.name));
+    final fetchedCategories =
+        await Category.fetchCategories(widget.cycleId, widget.type);
 
     setState(() {
       categories = fetchedCategories;

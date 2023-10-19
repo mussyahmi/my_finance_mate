@@ -362,48 +362,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-    CollectionReference<Map<String, dynamic>> categoriesRef;
-
-    if (selectedType != 'saving') {
-      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-      categoriesRef = cyclesRef.collection('categories');
-    } else {
-      categoriesRef = userRef.collection('savings');
-    }
-
-    Query<Map<String, dynamic>> query =
-        categoriesRef.where('deleted_at', isNull: true);
-
-    if (selectedType != 'saving') {
-      query = query.where('type', isEqualTo: selectedType);
-    }
-
-    final categoriesSnapshot = await query.get();
-
-    final fetchedCategories = categoriesSnapshot.docs
-        .map((doc) => Category(
-              id: doc.id,
-              name: doc['name'],
-              type: doc['type'],
-              note: doc['note'],
-              budget: doc['budget'],
-              amountSpent: doc['amount_spent'],
-              createdAt: (doc['created_at'] as Timestamp).toDate(),
-              updatedAt: (doc['updated_at'] as Timestamp).toDate(),
-            ))
-        .toList();
-
-    //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedCategories.sort((a, b) => (a.name).compareTo(b.name));
+    final fetchedCategories =
+        await Category.fetchCategories(widget.cycleId, selectedType);
 
     setState(() {
       categories = fetchedCategories;
@@ -555,16 +515,16 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           final categoryData = categoryDoc.data() as Map<String, dynamic>;
 
           //* Calculate the updated amounts
-          final double amountSpent =
-              double.parse(categoryData['amount_spent']) +
+          final double totalAmount =
+              double.parse(categoryData['total_amount']) +
                   double.parse(amount) -
                   (widget.transaction != null
                       ? double.parse(widget.transaction!.amount)
                       : 0);
 
-          //* Update the cycle document
+          //* Update the category document
           await categoryRef.update({
-            'amount_spent': amountSpent.toStringAsFixed(2),
+            'total_amount': totalAmount.toStringAsFixed(2),
             'updated_at': now,
           });
         }
@@ -587,7 +547,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ? double.parse(widget.transaction!.amount)
                       : 0);
 
-          //* Update the cycle document
+          //* Update the saving document
           await savingsRef.update({
             'amount_received': amountReceived.toStringAsFixed(2),
             'updated_at': now,

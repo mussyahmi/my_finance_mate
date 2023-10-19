@@ -301,7 +301,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Spent: RM ${budget.amountSpent}',
+                                                      'Spent: RM ${budget.totalAmount}',
                                                     ),
                                                     Text(
                                                       'Balance: RM ${budget.amountBalance()}',
@@ -826,7 +826,7 @@ class _DashboardPageState extends State<DashboardPage> {
         type: data['type'],
         note: data['note'],
         budget: data['budget'],
-        amountSpent: data['amount_spent'],
+        totalAmount: data['total_amount'],
         createdAt: (data['created_at'] as Timestamp).toDate(),
         updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );

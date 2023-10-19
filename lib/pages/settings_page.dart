@@ -8,6 +8,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'login_page.dart';
 import 'type_page.dart';
 import 'wishlist_page.dart';
+import 'summary_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final String cycleId;
@@ -66,6 +67,30 @@ class SettingsPageState extends State<SettingsPage> {
                       MaterialPageRoute(
                           builder: (context) =>
                               TypePage(cycleId: widget.cycleId)),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.analytics),
+                  title: const Text('Category Summary'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SummaryPage(
+                                cycleId: widget.cycleId,
+                              )),
                     );
                   },
                 ),

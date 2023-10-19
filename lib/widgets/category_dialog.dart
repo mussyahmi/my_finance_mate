@@ -158,7 +158,7 @@ class CategoryDialogState extends State<CategoryDialog> {
               .toStringAsFixed(2),
           'note': categoryNote,
           'type': widget.type,
-          'amount_spent': '0.00',
+          'total_amount': '0.00',
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,

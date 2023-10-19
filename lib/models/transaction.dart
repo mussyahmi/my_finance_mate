@@ -260,13 +260,13 @@ class Transaction {
                         categoryDoc.data() as Map<String, dynamic>;
 
                     //* Calculate the updated amounts
-                    final double amountSpent =
-                        double.parse(categoryData['amount_spent']) -
+                    final double totalAmount =
+                        double.parse(categoryData['total_amount']) -
                             double.parse(amount);
 
-                    //* Update the cycle document
+                    //* Update the category document
                     await categoryRef.update({
-                      'amount_spent': amountSpent.toStringAsFixed(2),
+                      'total_amount': totalAmount.toStringAsFixed(2),
                       'updated_at': now,
                     });
                   }
@@ -287,7 +287,7 @@ class Transaction {
                         double.parse(savingData['amount_received']) -
                             double.parse(amount);
 
-                    //* Update the cycle document
+                    //* Update the saving document
                     await savingsRef.update({
                       'amount_received': amountReceived.toStringAsFixed(2),
                       'updated_at': now,

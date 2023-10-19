@@ -36,7 +36,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
     await _fetchCycle();
     await _fetchCategories();
-    //* await Category.updateCategoryNameForAllTransactions();
+    // await Category.recalculateCategoryTotalAmount();
   }
 
   @override
@@ -342,61 +342,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-    CollectionReference<Map<String, dynamic>> categoriesRef;
-
-    if (selectedType != 'saving') {
-      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
-      categoriesRef = cyclesRef.collection('categories');
-    } else {
-      categoriesRef = userRef.collection('savings');
-    }
-
-    Query<Map<String, dynamic>> query =
-        categoriesRef.where('deleted_at', isNull: true);
-
-    if (selectedType != 'saving') {
-      query = query.where('type', isEqualTo: selectedType);
-    }
-
-    final categoriesSnapshot = await query.get();
-
-    final Set<String> uniqueCategoryNames = {};
-    final List<Category> filteredCategories = [];
-
-    for (var doc in categoriesSnapshot.docs) {
-      final categoryName = doc['name'] as String;
-      if (!uniqueCategoryNames.contains(categoryName)) {
-        uniqueCategoryNames.add(categoryName);
-
-        final category = Category(
-          id: doc.id,
-          name: categoryName,
-          type: doc['type'],
-          note: doc['note'],
-          budget: doc['budget'],
-          amountSpent: doc['amount_spent'],
-          createdAt: (doc['created_at'] as Timestamp).toDate(),
-          updatedAt: (doc['updated_at'] as Timestamp).toDate(),
-        );
-
-        filteredCategories.add(category);
-      }
-    }
-
-    //* Sort the list by alphabetical in ascending order (most recent first)
-    filteredCategories.sort((a, b) => (a.name).compareTo(b.name));
+    final fetchedCategories =
+        await Category.fetchCategories(widget.cycleId, selectedType, true);
 
     setState(() {
-      categories = filteredCategories;
+      categories = fetchedCategories;
     });
   }
 
