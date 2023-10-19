@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/category.dart';
+import 'transaction_list_page.dart';
 
 class SummaryPage extends StatefulWidget {
   final String cycleId;
@@ -77,6 +78,17 @@ class _SummaryPageState extends State<SummaryPage> {
                                   ? Colors.red
                                   : Colors.green),
                         ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TransactionListPage(
+                                  cycleId: widget.cycleId,
+                                  type: category.type,
+                                  categoryName: category.name),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
