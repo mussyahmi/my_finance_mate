@@ -167,17 +167,15 @@ class Category {
     print('done updateCategoryNameForAllTransactions');
   }
 
-  static Future<void> recalculateCategoryTotalAmount(
-      [String cycleId = 'qxVuoAqPIatIrTHaFCv2']) async {
+  static Future<void> recalculateCategoryTotalAmount(String cycleId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //* Handle the case where the user is not authenticated.
       return;
     }
 
-    final userRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc('2SEYtxdYBtadR0a9utHNKuDk5RN2');
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
     final cyclesRef = userRef.collection('cycles').doc(cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 

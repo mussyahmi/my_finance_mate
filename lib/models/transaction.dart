@@ -248,7 +248,7 @@ class Transaction {
                   });
                 }
 
-                if (type == 'spent') {
+                if (type != 'saving') {
                   final categoryRef =
                       cyclesRef.collection('categories').doc(categoryId);
 

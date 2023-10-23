@@ -505,7 +505,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       }
 
-      if (type == 'spent') {
+      if (type != 'saving') {
         final categoryRef = cyclesRef.collection('categories').doc(categoryId);
 
         //* Fetch the category document

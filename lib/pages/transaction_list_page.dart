@@ -36,7 +36,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
     await _fetchCycle();
     await _fetchCategories();
-    // await Category.recalculateCategoryTotalAmount();
   }
 
   @override
