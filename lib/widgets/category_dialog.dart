@@ -123,7 +123,7 @@ class CategoryDialogState extends State<CategoryDialog> {
             //* Close the dialog
             Navigator.of(context).pop();
           },
-          child: Text(widget.action),
+          child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
         ),
       ],
     );

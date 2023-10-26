@@ -137,7 +137,7 @@ class SavingsDialogState extends State<SavingsDialog> {
               Navigator.of(context).pop();
             }
           },
-          child: Text(widget.action),
+          child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
         ),
       ],
     );

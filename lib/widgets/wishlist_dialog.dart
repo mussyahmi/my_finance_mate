@@ -76,7 +76,7 @@ class WishlistDialogState extends State<WishlistDialog> {
               Navigator.of(context).pop();
             }
           },
-          child: Text(widget.action),
+          child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
         ),
       ],
     );
