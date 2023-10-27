@@ -98,7 +98,7 @@ class WishlistDialogState extends State<WishlistDialog> {
       }
 
       if (widget.action == 'Add') {
-        //* Create the new cycle document
+        //* Create the new wish document
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)

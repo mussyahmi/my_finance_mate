@@ -145,7 +145,7 @@ class CategoryDialogState extends State<CategoryDialog> {
       }
 
       if (widget.action == 'Add') {
-        //* Create the new cycle document
+        //* Create the new category document
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)

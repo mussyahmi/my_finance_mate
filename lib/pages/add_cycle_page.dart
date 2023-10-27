@@ -209,6 +209,7 @@ class AddCyclePageState extends State<AddCyclePage> {
 
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();
+      categoryData['total_amount'] = '0.00'; //* Set total_amount to '0.00'
       await newCycleRef.collection('categories').add(categoryData);
     }
   }

@@ -162,7 +162,7 @@ class SavingsDialogState extends State<SavingsDialog> {
       }
 
       if (widget.action == 'Add') {
-        //* Create the new cycle document
+        //* Create the new saving document
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
