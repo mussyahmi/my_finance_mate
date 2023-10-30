@@ -369,127 +369,127 @@ class _DashboardPageState extends State<DashboardPage> {
                   }
                 },
               ),
-              const SizedBox(height: 20),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Saving List',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 10),
-              FutureBuilder<List<Saving>>(
-                future: _fetchSavings(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Column(
-                        children: [
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ); //* Display a loading indicator
-                  } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: SelectableText(
-                        'Error: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        'No savings found.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ); //* Display a message for no savings
-                  } else {
-                    //* Display the list of savings
-                    final savings = snapshot.data;
-                    return Column(
-                      children: [
-                        SizedBox(
-                          height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            shrinkWrap: true,
-                            itemCount: savings!.length,
-                            itemBuilder: (context, index) {
-                              final saving = savings[index];
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: GestureDetector(
-                                  onTap: () {},
-                                  child: Card(
-                                    child: SizedBox(
-                                      width: 200,
-                                      child: ListTile(
-                                        key: Key(saving.id),
-                                        title: Text(
-                                          saving.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16),
-                                        ),
-                                        subtitle: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Saved: RM ${saving.amountSaved()}',
-                                                ),
-                                                if (saving.goal != '0.00')
-                                                  Text(
-                                                    'Balance: RM ${saving.amountBalance()}',
-                                                  ),
-                                              ],
-                                            ),
-                                            if (saving.goal != '0.00')
-                                              LinearProgressIndicator(
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8.0)),
-                                                value:
-                                                    saving.progressPercentage(),
-                                                backgroundColor:
-                                                    Colors.grey[300],
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
-                                                  saving.progressPercentage() >=
-                                                          1.0
-                                                      ? Colors
-                                                          .red //* Change color when budget is exceeded
-                                                      : Colors
-                                                          .green, //* Change color when budget is not exceeded
-                                                ),
-                                              ),
-                                            const SizedBox(height: 30),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                },
-              ),
+              // const SizedBox(height: 20),
+              // const Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: 16.0),
+              //   child: Text(
+              //     'Saving List',
+              //     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              //   ),
+              // ),
+              // const SizedBox(height: 10),
+              // FutureBuilder<List<Saving>>(
+              //   future: _fetchSavings(),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.connectionState == ConnectionState.waiting) {
+              //       return const Padding(
+              //         padding: EdgeInsets.only(bottom: 16.0),
+              //         child: Column(
+              //           children: [
+              //             CircularProgressIndicator(),
+              //           ],
+              //         ),
+              //       ); //* Display a loading indicator
+              //     } else if (snapshot.hasError) {
+              //       return Padding(
+              //         padding: const EdgeInsets.only(bottom: 16.0),
+              //         child: SelectableText(
+              //           'Error: ${snapshot.error}',
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       );
+              //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              //       return const Padding(
+              //         padding: EdgeInsets.only(bottom: 16.0),
+              //         child: Text(
+              //           'No savings found.',
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       ); //* Display a message for no savings
+              //     } else {
+              //       //* Display the list of savings
+              //       final savings = snapshot.data;
+              //       return Column(
+              //         children: [
+              //           SizedBox(
+              //             height: 100,
+              //             child: ListView.builder(
+              //               scrollDirection: Axis.horizontal,
+              //               shrinkWrap: true,
+              //               itemCount: savings!.length,
+              //               itemBuilder: (context, index) {
+              //                 final saving = savings[index];
+              //                 return Padding(
+              //                   padding:
+              //                       const EdgeInsets.symmetric(horizontal: 8.0),
+              //                   child: GestureDetector(
+              //                     onTap: () {},
+              //                     child: Card(
+              //                       child: SizedBox(
+              //                         width: 200,
+              //                         child: ListTile(
+              //                           key: Key(saving.id),
+              //                           title: Text(
+              //                             saving.name,
+              //                             style: const TextStyle(
+              //                                 fontWeight: FontWeight.bold,
+              //                                 fontSize: 16),
+              //                           ),
+              //                           subtitle: Column(
+              //                             mainAxisAlignment:
+              //                                 MainAxisAlignment.spaceBetween,
+              //                             crossAxisAlignment:
+              //                                 CrossAxisAlignment.stretch,
+              //                             children: [
+              //                               Column(
+              //                                 crossAxisAlignment:
+              //                                     CrossAxisAlignment.start,
+              //                                 children: [
+              //                                   Text(
+              //                                     'Saved: RM ${saving.amountSaved()}',
+              //                                   ),
+              //                                   if (saving.goal != '0.00')
+              //                                     Text(
+              //                                       'Balance: RM ${saving.amountBalance()}',
+              //                                     ),
+              //                                 ],
+              //                               ),
+              //                               if (saving.goal != '0.00')
+              //                                 LinearProgressIndicator(
+              //                                   borderRadius:
+              //                                       const BorderRadius.all(
+              //                                           Radius.circular(8.0)),
+              //                                   value:
+              //                                       saving.progressPercentage(),
+              //                                   backgroundColor:
+              //                                       Colors.grey[300],
+              //                                   valueColor:
+              //                                       AlwaysStoppedAnimation<
+              //                                           Color>(
+              //                                     saving.progressPercentage() >=
+              //                                             1.0
+              //                                         ? Colors
+              //                                             .red //* Change color when budget is exceeded
+              //                                         : Colors
+              //                                             .green, //* Change color when budget is not exceeded
+              //                                   ),
+              //                                 ),
+              //                               const SizedBox(height: 30),
+              //                             ],
+              //                           ),
+              //                         ),
+              //                       ),
+              //                     ),
+              //                   ),
+              //                 );
+              //               },
+              //             ),
+              //           ),
+              //         ],
+              //       );
+              //     }
+              //   },
+              // ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

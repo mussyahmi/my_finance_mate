@@ -118,7 +118,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
                   _fetchCategories();
                 },
-                items: ['spent', 'received', 'saving']
+                items: ['spent', 'received']
                     .map((type) => DropdownMenuItem(
                           value: type,
                           child: Text(

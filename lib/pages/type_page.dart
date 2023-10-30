@@ -75,28 +75,28 @@ class TypePageState extends State<TypePage> {
                   },
                 ),
               ),
-              const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1.0,
-                  ),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: ListTile(
-                  title: const Text('Saving'),
-                  leading: const Icon(Icons.favorite),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SavingsPage()),
-                    );
-                  },
-                ),
-              ),
+              // const SizedBox(height: 10),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     border: Border.all(
+              //       color: Colors.grey,
+              //       width: 1.0,
+              //     ),
+              //     borderRadius: BorderRadius.circular(8.0),
+              //   ),
+              //   child: ListTile(
+              //     title: const Text('Saving'),
+              //     leading: const Icon(Icons.favorite),
+              //     trailing: const Icon(Icons.arrow_forward_ios),
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //             builder: (context) => const SavingsPage()),
+              //       );
+              //     },
+              //   ),
+              // ),
             ],
           ),
         ),
