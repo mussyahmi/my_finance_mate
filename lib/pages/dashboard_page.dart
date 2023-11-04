@@ -258,6 +258,14 @@ class _DashboardPageState extends State<DashboardPage> {
                               final budget = budgets[index];
                               final titleTextWidth = budget.name.length *
                                   12.0; //* Adjust the multiplier as needed
+                              double amountBalance =
+                                  double.parse(budget.amountBalance());
+
+                              String thresholdText = 'Balance';
+                              if (amountBalance < 0) {
+                                thresholdText = 'Exceed';
+                              }
+
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
@@ -304,7 +312,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       'Spent: RM ${budget.totalAmount}',
                                                     ),
                                                     Text(
-                                                      'Balance: RM ${budget.amountBalance()}',
+                                                      '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
                                                     ),
                                                   ],
                                                 ),
@@ -880,7 +888,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
     for (var budget in budgets) {
       if (budget.budget != '0.00') {
-        budgetBalance -= double.parse(budget.amountBalance()).abs();
+        budgetBalance -= double.parse(budget.amountBalance()) < 0
+            ? 0
+            : double.parse(budget.amountBalance());
       }
     }
 
