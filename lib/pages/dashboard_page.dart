@@ -14,6 +14,8 @@ import 'settings_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
 
+enum BudgetFilter { all, ongoing, exceeded, completed }
+
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -29,6 +31,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String? amountSpent;
   String? openingBalance;
   bool _isAmountVisible = false;
+  BudgetFilter currentFilter = BudgetFilter.all;
 
   @override
   void initState() {
@@ -204,11 +207,20 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  'Forecast Budget',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Forecast Budget',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    TextButton(
+                        onPressed: _showFilterDialog,
+                        child: const Text('Filter'))
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
@@ -241,8 +253,35 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ); //* Display a message for no budgets
                   } else {
+                    //* Filter categories based on the selected filter
+                    List<Category> filteredBudgets;
+                    switch (currentFilter) {
+                      case BudgetFilter.ongoing:
+                        filteredBudgets = snapshot.data!
+                            .where((budget) =>
+                                double.parse(budget.amountBalance()) > 0)
+                            .toList();
+                        break;
+                      case BudgetFilter.exceeded:
+                        filteredBudgets = snapshot.data!
+                            .where((budget) =>
+                                double.parse(budget.amountBalance()) < 0)
+                            .toList();
+                        break;
+                      case BudgetFilter.completed:
+                        filteredBudgets = snapshot.data!
+                            .where((budget) =>
+                                double.parse(budget.amountBalance()) <= 0)
+                            .toList();
+                        break;
+                      case BudgetFilter.all:
+                      default:
+                        filteredBudgets = snapshot.data!;
+                        break;
+                    }
+
                     //* Display the list of budgets
-                    final budgets = snapshot.data!;
+                    final budgets = filteredBudgets;
                     final amountBalanceAfterBudget =
                         _getAmountBalanceAfterBudget(budgets);
 
@@ -374,13 +413,18 @@ class _DashboardPageState extends State<DashboardPage> {
                             },
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
+                        if (currentFilter == BudgetFilter.all)
+                          Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              Text(
+                                'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          )
                       ],
                     );
                   }
@@ -904,5 +948,55 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     return budgetBalance.toStringAsFixed(2);
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Filter'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('All'),
+                onTap: () {
+                  _applyFilter(BudgetFilter.all);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Ongoing'),
+                onTap: () {
+                  _applyFilter(BudgetFilter.ongoing);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Exceeded'),
+                onTap: () {
+                  _applyFilter(BudgetFilter.exceeded);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: const Text('Completed'),
+                onTap: () {
+                  _applyFilter(BudgetFilter.completed);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _applyFilter(BudgetFilter filter) {
+    setState(() {
+      currentFilter = filter;
+    });
   }
 }
