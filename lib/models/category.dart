@@ -95,7 +95,7 @@ class Category {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(note.replaceAll('\\n', '\n')),
+                    SelectableText(note.replaceAll('\\n', '\n')),
                   ],
                 ),
               //* Add more transaction details as needed

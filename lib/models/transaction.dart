@@ -96,7 +96,7 @@ class Transaction {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(note.replaceAll('\\n', '\n')),
+                    SelectableText(note.replaceAll('\\n', '\n')),
                   ],
                 ),
               if (files.isNotEmpty)

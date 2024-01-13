@@ -233,7 +233,7 @@ class _WishlistPageState extends State<WishlistPage> {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text(note.replaceAll('\\n', '\n')),
+                    SelectableText(note.replaceAll('\\n', '\n')),
                   ],
                 ),
               //* Add more wishlist details as needed
