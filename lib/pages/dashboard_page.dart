@@ -327,12 +327,21 @@ class _DashboardPageState extends State<DashboardPage> {
                                                   valueColor:
                                                       AlwaysStoppedAnimation<
                                                           Color>(
-                                                    budget.progressPercentage() >=
-                                                            1.0
-                                                        ? Colors
-                                                            .green //* Change color when budget is exceeded
-                                                        : Colors
-                                                            .red, //* Change color when budget is not exceeded
+                                                    () {
+                                                      double progress = budget
+                                                          .progressPercentage();
+                                                      if (progress == 1.0) {
+                                                        return Colors
+                                                            .green; //* Change color when budget is exactly 1
+                                                      } else if (progress >
+                                                          1.0) {
+                                                        return Colors
+                                                            .yellow; //* Change color when budget is greater than 1
+                                                      } else {
+                                                        return Colors
+                                                            .red; //* Change color when budget is less than 1
+                                                      }
+                                                    }(),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 30),
