@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/wishlist_dialog.dart';
 
@@ -233,7 +235,13 @@ class _WishlistPageState extends State<WishlistPage> {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SelectableText(note.replaceAll('\\n', '\n')),
+                    MarkdownBody(
+                      selectable: true,
+                      data: note.replaceAll('\\n', '\n'),
+                      onTapLink: (text, url, title) {
+                        launchUrl(Uri.parse(url!));
+                      },
+                    ),
                   ],
                 ),
               //* Add more wishlist details as needed

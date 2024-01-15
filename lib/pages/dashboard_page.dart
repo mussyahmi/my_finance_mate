@@ -220,7 +220,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     TextButton.icon(
                       icon: const Icon(Icons.filter_list),
                       onPressed: _showFilterDialog,
-                      label: Text(currentFilter.name),
+                      label: Text(currentFilter.name[0].toUpperCase() +
+                          currentFilter.name.substring(1)),
                     )
                   ],
                 ),
