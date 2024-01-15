@@ -217,9 +217,11 @@ class _DashboardPageState extends State<DashboardPage> {
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
-                    TextButton(
-                        onPressed: _showFilterDialog,
-                        child: const Text('Filter'))
+                    TextButton.icon(
+                      icon: const Icon(Icons.filter_list),
+                      onPressed: _showFilterDialog,
+                      label: Text(currentFilter.name),
+                    )
                   ],
                 ),
               ),
@@ -375,10 +377,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       } else if (progress >
                                                           1.0) {
                                                         return Colors
-                                                            .yellow; //* Change color when budget is greater than 1
+                                                            .red; //* Change color when budget is greater than 1
                                                       } else {
                                                         return Colors
-                                                            .red; //* Change color when budget is less than 1
+                                                            .orange; //* Change color when budget is less than 1
                                                       }
                                                     }(),
                                                   ),
@@ -413,7 +415,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             },
                           ),
                         ),
-                        if (currentFilter == BudgetFilter.all)
+                        if (currentFilter == BudgetFilter.all ||
+                            currentFilter == BudgetFilter.ongoing)
                           Column(
                             children: [
                               const SizedBox(height: 10),
@@ -965,6 +968,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   _applyFilter(BudgetFilter.all);
                   Navigator.pop(context);
                 },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                selected: currentFilter == BudgetFilter.all,
+                selectedColor: Theme.of(context).colorScheme.onPrimary,
+                selectedTileColor: Theme.of(context).colorScheme.primary,
               ),
               ListTile(
                 title: const Text('Ongoing'),
@@ -972,6 +981,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   _applyFilter(BudgetFilter.ongoing);
                   Navigator.pop(context);
                 },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                selected: currentFilter == BudgetFilter.ongoing,
+                selectedColor: Theme.of(context).colorScheme.onPrimary,
+                selectedTileColor: Theme.of(context).colorScheme.primary,
               ),
               ListTile(
                 title: const Text('Exceeded'),
@@ -979,6 +994,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   _applyFilter(BudgetFilter.exceeded);
                   Navigator.pop(context);
                 },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                selected: currentFilter == BudgetFilter.exceeded,
+                selectedColor: Theme.of(context).colorScheme.onPrimary,
+                selectedTileColor: Theme.of(context).colorScheme.primary,
               ),
               ListTile(
                 title: const Text('Completed'),
@@ -986,6 +1007,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   _applyFilter(BudgetFilter.completed);
                   Navigator.pop(context);
                 },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                selected: currentFilter == BudgetFilter.completed,
+                selectedColor: Theme.of(context).colorScheme.onPrimary,
+                selectedTileColor: Theme.of(context).colorScheme.primary,
               ),
             ],
           ),
