@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -287,38 +288,52 @@ class TransactionFormPageState extends State<TransactionFormPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  final result = await FilePicker.platform
-                      .pickFiles(allowMultiple: true, type: FileType.image);
-                  if (result != null) {
-                    for (var file in result.files) {
-                      //* Check if file size is less than or equal to 5MB (5 * 1024 * 1024 bytes)
-                      if (file.size <= 5 * 1024 * 1024) {
-                        setState(() {
-                          files = [...files, file];
-                        });
-                      } else {
-                        //* Notify user about the file size limit
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('File Size Limit Exceeded'),
-                              content: Text(
-                                  'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
-                    }
-                  }
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Choose Option',
+                          textAlign: TextAlign.center,
+                        ),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                );
+                                if (result != null) {
+                                  PlatformFile file = result.files.first;
+
+                                  await _checkFileSize(file, file.size);
+                                }
+                              },
+                              child: const Text('Pick from Gallery'),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final file = await ImagePicker().pickImage(
+                                  source: ImageSource.camera,
+                                );
+
+                                if (file != null) {
+                                  await _checkFileSize(
+                                      file, await file.length());
+                                }
+                              },
+                              child: const Text('Take a Photo'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
                 },
                 child: const Text('Add Attachment'),
               ),
@@ -560,6 +575,33 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       //* Handle any errors that occur during the Firestore operation
       print('Error saving transaction: $e');
       //* You can show an error message to the user if needed
+    }
+  }
+
+  Future<void> _checkFileSize(dynamic file, int fileSize) async {
+    if (fileSize <= 5 * 1024 * 1024) {
+      setState(() {
+        files = [...files, file];
+      });
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('File Size Limit Exceeded'),
+            content: Text(
+                'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 }
