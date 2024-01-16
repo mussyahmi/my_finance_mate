@@ -736,7 +736,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -751,7 +751,8 @@ class _DashboardPageState extends State<DashboardPage> {
             setState(() {});
           }
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Transaction'),
       ),
     );
   }
