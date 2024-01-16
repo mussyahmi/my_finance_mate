@@ -951,6 +951,11 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     }
 
+    //* Fix value -0.00
+    if (budgetBalance < 0 && budgetBalance > -0.01) {
+      budgetBalance = budgetBalance.abs();
+    }
+
     return budgetBalance.toStringAsFixed(2);
   }
 
