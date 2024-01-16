@@ -320,6 +320,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 Navigator.of(context).pop();
                                 final file = await ImagePicker().pickImage(
                                   source: ImageSource.camera,
+                                  imageQuality: 50,
                                 );
 
                                 if (file != null) {
