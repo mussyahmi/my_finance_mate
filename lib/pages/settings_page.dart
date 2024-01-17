@@ -128,8 +128,7 @@ class SettingsPageState extends State<SettingsPage> {
                 ),
                 child: ListTile(
                   title: const Text('Toggle Theme Mode'),
-                  leading: const Icon(Icons.palette),
-                  trailing: Icon(savedThemeMode == AdaptiveThemeMode.light
+                  leading: Icon(savedThemeMode == AdaptiveThemeMode.light
                       ? Icons.light_mode
                       : Icons.dark_mode),
                   onTap: () async {
@@ -149,6 +148,78 @@ class SettingsPageState extends State<SettingsPage> {
                       savedThemeMode = result;
                     });
                   },
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: const ListTile(
+                  title: Row(
+                    children: [
+                      Text('Theme Colors'),
+                      SizedBox(width: 8),
+                      Text(
+                        '(Slide left for more option)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic
+                        ),
+                      ),
+                    ],
+                  ),
+                  leading: Icon(Icons.palette),
+                  subtitle: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          ThemeColorSelector(color: Colors.amber),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.blue),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.blueGrey),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.brown),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.cyan),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.deepOrange),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.deepPurple),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.green),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.indigo),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.lightBlue),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.lightGreen),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.lime),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.orange),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.pink),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.purple),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.red),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.teal),
+                          SizedBox(width: 8),
+                          ThemeColorSelector(color: Colors.yellow),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 30),
@@ -183,5 +254,39 @@ class SettingsPageState extends State<SettingsPage> {
     } catch (error) {
       print('Sign Out Error: $error');
     }
+  }
+}
+
+class ThemeColorSelector extends StatelessWidget {
+  final MaterialColor color;
+
+  const ThemeColorSelector({super.key, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        AdaptiveTheme.of(context).setTheme(
+          light: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            colorSchemeSeed: color,
+          ),
+          dark: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            colorSchemeSeed: color,
+          ),
+        );
+      },
+      child: Container(
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+      ),
+    );
   }
 }
