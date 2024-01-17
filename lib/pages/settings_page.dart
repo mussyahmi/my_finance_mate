@@ -165,7 +165,7 @@ class SettingsPageState extends State<SettingsPage> {
                       Text('Theme Colors'),
                       SizedBox(width: 8),
                       Text(
-                        '(Slide left for more option)',
+                        '(Slide left for more options)',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
