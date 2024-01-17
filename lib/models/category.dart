@@ -99,7 +99,7 @@ class Category {
                     ),
                     MarkdownBody(
                       selectable: true,
-                      data: note.replaceAll('\\n', '\n'),
+                      data: note.replaceAll('\n', '\\\n'),
                       onTapLink: (text, url, title) {
                         launchUrl(Uri.parse(url!));
                       },
