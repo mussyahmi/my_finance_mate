@@ -137,7 +137,7 @@ class SettingsPageState extends State<SettingsPage> {
                 ),
                 child: ListTile(
                   title: const Text('Toggle Theme Mode'),
-                  leading: Icon(savedThemeMode == AdaptiveThemeMode.light
+                  trailing: Icon(savedThemeMode == AdaptiveThemeMode.light
                       ? Icons.light_mode
                       : Icons.dark_mode),
                   onTap: () async {
@@ -169,82 +169,81 @@ class SettingsPageState extends State<SettingsPage> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: ListTile(
-                  title: const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  title: const Text('Theme Colors'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Theme Colors'),
-                      Text(
+                      const Text(
                         '(Slide left for more options)',
                         style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
                             fontStyle: FontStyle.italic),
                       ),
-                    ],
-                  ),
-                  leading: const Icon(Icons.palette),
-                  subtitle: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          themeColorSelector(
-                              context: context, color: Colors.amber),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.blueGrey),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.brown),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.cyan),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.deepOrange),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.deepPurple),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.green),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.indigo),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.lightBlue),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.lightGreen),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.lime),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.orange),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.pink),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.purple),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.red),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.teal),
-                          const SizedBox(width: 8),
-                          themeColorSelector(
-                              context: context, color: Colors.yellow),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            children: [
+                              themeColorSelector(
+                                  context: context, color: Colors.amber),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.blueGrey),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.brown),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.cyan),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.deepOrange),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.deepPurple),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.green),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.indigo),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.lightBlue),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.lightGreen),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.lime),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.orange),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.pink),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.purple),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.red),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.teal),
+                              const SizedBox(width: 8),
+                              themeColorSelector(
+                                  context: context, color: Colors.yellow),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
