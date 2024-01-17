@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_page.dart';
 import 'type_page.dart';
@@ -20,7 +21,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class SettingsPageState extends State<SettingsPage> {
+  late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
+  Color themeColor = Colors.deepPurple;
 
   @override
   void initState() {
@@ -29,10 +32,16 @@ class SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> initAsync() async {
-    AdaptiveThemeMode? result = await AdaptiveTheme.getThemeMode();
+    SharedPreferences? sharedPreferences =
+        await SharedPreferences.getInstance();
+    AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
+    final savedThemeColor = sharedPreferences.getInt('theme_color');
 
     setState(() {
-      savedThemeMode = result;
+      prefs = sharedPreferences;
+      savedThemeMode = adaptiveThemeMode;
+      themeColor =
+          savedThemeColor != null ? Color(savedThemeColor) : Colors.deepPurple;
     });
   }
 
@@ -159,63 +168,80 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const ListTile(
-                  title: Row(
+                child: ListTile(
+                  title: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Theme Colors'),
-                      SizedBox(width: 8),
                       Text(
                         '(Slide left for more options)',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontStyle: FontStyle.italic
-                        ),
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
-                  leading: Icon(Icons.palette),
+                  leading: const Icon(Icons.palette),
                   subtitle: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Row(
                         children: [
-                          ThemeColorSelector(color: Colors.amber),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.blue),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.blueGrey),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.brown),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.cyan),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.deepOrange),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.deepPurple),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.green),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.indigo),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.lightBlue),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.lightGreen),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.lime),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.orange),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.pink),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.purple),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.red),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.teal),
-                          SizedBox(width: 8),
-                          ThemeColorSelector(color: Colors.yellow),
+                          themeColorSelector(
+                              context: context, color: Colors.amber),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.blueGrey),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.brown),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.cyan),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.deepOrange),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.deepPurple),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.green),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.indigo),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.lightBlue),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.lightGreen),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.lime),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.pink),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.purple),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.red),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.teal),
+                          const SizedBox(width: 8),
+                          themeColorSelector(
+                              context: context, color: Colors.yellow),
                         ],
                       ),
                     ),
@@ -255,17 +281,13 @@ class SettingsPageState extends State<SettingsPage> {
       print('Sign Out Error: $error');
     }
   }
-}
 
-class ThemeColorSelector extends StatelessWidget {
-  final MaterialColor color;
-
-  const ThemeColorSelector({super.key, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget themeColorSelector({
+    required BuildContext context,
+    required MaterialColor color,
+  }) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(
             useMaterial3: true,
@@ -278,13 +300,25 @@ class ThemeColorSelector extends StatelessWidget {
             colorSchemeSeed: color,
           ),
         );
+
+        await prefs.setInt('theme_color', color.value);
+
+        setState(() {
+          themeColor = color;
+        });
       },
       child: Container(
-        width: 20,
-        height: 20,
+        width: themeColor.value == color.value ? 26 : 20,
+        height: themeColor.value == color.value ? 26 : 20,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
+          border: Border.all(
+            color: themeColor.value == color.value
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
+            width: themeColor.value == color.value ? 5.0 : 2.0,
+          ),
         ),
       ),
     );
