@@ -88,7 +88,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     });
                     _fetchCategories();
                   },
-                  items: ['spent', 'received', 'saving'].map((type) {
+                  items: ['spent', 'received'].map((type) {
                     return DropdownMenuItem(
                       value: type,
                       child:
@@ -159,8 +159,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   final transactions = snapshot.data;
                   double total = 0;
 
-                  if (selectedType != 'saving' &&
-                      selectedCategoryName != null) {
+                  if (selectedCategoryName != null) {
                     for (var transaction in transactions!) {
                       if (transaction.type == 'spent') {
                         total -= double.parse(transaction.amount);
@@ -263,11 +262,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ],
                                 ),
                                 trailing: Text(
-                                  '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
+                                  '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
                                   style: TextStyle(
                                       fontSize: 16,
-                                      color: (transaction.type == 'spent' ||
-                                              transaction.type == 'saving')
+                                      color: transaction.type == 'spent'
                                           ? Colors.red
                                           : Colors.green),
                                 ),
@@ -281,8 +279,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                           },
                         ),
                       ),
-                      if (selectedType != 'saving' &&
-                          selectedCategoryName != null)
+                      if (selectedCategoryName != null)
                         Column(
                           children: [
                             const Divider(
@@ -383,17 +380,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
       //* Fetch the category name based on the categoryId
       DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      if (data['type'] != 'saving') {
-        categoryDoc = await userRef
-            .collection('cycles')
-            .doc(data['cycle_id'])
-            .collection('categories')
-            .doc(data['category_id'])
-            .get();
-      } else {
-        categoryDoc =
-            await userRef.collection('savings').doc(data['category_id']).get();
-      }
+      categoryDoc = await userRef
+          .collection('cycles')
+          .doc(data['cycle_id'])
+          .collection('categories')
+          .doc(data['category_id'])
+          .get();
 
       final categoryName = categoryDoc['name'] as String;
 

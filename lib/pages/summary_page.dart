@@ -99,11 +99,10 @@ class _SummaryPageState extends State<SummaryPage> {
                                     fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               trailing: Text(
-                                '${(category.type == 'spent' || category.type == 'saving') ? '-' : ''}RM${category.totalAmount}',
+                                '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: (category.type == 'spent' ||
-                                            category.type == 'saving')
+                                    color: category.type == 'spent'
                                         ? Colors.red
                                         : Colors.green),
                               ),

@@ -239,9 +239,7 @@ class Transaction {
                           (type == 'received' ? -double.parse(amount) : 0);
                   final double cycleAmountSpent =
                       double.parse(cycleData['amount_spent']) +
-                          ((type == 'spent' || type == 'saving')
-                              ? -double.parse(amount)
-                              : 0);
+                          (type == 'spent' ? -double.parse(amount) : 0);
 
                   final double updatedAmountBalance = cycleOpeningBalance +
                       cycleAmountReceived -
@@ -256,51 +254,26 @@ class Transaction {
                   });
                 }
 
-                if (type != 'saving') {
-                  final categoryRef =
-                      cyclesRef.collection('categories').doc(categoryId);
+                final categoryRef =
+                    cyclesRef.collection('categories').doc(categoryId);
 
-                  //* Fetch the category document
-                  final categoryDoc = await categoryRef.get();
+                //* Fetch the category document
+                final categoryDoc = await categoryRef.get();
 
-                  if (categoryDoc.exists) {
-                    final categoryData =
-                        categoryDoc.data() as Map<String, dynamic>;
+                if (categoryDoc.exists) {
+                  final categoryData =
+                      categoryDoc.data() as Map<String, dynamic>;
 
-                    //* Calculate the updated amounts
-                    final double totalAmount =
-                        double.parse(categoryData['total_amount']) -
-                            double.parse(amount);
+                  //* Calculate the updated amounts
+                  final double totalAmount =
+                      double.parse(categoryData['total_amount']) -
+                          double.parse(amount);
 
-                    //* Update the category document
-                    await categoryRef.update({
-                      'total_amount': totalAmount.toStringAsFixed(2),
-                      'updated_at': now,
-                    });
-                  }
-                }
-
-                if (type == 'saving') {
-                  final savingsRef =
-                      userRef.collection('savings').doc(categoryId);
-
-                  //* Fetch the category document
-                  final savingDoc = await savingsRef.get();
-
-                  if (savingDoc.exists) {
-                    final savingData = savingDoc.data() as Map<String, dynamic>;
-
-                    //* Calculate the updated amounts
-                    final double amountReceived =
-                        double.parse(savingData['amount_received']) -
-                            double.parse(amount);
-
-                    //* Update the saving document
-                    await savingsRef.update({
-                      'amount_received': amountReceived.toStringAsFixed(2),
-                      'updated_at': now,
-                    });
-                  }
+                  //* Update the category document
+                  await categoryRef.update({
+                    'total_amount': totalAmount.toStringAsFixed(2),
+                    'updated_at': now,
+                  });
                 }
 
                 // ignore: use_build_context_synchronously

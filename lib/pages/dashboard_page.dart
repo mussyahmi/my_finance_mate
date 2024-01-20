@@ -362,11 +362,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ],
                               ),
                               trailing: Text(
-                                '${(transaction.type == 'spent' || transaction.type == 'saving') ? '-' : ''}RM${transaction.amount}',
+                                '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: (transaction.type == 'spent' ||
-                                            transaction.type == 'saving')
+                                    color: transaction.type == 'spent'
                                         ? Colors.red
                                         : Colors.green),
                               ),
@@ -431,17 +430,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
       //* Fetch the category name based on the categoryId
       DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      if (data['type'] != 'saving') {
-        categoryDoc = await userRef
-            .collection('cycles')
-            .doc(data['cycle_id'])
-            .collection('categories')
-            .doc(data['category_id'])
-            .get();
-      } else {
-        categoryDoc =
-            await userRef.collection('savings').doc(data['category_id']).get();
-      }
+      categoryDoc = await userRef
+          .collection('cycles')
+          .doc(data['cycle_id'])
+          .collection('categories')
+          .doc(data['category_id'])
+          .get();
 
       final categoryName = categoryDoc['name'] as String;
 

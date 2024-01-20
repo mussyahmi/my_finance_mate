@@ -14,7 +14,6 @@ import 'package:my_finance_mate/models/category.dart';
 
 import 'category_list_page.dart';
 import 'image_view_page.dart';
-import 'savings_page.dart';
 import '../models/transaction.dart' as t;
 
 class TransactionFormPage extends StatefulWidget {
@@ -142,17 +141,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) {
-                        if (selectedType != 'saving') {
-                          return CategoryListPage(
-                            cycleId: widget.cycleId,
-                            type: selectedType,
-                            isFromTransactionForm: true,
-                          );
-                        } else {
-                          return const SavingsPage(
-                            isFromTransactionForm: true,
-                          );
-                        }
+                        return CategoryListPage(
+                          cycleId: widget.cycleId,
+                          type: selectedType,
+                          isFromTransactionForm: true,
+                        );
                       }),
                     );
 
@@ -496,8 +489,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         final double cycleAmountSpent =
             double.parse(cycleData['amount_spent']) +
                 (widget.transaction != null &&
-                        (widget.transaction!.type == 'spent' ||
-                            widget.transaction!.type == 'saving')
+                        widget.transaction!.type == 'spent'
                     ? -double.parse(widget.transaction!.amount)
                     : 0);
 
@@ -506,12 +498,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         final double updatedAmountBalance = cycleOpeningBalance +
             cycleAmountReceived -
             cycleAmountSpent +
-            ((type == 'spent' || type == 'saving') ? -newAmount : newAmount);
+            (type == 'spent' ? -newAmount : newAmount);
 
         //* Update the cycle document
         await cyclesRef.update({
-          'amount_spent': (cycleAmountSpent +
-                  ((type == 'spent' || type == 'saving') ? newAmount : 0))
+          'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
               .toStringAsFixed(2),
           'amount_received':
               (cycleAmountReceived + (type == 'received' ? newAmount : 0))
@@ -521,54 +512,26 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       }
 
-      if (type != 'saving') {
-        final categoryRef = cyclesRef.collection('categories').doc(categoryId);
+      final categoryRef = cyclesRef.collection('categories').doc(categoryId);
 
-        //* Fetch the category document
-        final categoryDoc = await categoryRef.get();
+      //* Fetch the category document
+      final categoryDoc = await categoryRef.get();
 
-        if (categoryDoc.exists) {
-          final categoryData = categoryDoc.data() as Map<String, dynamic>;
+      if (categoryDoc.exists) {
+        final categoryData = categoryDoc.data() as Map<String, dynamic>;
 
-          //* Calculate the updated amounts
-          final double totalAmount =
-              double.parse(categoryData['total_amount']) +
-                  double.parse(amount) -
-                  (widget.transaction != null
-                      ? double.parse(widget.transaction!.amount)
-                      : 0);
+        //* Calculate the updated amounts
+        final double totalAmount = double.parse(categoryData['total_amount']) +
+            double.parse(amount) -
+            (widget.transaction != null
+                ? double.parse(widget.transaction!.amount)
+                : 0);
 
-          //* Update the category document
-          await categoryRef.update({
-            'total_amount': totalAmount.toStringAsFixed(2),
-            'updated_at': now,
-          });
-        }
-      }
-
-      if (type == 'saving') {
-        final savingsRef = userRef.collection('savings').doc(categoryId);
-
-        //* Fetch the category document
-        final savingDoc = await savingsRef.get();
-
-        if (savingDoc.exists) {
-          final savingData = savingDoc.data() as Map<String, dynamic>;
-
-          //* Calculate the updated amounts
-          final double amountReceived =
-              double.parse(savingData['amount_received']) +
-                  double.parse(amount) -
-                  (widget.transaction != null
-                      ? double.parse(widget.transaction!.amount)
-                      : 0);
-
-          //* Update the saving document
-          await savingsRef.update({
-            'amount_received': amountReceived.toStringAsFixed(2),
-            'updated_at': now,
-          });
-        }
+        //* Update the category document
+        await categoryRef.update({
+          'total_amount': totalAmount.toStringAsFixed(2),
+          'updated_at': now,
+        });
       }
 
       Navigator.of(context).pop(true);
