@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:my_finance_mate/pages/category_list_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_page.dart';
-import 'type_page.dart';
 import 'wishlist_page.dart';
 import 'summary_page.dart';
 
@@ -74,8 +74,9 @@ class SettingsPageState extends State<SettingsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              TypePage(cycleId: widget.cycleId)),
+                        builder: (context) =>
+                            CategoryListPage(cycleId: widget.cycleId),
+                      ),
                     );
                   },
                 ),
