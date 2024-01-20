@@ -22,6 +22,7 @@ class AddCyclePageState extends State<AddCyclePage> {
   String? lastCycleId;
   String? lastCycleBalance;
   int lastCycleNo = 0;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -60,11 +61,8 @@ class AddCyclePageState extends State<AddCyclePage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        //* Prevent the user from navigating back using the back button
-        return false;
-      },
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Create New Cycle'),
@@ -121,67 +119,34 @@ class AddCyclePageState extends State<AddCyclePage> {
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () async {
-                    //todo: validation
-                    //todo: selectedDateRange must have today's date
-                    //todo: cycle's name is required
-                    //todo: opening balance, should be able to enter number only, and will automatically assign decimal point
+                    if (_isLoading) return;
 
-                    if (selectedDateRange != null) {
-                      final adjustedEndDate = selectedDateRange!.end
-                          .add(const Duration(days: 1))
-                          .subtract(const Duration(minutes: 1));
+                    setState(() {
+                      _isLoading = true;
+                    });
 
-                      //* Get the current user
-                      final user = FirebaseAuth.instance.currentUser;
-
-                      if (user == null) {
-                        //todo: Handle the case where user is not authenticated
-                        return;
-                      }
-
-                      //* Get current timestamp
-                      final now = DateTime.now();
-
-                      //* Create the new cycle document
-                      final newCycleDoc = await FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(user.uid)
-                          .collection('cycles')
-                          .add({
-                        'cycle_no': lastCycleNo + 1,
-                        'cycle_name': cycleNameController.text,
-                        'start_date': selectedDateRange!.start,
-                        'end_date': adjustedEndDate,
-                        'created_at': now,
-                        'updated_at': now,
-                        'deleted_at': null,
-                        'opening_balance':
-                            double.parse(openingBalanceController.text)
-                                .toStringAsFixed(2),
-                        'amount_balance':
-                            double.parse(openingBalanceController.text)
-                                .toStringAsFixed(2),
-                        'amount_received': '0.00',
-                        'amount_spent': '0.00',
+                    try {
+                      await _updateTransactionToFirebase();
+                    } finally {
+                      setState(() {
+                        _isLoading = false;
                       });
-
-                      await copyCategoriesFromLastCycle(user, newCycleDoc.id);
-
-                      // ignore: use_build_context_synchronously
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DashboardPage()),
-                        (route) =>
-                            false, //* This line removes all previous routes from the stack
-                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  child: const Text('Submit'),
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            strokeWidth: 2.0,
+                          ),
+                        )
+                      : const Text('Submit'),
                 ),
               ],
             ),
@@ -189,6 +154,56 @@ class AddCyclePageState extends State<AddCyclePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _updateTransactionToFirebase() async {
+    if (selectedDateRange != null) {
+      final adjustedEndDate = selectedDateRange!.end
+          .add(const Duration(days: 1))
+          .subtract(const Duration(minutes: 1));
+
+      //* Get the current user
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        //todo: Handle the case where user is not authenticated
+        return;
+      }
+
+      //* Get current timestamp
+      final now = DateTime.now();
+
+      //* Create the new cycle document
+      final newCycleDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .add({
+        'cycle_no': lastCycleNo + 1,
+        'cycle_name': cycleNameController.text,
+        'start_date': selectedDateRange!.start,
+        'end_date': adjustedEndDate,
+        'created_at': now,
+        'updated_at': now,
+        'deleted_at': null,
+        'opening_balance':
+            double.parse(openingBalanceController.text).toStringAsFixed(2),
+        'amount_balance':
+            double.parse(openingBalanceController.text).toStringAsFixed(2),
+        'amount_received': '0.00',
+        'amount_spent': '0.00',
+      });
+
+      await copyCategoriesFromLastCycle(user, newCycleDoc.id);
+
+      // ignore: use_build_context_synchronously
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
+        (route) =>
+            false, //* This line removes all previous routes from the stack
+      );
+    }
   }
 
   Future<void> copyCategoriesFromLastCycle(User user, String newCycleId) async {
