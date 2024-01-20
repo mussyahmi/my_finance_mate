@@ -69,86 +69,89 @@ class AddCyclePageState extends State<AddCyclePage> {
           centerTitle: true,
           automaticallyImplyLeading: false, //* Hide the back icon button
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    final pickedDateRange = await showDateRangePicker(
-                      context: context,
-                      firstDate:
-                          DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
+        body: GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      final pickedDateRange = await showDateRangePicker(
+                        context: context,
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
 
-                    if (pickedDateRange != null) {
+                      if (pickedDateRange != null) {
+                        setState(() {
+                          selectedDateRange = pickedDateRange;
+                        });
+                      }
+                    },
+                    child: Text(
+                      selectedDateRange != null
+                          ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                          : 'Select Date Range',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: cycleNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: openingBalanceController,
+                    keyboardType:
+                        TextInputType.number, //* Allow only numeric input
+                    decoration: InputDecoration(
+                      labelText:
+                          '${widget.isFirstCycle ? 'Opening' : 'Previous'} Balance',
+                      prefixText: 'RM ',
+                    ),
+                    enabled: widget.isFirstCycle,
+                  ),
+                  const SizedBox(height: 30),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (_isLoading) return;
+
                       setState(() {
-                        selectedDateRange = pickedDateRange;
+                        _isLoading = true;
                       });
-                    }
-                  },
-                  child: Text(
-                    selectedDateRange != null
-                        ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                        : 'Select Date Range',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: cycleNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: openingBalanceController,
-                  keyboardType:
-                      TextInputType.number, //* Allow only numeric input
-                  decoration: InputDecoration(
-                    labelText:
-                        '${widget.isFirstCycle ? 'Opening' : 'Previous'} Balance',
-                    prefixText: 'RM ',
-                  ),
-                  enabled: widget.isFirstCycle,
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_isLoading) return;
 
-                    setState(() {
-                      _isLoading = true;
-                    });
-
-                    try {
-                      await _updateTransactionToFirebase();
-                    } finally {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      try {
+                        await _updateTransactionToFirebase();
+                      } finally {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    child: _isLoading
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              strokeWidth: 2.0,
+                            ),
+                          )
+                        : const Text('Submit'),
                   ),
-                  child: _isLoading
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            strokeWidth: 2.0,
-                          ),
-                        )
-                      : const Text('Submit'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

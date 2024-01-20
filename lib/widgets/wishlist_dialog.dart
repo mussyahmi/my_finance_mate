@@ -34,51 +34,54 @@ class WishlistDialogState extends State<WishlistDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('${widget.action} Wishlist'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _wishlistNameController,
-            decoration: const InputDecoration(
-              labelText: 'Name',
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: AlertDialog(
+        title: Text('${widget.action} Wishlist'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _wishlistNameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+              ),
             ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: _wishlistNoteController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Note',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); //* Close the dialog
+            },
+            child: const Text('Cancel'),
           ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _wishlistNoteController,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Note',
-              border: OutlineInputBorder(),
-            ),
+          ElevatedButton(
+            onPressed: () {
+              final wishlistName = _wishlistNameController.text;
+              final wishlistNote = _wishlistNoteController.text;
+
+              if (wishlistName.isNotEmpty) {
+                //* Call the function to update to Firebase
+                updateWishlistToFirebase(wishlistName, wishlistNote);
+
+                //* Close the dialog
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(); //* Close the dialog
-          },
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            final wishlistName = _wishlistNameController.text;
-            final wishlistNote = _wishlistNoteController.text;
-
-            if (wishlistName.isNotEmpty) {
-              //* Call the function to update to Firebase
-              updateWishlistToFirebase(wishlistName, wishlistNote);
-
-              //* Close the dialog
-              Navigator.of(context).pop();
-            }
-          },
-          child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
-        ),
-      ],
     );
   }
 
