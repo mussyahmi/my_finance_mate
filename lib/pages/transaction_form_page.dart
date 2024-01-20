@@ -77,6 +77,30 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              SegmentedButton(
+                segments: const [
+                  ButtonSegment(
+                    value: 'spent',
+                    label: Text('Spent'),
+                    icon: Icon(Icons.file_upload_outlined),
+                  ),
+                  ButtonSegment(
+                    value: 'received',
+                    label: Text('Received'),
+                    icon: Icon(Icons.file_download_outlined),
+                  ),
+                ],
+                selected: {selectedType},
+                onSelectionChanged: (newSelection) {
+                  setState(() {
+                    selectedType = newSelection.first;
+                    selectedCategoryId = null;
+                  });
+
+                  _fetchCategories();
+                },
+              ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   final selectedDate = await showDatePicker(
@@ -108,28 +132,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                value: selectedType,
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedType = newValue as String;
-                    selectedCategoryId = null;
-                  });
-
-                  _fetchCategories();
-                },
-                items: ['spent', 'received']
-                    .map((type) => DropdownMenuItem(
-                          value: type,
-                          child: Text(
-                              '${type[0].toUpperCase()}${type.substring(1)}'),
-                        ))
-                    .toList(),
-                decoration: const InputDecoration(
-                  labelText: 'Type',
-                ),
-              ),
-              const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: selectedCategoryId,
                 onChanged: (newValue) async {
@@ -278,7 +280,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
                   showDialog(

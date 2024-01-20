@@ -71,7 +71,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       text: 'Spent',
                     ),
                     Tab(
-                      icon: Icon(Icons.file_upload_outlined),
+                      icon: Icon(Icons.file_download_outlined),
                       text: 'Received',
                     ),
                   ],
