@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import 'transaction_list_page.dart';
@@ -38,6 +39,9 @@ class _SummaryPageState extends State<SummaryPage> {
 
               await Category.recalculateCategoryAndCycleTotalAmount(
                   widget.cycleId);
+
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('refresh_dashboard', true);
 
               setState(() {
                 _isLoading = false;

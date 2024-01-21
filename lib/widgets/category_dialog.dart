@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 
 class CategoryDialog extends StatefulWidget {
@@ -204,6 +205,9 @@ class CategoryDialogState extends State<CategoryDialog> {
           }
         }
       }
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('refresh_dashboard', true);
 
       //* Notify the parent widget about the category addition
       widget.onCategoryChanged();

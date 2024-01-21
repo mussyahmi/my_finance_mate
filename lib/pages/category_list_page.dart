@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/category_dialog.dart';
 import '../models/category.dart';
@@ -234,6 +235,12 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                             'updated_at': now,
                                             'deleted_at': now,
                                           });
+
+                                          SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+                                          await prefs.setBool(
+                                              'refresh_dashboard', true);
 
                                           setState(() {}); //* Refresh
 

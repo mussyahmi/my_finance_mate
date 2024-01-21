@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../size_config.dart';
 import '../widgets/forecast_budget.dart';
@@ -21,6 +22,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  late SharedPreferences prefs;
   String? cycleId;
   String? cycleName;
   String? amountBalance;
@@ -33,7 +35,12 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     //* Call the function when the DashboardPage is loaded
-    _fetchCycle();
+    _refreshPage();
+  }
+
+  Future<void> _refreshPage() async {
+    await _fetchCycle();
+    setState(() {});
   }
 
   @override
@@ -49,18 +56,24 @@ class _DashboardPageState extends State<DashboardPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => SettingsPage(cycleId: cycleId ?? '')),
               );
+
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              if (prefs.getBool('refresh_dashboard') ?? false) {
+                await prefs.remove('refresh_dashboard');
+                await _refreshPage();
+              }
             },
           ),
         ],
       ),
-      body: SizedBox(
-        height: SizeConfig.screenHeight,
+      body: RefreshIndicator(
+        onRefresh: _refreshPage,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -313,8 +326,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 );
 
                                 if (result == true) {
-                                  _fetchCycle();
-                                  setState(() {});
+                                  await _refreshPage();
                                   return true;
                                 } else {
                                   return false;
@@ -326,8 +338,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     .deleteTransaction(context);
 
                                 if (result == true) {
-                                  _fetchCycle();
-                                  setState(() {});
+                                  await _refreshPage();
                                   return true;
                                 } else {
                                   return false;
@@ -398,8 +409,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
 
           if (result == true) {
-            _fetchCycle();
-            setState(() {});
+            await _refreshPage();
           }
         },
         icon: const Icon(Icons.add),
