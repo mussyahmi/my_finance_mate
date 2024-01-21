@@ -36,7 +36,8 @@ class _SummaryPageState extends State<SummaryPage> {
                 _isLoading = true;
               });
 
-              await Category.recalculateCategoryTotalAmount(widget.cycleId);
+              await Category.recalculateCategoryAndCycleTotalAmount(
+                  widget.cycleId);
 
               setState(() {
                 _isLoading = false;

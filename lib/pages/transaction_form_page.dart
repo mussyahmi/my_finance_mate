@@ -410,31 +410,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           FirebaseFirestore.instance.collection('users').doc(user.uid);
       final transactionsRef = userRef.collection('transactions');
 
-      List downloadURLs = [];
-
-      for (var file in files) {
-        if (file is! String) {
-          //* Generate a unique file name
-          String fileName =
-              '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
-
-          Reference storageReference = FirebaseStorage.instance
-              .ref()
-              .child('${user.uid}/transactions/$fileName');
-
-          UploadTask uploadTask = storageReference.putFile(File(file.path!));
-
-          await uploadTask.whenComplete(() async {
-            print('File Uploaded');
-            String downloadURL = await storageReference.getDownloadURL();
-            print('Download URL: $downloadURL');
-            downloadURLs = [...downloadURLs, downloadURL];
-          });
-        } else {
-          //* for existing file
-          downloadURLs = [...downloadURLs, file];
-        }
-      }
+      List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
 
       if (widget.action == 'Add') {
         //* Create a new transaction document
@@ -467,83 +443,142 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'updated_at': now,
           'files': downloadURLs,
         });
-
-        for (var fileToDelete in filesToDelete) {
-          t.Transaction.deleteFile(Uri.decodeComponent(
-              t.Transaction.extractPathFromUrl(fileToDelete)));
-        }
       }
 
       final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
 
-      //* Fetch the current cycle document
-      final cycleDoc = await cyclesRef.get();
+      await _updateCycleToFirebase(cyclesRef, type, amount, now);
 
-      if (cycleDoc.exists) {
-        final cycleData = cycleDoc.data() as Map<String, dynamic>;
-
-        //* Calculate the updated amounts
-        final double cycleOpeningBalance =
-            double.parse(cycleData['opening_balance']);
-        final double cycleAmountReceived =
-            double.parse(cycleData['amount_received']) +
-                (widget.transaction != null &&
-                        widget.transaction!.type == 'received'
-                    ? -double.parse(widget.transaction!.amount)
-                    : 0);
-        final double cycleAmountSpent =
-            double.parse(cycleData['amount_spent']) +
-                (widget.transaction != null &&
-                        widget.transaction!.type == 'spent'
-                    ? -double.parse(widget.transaction!.amount)
-                    : 0);
-
-        final newAmount = double.parse(amount);
-
-        final double updatedAmountBalance = cycleOpeningBalance +
-            cycleAmountReceived -
-            cycleAmountSpent +
-            (type == 'spent' ? -newAmount : newAmount);
-
-        //* Update the cycle document
-        await cyclesRef.update({
-          'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
-              .toStringAsFixed(2),
-          'amount_received':
-              (cycleAmountReceived + (type == 'received' ? newAmount : 0))
-                  .toStringAsFixed(2),
-          'amount_balance': updatedAmountBalance.toStringAsFixed(2),
-          'updated_at': now,
-        });
-      }
-
-      final categoryRef = cyclesRef.collection('categories').doc(categoryId);
-
-      //* Fetch the category document
-      final categoryDoc = await categoryRef.get();
-
-      if (categoryDoc.exists) {
-        final categoryData = categoryDoc.data() as Map<String, dynamic>;
-
-        //* Calculate the updated amounts
-        final double totalAmount = double.parse(categoryData['total_amount']) +
-            double.parse(amount) -
-            (widget.transaction != null
-                ? double.parse(widget.transaction!.amount)
-                : 0);
-
-        //* Update the category document
-        await categoryRef.update({
-          'total_amount': totalAmount.toStringAsFixed(2),
-          'updated_at': now,
-        });
-      }
+      await _updateCategoryToFirebase(cyclesRef, categoryId, amount, now);
 
       Navigator.of(context).pop(true);
     } catch (e) {
       //* Handle any errors that occur during the Firestore operation
       print('Error saving transaction: $e');
       //* You can show an error message to the user if needed
+    }
+  }
+
+  Future<List> _uploadAndDeleteFilesToFirebase(User user) async {
+    List downloadURLs = [];
+
+    for (var file in files) {
+      if (file is! String) {
+        //* Generate a unique file name
+        String fileName =
+            '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
+
+        Reference storageReference = FirebaseStorage.instance
+            .ref()
+            .child('${user.uid}/transactions/$fileName');
+
+        UploadTask uploadTask = storageReference.putFile(File(file.path!));
+
+        await uploadTask.whenComplete(() async {
+          print('File Uploaded');
+          String downloadURL = await storageReference.getDownloadURL();
+          print('Download URL: $downloadURL');
+          downloadURLs = [...downloadURLs, downloadURL];
+        });
+      } else {
+        //* for existing file
+        downloadURLs = [...downloadURLs, file];
+      }
+    }
+
+    if (widget.action == 'Edit') {
+      for (var fileToDelete in filesToDelete) {
+        t.Transaction.deleteFile(Uri.decodeComponent(
+            t.Transaction.extractPathFromUrl(fileToDelete)));
+      }
+    }
+
+    return downloadURLs;
+  }
+
+  Future<void> _updateCycleToFirebase(DocumentReference cyclesRef, String type,
+      String amount, DateTime now) async {
+    //* Fetch the current cycle document
+    final cycleDoc = await cyclesRef.get();
+
+    if (cycleDoc.exists) {
+      final cycleData = cycleDoc.data() as Map<String, dynamic>;
+
+      final double cycleOpeningBalance =
+          double.parse(cycleData['opening_balance']);
+      double cycleAmountReceived = double.parse(cycleData['amount_received']);
+      double cycleAmountSpent = double.parse(cycleData['amount_spent']);
+
+      //* Calculate the cycle's amounts before including this transaction
+      if (widget.action == 'Edit') {
+        if (type == 'spent') {
+          cycleAmountSpent -= double.parse(widget.transaction!.amount);
+        } else {
+          cycleAmountReceived -= double.parse(widget.transaction!.amount);
+        }
+      }
+
+      final newAmount = double.parse(amount);
+
+      final double updatedAmountBalance = cycleOpeningBalance +
+          cycleAmountReceived -
+          cycleAmountSpent +
+          (type == 'spent' ? -newAmount : newAmount);
+
+      //* Update the cycle document
+      await cyclesRef.update({
+        'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
+            .toStringAsFixed(2),
+        'amount_received':
+            (cycleAmountReceived + (type == 'received' ? newAmount : 0))
+                .toStringAsFixed(2),
+        'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+        'updated_at': now,
+      });
+    }
+  }
+
+  Future<void> _updateCategoryToFirebase(DocumentReference cyclesRef,
+      String categoryId, String amount, DateTime now) async {
+    //* Update previous category's data
+    if (widget.action == 'Edit') {
+      final prevCategoryRef = cyclesRef
+          .collection('categories')
+          .doc(widget.transaction!.categoryId);
+
+      //* Fetch the category document
+      final prevCategoryDoc = await prevCategoryRef.get();
+
+      if (prevCategoryDoc.exists) {
+        final prevCategoryData = prevCategoryDoc.data() as Map<String, dynamic>;
+
+        double totalAmount = double.parse(prevCategoryData['total_amount']) -
+            double.parse(widget.transaction!.amount);
+
+        //* Update the category document
+        await prevCategoryRef.update({
+          'total_amount': totalAmount.toStringAsFixed(2),
+          'updated_at': now,
+        });
+      }
+    }
+
+    final newCategoryRef = cyclesRef.collection('categories').doc(categoryId);
+
+    //* Fetch the category document
+    final newCategoryDoc = await newCategoryRef.get();
+
+    if (newCategoryDoc.exists) {
+      final newCategoryData = newCategoryDoc.data() as Map<String, dynamic>;
+
+      double totalAmount =
+          double.parse(newCategoryData['total_amount']) + double.parse(amount);
+
+      //* Update the category document
+      await newCategoryRef.update({
+        'total_amount': totalAmount.toStringAsFixed(2),
+        'updated_at': now,
+      });
     }
   }
 

@@ -175,7 +175,8 @@ class Category {
     print('done updateCategoryNameForAllTransactions');
   }
 
-  static Future<void> recalculateCategoryTotalAmount(String cycleId) async {
+  static Future<void> recalculateCategoryAndCycleTotalAmount(
+      String cycleId) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //* Handle the case where the user is not authenticated.
@@ -187,9 +188,16 @@ class Category {
     final cyclesRef = userRef.collection('cycles').doc(cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 
+    final cycleDoc = await cyclesRef.get();
     final categoriesSnapshot = await categoriesRef.get();
 
+    //* Get current timestamp
+    final now = DateTime.now();
+
     print('initiate recalculateCategoryTotalAmount');
+
+    double totalAmountSpent = 0;
+    double totalAmountReceived = 0;
 
     for (var doc in categoriesSnapshot.docs) {
       final transactionsRef = userRef.collection('transactions');
@@ -206,11 +214,36 @@ class Category {
         final data = doc.data();
 
         totalAmount += double.parse(data['amount']);
+
+        if (data['type'] == 'spent') {
+          totalAmountSpent += double.parse(data['amount']);
+        } else {
+          totalAmountReceived += double.parse(data['amount']);
+        }
       }
 
-      await categoriesRef
-          .doc(doc.id)
-          .update({'total_amount': totalAmount.toStringAsFixed(2)});
+      //* Update each cateogry's data
+      await categoriesRef.doc(doc.id).update({
+        'total_amount': totalAmount.toStringAsFixed(2),
+        'updated_at': now,
+      });
+    }
+
+    if (cycleDoc.exists) {
+      final cycleData = cycleDoc.data() as Map<String, dynamic>;
+
+      final double cycleOpeningBalance =
+          double.parse(cycleData['opening_balance']);
+
+      //* Update the cycle document
+      await cyclesRef.update({
+        'amount_spent': totalAmountSpent.toStringAsFixed(2),
+        'amount_received': totalAmountReceived.toStringAsFixed(2),
+        'amount_balance':
+            (cycleOpeningBalance + totalAmountReceived - totalAmountSpent)
+                .toStringAsFixed(2),
+        'updated_at': now,
+      });
     }
 
     print('done recalculateCategoryTotalAmount');
