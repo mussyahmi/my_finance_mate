@@ -50,6 +50,8 @@ dependencies:
   flutter_markdown: ^0.6.18+3
   url_launcher: ^6.2.3
   image_picker: ^1.0.7
+  google_mobile_ads: ^4.0.0
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:

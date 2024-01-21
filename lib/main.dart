@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:my_finance_mate/services/ad_mob_service.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
@@ -21,7 +24,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(MyApp(savedThemeMode: savedThemeMode, themeColor: themeColor));
+  final initAdFuture = MobileAds.instance.initialize();
+  final adMobService = AdMobService(initAdFuture);
+
+  runApp(MultiProvider(
+    providers: [Provider.value(value: adMobService)],
+    child: MyApp(savedThemeMode: savedThemeMode, themeColor: themeColor),
+  ));
 }
 
 class MyApp extends StatefulWidget {

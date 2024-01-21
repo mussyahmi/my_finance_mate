@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,7 +12,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:my_finance_mate/models/category.dart';
+import 'package:provider/provider.dart';
 
+import '../services/ad_mob_service.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
@@ -41,10 +44,25 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   List<dynamic> files = [];
   List<dynamic> filesToDelete = [];
 
+  //* Ad related
+  late AdMobService _adMobService;
+  InterstitialAd? _interstitialAd;
+
   @override
   void initState() {
     super.initState();
     initAsync();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adMobService.initialization.then((value) {
+      setState(() {
+        _createInterstitialAd();
+      });
+    });
   }
 
   Future<void> initAsync() async {
@@ -344,6 +362,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       _isLoading = true;
                     });
 
+                    _showInterstitialAd();
+
                     try {
                       await _updateTransactionToFirebase();
                     } finally {
@@ -606,6 +626,39 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           );
         },
       );
+    }
+  }
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: _adMobService.interstitialTransactionFormAdUnitId!,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+        },
+        onAdFailedToLoad: (error) {
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+      );
+
+      _interstitialAd!.show();
+      _interstitialAd = null;
     }
   }
 }

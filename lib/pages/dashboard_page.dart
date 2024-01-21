@@ -3,9 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/forecast_budget.dart';
 import 'add_cycle_page.dart';
@@ -31,11 +34,38 @@ class _DashboardPageState extends State<DashboardPage> {
   String? openingBalance;
   bool _isAmountVisible = false;
 
+  //* Ad related
+  late AdMobService _adMobService;
+  BannerAd? _bannerAdMiddle;
+  BannerAd? _bannerAdBottom;
+
   @override
   void initState() {
     super.initState();
     //* Call the function when the DashboardPage is loaded
     _refreshPage();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adMobService.initialization.then((value) {
+      setState(() {
+        _bannerAdMiddle = BannerAd(
+          size: AdSize.fullBanner,
+          adUnitId: _adMobService.bannerDasboardAdUnitId!,
+          listener: _adMobService.bannerAdListener,
+          request: const AdRequest(),
+        )..load();
+        _bannerAdBottom = BannerAd(
+          size: AdSize.fullBanner,
+          adUnitId: _adMobService.bannerDasboardAdUnitId!,
+          listener: _adMobService.bannerAdListener,
+          request: const AdRequest(),
+        )..load();
+      });
+    });
   }
 
   Future<void> _refreshPage() async {
@@ -220,6 +250,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 cycleId: cycleId ?? '',
                 amountBalance: amountBalance ?? '0.00',
               ),
+              if (_bannerAdMiddle != null)
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 60.0,
+                      child: AdWidget(ad: _bannerAdMiddle!),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -393,6 +433,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   }
                 },
               ),
+              if (_bannerAdBottom != null)
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 60.0,
+                      child: AdWidget(ad: _bannerAdBottom!),
+                    ),
+                  ],
+                ),
               const SizedBox(height: 80),
             ],
           ),
