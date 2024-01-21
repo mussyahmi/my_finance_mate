@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
+import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
 
 class AddCyclePage extends StatefulWidget {
@@ -18,11 +21,14 @@ class AddCyclePageState extends State<AddCyclePage> {
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
   DateTimeRange? selectedDateRange;
-
   String? lastCycleId;
   String? lastCycleBalance;
   int lastCycleNo = 0;
   bool _isLoading = false;
+
+  //* Ad related
+  late AdMobService _adMobService;
+  BannerAd? _bannerAd;
 
   @override
   void initState() {
@@ -31,6 +37,22 @@ class AddCyclePageState extends State<AddCyclePage> {
       //* Fetch the last cycle's balance and number if it's not the first cycle
       fetchLastCycleData();
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adMobService.initialization.then((value) {
+      setState(() {
+        _bannerAd = BannerAd(
+          size: AdSize.fullBanner,
+          adUnitId: _adMobService.bannerDasboardAdUnitId!,
+          listener: _adMobService.bannerAdListener,
+          request: const AdRequest(),
+        )..load();
+      });
+    });
   }
 
   Future<void> fetchLastCycleData() async {
@@ -69,91 +91,106 @@ class AddCyclePageState extends State<AddCyclePage> {
           centerTitle: true,
           automaticallyImplyLeading: false, //* Hide the back icon button
         ),
-        body: GestureDetector(
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      final pickedDateRange = await showDateRangePicker(
-                        context: context,
-                        firstDate:
-                            DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-
-                      if (pickedDateRange != null) {
-                        setState(() {
-                          selectedDateRange = pickedDateRange;
-                        });
-                      }
-                    },
-                    child: Text(
-                      selectedDateRange != null
-                          ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                          : 'Select Date Range',
-                      textAlign: TextAlign.center,
+        body: Column(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            final pickedDateRange = await showDateRangePicker(
+                              context: context,
+                              firstDate: DateTime.now()
+                                  .subtract(const Duration(days: 365)),
+                              lastDate:
+                                  DateTime.now().add(const Duration(days: 365)),
+                            );
+              
+                            if (pickedDateRange != null) {
+                              setState(() {
+                                selectedDateRange = pickedDateRange;
+                              });
+                            }
+                          },
+                          child: Text(
+                            selectedDateRange != null
+                                ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                                : 'Select Date Range',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: cycleNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: openingBalanceController,
+                          keyboardType:
+                              TextInputType.number, //* Allow only numeric input
+                          decoration: InputDecoration(
+                            labelText:
+                                '${widget.isFirstCycle ? 'Opening' : 'Previous'} Balance',
+                            prefixText: 'RM ',
+                          ),
+                          enabled: widget.isFirstCycle,
+                        ),
+                        const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (_isLoading) return;
+              
+                            setState(() {
+                              _isLoading = true;
+                            });
+              
+                            try {
+                              await _updateTransactionToFirebase();
+                            } finally {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          child: _isLoading
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                    strokeWidth: 2.0,
+                                  ),
+                                )
+                              : const Text('Submit'),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: cycleNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: openingBalanceController,
-                    keyboardType:
-                        TextInputType.number, //* Allow only numeric input
-                    decoration: InputDecoration(
-                      labelText:
-                          '${widget.isFirstCycle ? 'Opening' : 'Previous'} Balance',
-                      prefixText: 'RM ',
-                    ),
-                    enabled: widget.isFirstCycle,
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_isLoading) return;
-
-                      setState(() {
-                        _isLoading = true;
-                      });
-
-                      try {
-                        await _updateTransactionToFirebase();
-                      } finally {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    child: _isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              strokeWidth: 2.0,
-                            ),
-                          )
-                        : const Text('Submit'),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            if (_bannerAd != null)
+              SizedBox(
+                height: 60.0,
+                child: AdWidget(ad: _bannerAd!),
+              ),
+          ],
         ),
       ),
     );

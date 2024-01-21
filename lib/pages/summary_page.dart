@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
+import '../services/ad_mob_service.dart';
 import 'transaction_list_page.dart';
 
 class SummaryPage extends StatefulWidget {
@@ -15,6 +18,21 @@ class SummaryPage extends StatefulWidget {
 
 class _SummaryPageState extends State<SummaryPage> {
   bool _isLoading = false;
+
+  //* Ad related
+  late AdMobService _adMobService;
+  InterstitialAd? _interstitialAd;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adMobService.initialization.then((value) {
+      setState(() {
+        _createInterstitialAd();
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +51,13 @@ class _SummaryPageState extends State<SummaryPage> {
                     ))
                 : const Icon(Icons.refresh),
             onPressed: () async {
+              if (_isLoading) return;
+              
               setState(() {
                 _isLoading = true;
               });
+
+              _showInterstitialAd();
 
               await Category.recalculateCategoryAndCycleTotalAmount(
                   widget.cycleId);
@@ -135,5 +157,38 @@ class _SummaryPageState extends State<SummaryPage> {
         ],
       ),
     );
+  }
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: _adMobService.interstitialRecalculateAdUnitId!,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+        },
+        onAdFailedToLoad: (error) {
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+      );
+
+      _interstitialAd!.show();
+      _interstitialAd = null;
+    }
   }
 }

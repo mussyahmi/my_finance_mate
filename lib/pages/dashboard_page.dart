@@ -36,8 +36,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   //* Ad related
   late AdMobService _adMobService;
-  BannerAd? _bannerAdMiddle;
-  BannerAd? _bannerAdBottom;
+  BannerAd? _bannerAd;
 
   @override
   void initState() {
@@ -52,13 +51,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _adMobService = context.read<AdMobService>();
     _adMobService.initialization.then((value) {
       setState(() {
-        _bannerAdMiddle = BannerAd(
-          size: AdSize.fullBanner,
-          adUnitId: _adMobService.bannerDasboardAdUnitId!,
-          listener: _adMobService.bannerAdListener,
-          request: const AdRequest(),
-        )..load();
-        _bannerAdBottom = BannerAd(
+        _bannerAd = BannerAd(
           size: AdSize.fullBanner,
           adUnitId: _adMobService.bannerDasboardAdUnitId!,
           listener: _adMobService.bannerAdListener,
@@ -250,13 +243,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 cycleId: cycleId ?? '',
                 amountBalance: amountBalance ?? '0.00',
               ),
-              if (_bannerAdMiddle != null)
+              if (_bannerAd != null)
                 Column(
                   children: [
                     const SizedBox(height: 20),
                     SizedBox(
                       height: 60.0,
-                      child: AdWidget(ad: _bannerAdMiddle!),
+                      child: AdWidget(ad: _bannerAd!),
                     ),
                   ],
                 ),
@@ -433,16 +426,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   }
                 },
               ),
-              if (_bannerAdBottom != null)
-                Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 60.0,
-                      child: AdWidget(ad: _bannerAdBottom!),
-                    ),
-                  ],
-                ),
               const SizedBox(height: 80),
             ],
           ),

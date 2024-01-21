@@ -3,8 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/ad_mob_service.dart';
 import '../widgets/category_dialog.dart';
 import '../models/category.dart';
 import 'transaction_list_page.dart';
@@ -27,6 +30,11 @@ class CategoryListPage extends StatefulWidget {
 class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
 
+  //* Ad related
+  late AdMobService _adMobService;
+  BannerAd? _bannerAdSpent;
+  BannerAd? _bannerAdReceived;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +43,28 @@ class _CategoryListPageState extends State<CategoryListPage> {
       if (widget.isFromTransactionForm != null) {
         _showCategoryDialog(context, 'Add');
       }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adMobService.initialization.then((value) {
+      setState(() {
+        _bannerAdSpent = BannerAd(
+          size: AdSize.fullBanner,
+          adUnitId: _adMobService.bannerCategoryListAdUnitId!,
+          listener: _adMobService.bannerAdListener,
+          request: const AdRequest(),
+        )..load();
+        _bannerAdReceived = BannerAd(
+          size: AdSize.fullBanner,
+          adUnitId: _adMobService.bannerCategoryListAdUnitId!,
+          listener: _adMobService.bannerAdListener,
+          request: const AdRequest(),
+        )..load();
+      });
     });
   }
 
@@ -126,7 +156,21 @@ class _CategoryListPageState extends State<CategoryListPage> {
             ),
           ); //* Display a message for no categories
         } else {
-          return _buildCategoryList(context, snapshot.data!);
+          return Column(
+            children: [
+              if (type == 'spent' && _bannerAdSpent != null)
+                SizedBox(
+                  height: 60.0,
+                  child: AdWidget(ad: _bannerAdSpent!),
+                ),
+              if (type == 'received' && _bannerAdReceived != null)
+                SizedBox(
+                  height: 60.0,
+                  child: AdWidget(ad: _bannerAdReceived!),
+                ),
+              Expanded(child: _buildCategoryList(context, snapshot.data!)),
+            ],
+          );
         }
       },
     );
