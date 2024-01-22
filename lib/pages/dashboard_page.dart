@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +24,8 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage>
+    with WidgetsBindingObserver {
   late SharedPreferences prefs;
   String? cycleId;
   String? cycleName;
@@ -33,22 +34,28 @@ class _DashboardPageState extends State<DashboardPage> {
   String? amountSpent;
   String? openingBalance;
   bool _isAmountVisible = false;
+  bool _isPaused = false;
 
   //* Ad related
   late AdMobService _adMobService;
   BannerAd? _bannerAd;
+  AppOpenAd? _appOpenAd;
 
   @override
   void initState() {
     super.initState();
+
     //* Call the function when the DashboardPage is loaded
     _refreshPage();
+
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+
     _adMobService.initialization.then((value) {
       setState(() {
         _bannerAd = BannerAd(
@@ -59,6 +66,29 @@ class _DashboardPageState extends State<DashboardPage> {
         )..load();
       });
     });
+
+    _createAppOpenAd();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      _isPaused = true;
+      print('Paused');
+    } else if (state == AppLifecycleState.resumed && _isPaused) {
+      _showAppOpenAd();
+      _isPaused = false;
+      print('Resumed');
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   Future<void> _refreshPage() async {
@@ -552,6 +582,39 @@ class _DashboardPageState extends State<DashboardPage> {
         MaterialPageRoute(
             builder: (context) => const AddCyclePage(isFirstCycle: true)),
       );
+    }
+  }
+
+  void _createAppOpenAd() {
+    AppOpenAd.load(
+        adUnitId: _adMobService.appOpenAdUnitId!,
+        request: const AdRequest(),
+        adLoadCallback: AppOpenAdLoadCallback(
+          onAdLoaded: (ad) {
+            _appOpenAd = ad;
+          },
+          onAdFailedToLoad: (error) {
+            _appOpenAd = null;
+          },
+        ),
+        orientation: AppOpenAd.orientationPortrait);
+  }
+
+  void _showAppOpenAd() {
+    if (_appOpenAd != null) {
+      _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createAppOpenAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createAppOpenAd();
+        },
+      );
+
+      _appOpenAd!.show();
+      _appOpenAd = null;
     }
   }
 }
