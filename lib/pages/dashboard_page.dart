@@ -59,7 +59,7 @@ class _DashboardPageState extends State<DashboardPage>
     _adMobService.initialization.then((value) {
       setState(() {
         _bannerAd = BannerAd(
-          size: AdSize.fullBanner,
+          size: AdSize.mediumRectangle,
           adUnitId: _adMobService.bannerDasboardAdUnitId!,
           listener: _adMobService.bannerAdListener,
           request: const AdRequest(),
@@ -268,21 +268,21 @@ class _DashboardPageState extends State<DashboardPage>
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              ForecastBudget(
-                cycleId: cycleId ?? '',
-                amountBalance: amountBalance ?? '0.00',
-              ),
               if (_bannerAd != null)
                 Column(
                   children: [
                     const SizedBox(height: 20),
                     SizedBox(
-                      height: 60.0,
+                      height: 250.0,
                       child: AdWidget(ad: _bannerAd!),
                     ),
                   ],
                 ),
+              const SizedBox(height: 20),
+              ForecastBudget(
+                cycleId: cycleId ?? '',
+                amountBalance: amountBalance ?? '0.00',
+              ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -17,32 +17,12 @@ class WishlistPage extends StatefulWidget {
 }
 
 class _WishlistPageState extends State<WishlistPage> {
-  List<Map<String, dynamic>> wishlist = [];
-
-  //* Ad related
-  late AdMobService _adMobService;
-  BannerAd? _bannerAd;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchWishlist();
-  }
+  List<Object> wishlist = [];
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _adMobService = context.read<AdMobService>();
-    _adMobService.initialization.then((value) {
-      setState(() {
-        _bannerAd = BannerAd(
-          size: AdSize.fullBanner,
-          adUnitId: _adMobService.bannerWishlistAdUnitId!,
-          listener: _adMobService.bannerAdListener,
-          request: const AdRequest(),
-        )..load();
-      });
-    });
+    _fetchWishlist();
   }
 
   Future<void> _fetchWishlist() async {
@@ -73,7 +53,21 @@ class _WishlistPageState extends State<WishlistPage> {
         .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
     setState(() {
-      wishlist = fetchedWishlist;
+      wishlist = List.from(fetchedWishlist);
+
+      final adMobService = context.read<AdMobService>();
+      adMobService.initialization.then((value) {
+        for (var i = 2; i < wishlist.length; i += 7) {
+          wishlist.insert(
+              i,
+              BannerAd(
+                size: AdSize.banner,
+                adUnitId: adMobService.bannerWishlistAdUnitId!,
+                listener: adMobService.bannerAdListener,
+                request: const AdRequest(),
+              )..load());
+        }
+      });
     });
   }
 
@@ -84,141 +78,127 @@ class _WishlistPageState extends State<WishlistPage> {
         title: const Text('Wishlist'),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          if (_bannerAd != null)
-            SizedBox(
-              height: 60.0,
-              child: AdWidget(ad: _bannerAd!),
-            ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    ...wishlist.map((wish) {
-                      return Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                                width: 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: ListTile(
-                              title: Text(wish['name']),
-                              trailing: PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_horiz),
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    //* Handle edit option
-                                    _showWishlistDialog(context, 'Edit',
-                                        wish: wish);
-                                  } else if (value == 'delete') {
-                                    //* Handle delete option
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Text('Confirm Delete'),
-                                          content: const Text(
-                                              'Are you sure you want to delete this wish?'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context)
-                                                    .pop(); //* Close the dialog
-                                              },
-                                              child: const Text('Cancel'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                //* Delete the item from Firestore here
-                                                final wishId = wish['id'];
+      body: ListView.builder(
+        itemCount: wishlist.length,
+        itemBuilder: (context, index) {
+          if (wishlist[index] is BannerAd) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 5.0),
+              height: 50.0,
+              child: AdWidget(ad: wishlist[index] as BannerAd),
+            );
+          } else {
+            Map wish = wishlist[index] as Map;
 
-                                                //* Reference to the Firestore document to delete
-                                                final user = FirebaseAuth
-                                                    .instance.currentUser;
-                                                if (user == null) {
-                                                  //todo: Handle the case where the user is not authenticated
-                                                  return;
-                                                }
+            return Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: ListTile(
+                  title: Text(wish['name']),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_horiz),
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        //* Handle edit option
+                        _showWishlistDialog(context, 'Edit', wish: wish);
+                      } else if (value == 'delete') {
+                        //* Handle delete option
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Confirm Delete'),
+                              content: const Text(
+                                  'Are you sure you want to delete this wish?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); //* Close the dialog
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    //* Delete the item from Firestore here
+                                    final wishId = wish['id'];
 
-                                                final userRef =
-                                                    FirebaseFirestore.instance
-                                                        .collection('users')
-                                                        .doc(user.uid);
-                                                final wishlistRef = userRef
-                                                    .collection('wishlist');
-                                                final wishRef =
-                                                    wishlistRef.doc(wishId);
+                                    //* Reference to the Firestore document to delete
+                                    final user =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (user == null) {
+                                      //todo: Handle the case where the user is not authenticated
+                                      return;
+                                    }
 
-                                                //* Update the 'deleted_at' field with the current timestamp
-                                                final now = DateTime.now();
-                                                wishRef.update({
-                                                  'updated_at': now,
-                                                  'deleted_at': now,
-                                                });
+                                    final userRef = FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(user.uid);
+                                    final wishlistRef =
+                                        userRef.collection('wishlist');
+                                    final wishRef = wishlistRef.doc(wishId);
 
-                                                _fetchWishlist();
+                                    //* Update the 'deleted_at' field with the current timestamp
+                                    final now = DateTime.now();
+                                    wishRef.update({
+                                      'updated_at': now,
+                                      'deleted_at': now,
+                                    });
 
-                                                Navigator.of(context)
-                                                    .pop(); //* Close the dialog
-                                              },
-                                              child: const Text('Delete'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                },
-                                itemBuilder: (context) =>
-                                    <PopupMenuEntry<String>>[
-                                  const PopupMenuItem<String>(
-                                    value: 'edit',
-                                    child: ListTile(
-                                      leading: Icon(Icons.edit),
-                                      title: Text('Edit'),
-                                      dense: true,
-                                    ),
-                                  ),
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      title: Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                      dense: true,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                showWishlistSummaryDialog(
-                                    wish['name'], wish['note']);
-                              },
-                            ),
+                                    _fetchWishlist();
+
+                                    Navigator.of(context)
+                                        .pop(); //* Close the dialog
+                                  },
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },
+                    itemBuilder: (context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'edit',
+                        child: ListTile(
+                          leading: Icon(Icons.edit),
+                          title: Text('Edit'),
+                          dense: true,
+                        ),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.delete,
+                            color: Colors.red,
                           ),
-                          const SizedBox(height: 10),
-                        ],
-                      );
-                    }).toList(),
-                    const SizedBox(height: 80),
-                  ],
+                          title: Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          dense: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    showWishlistSummaryDialog(wish['name'], wish['note']);
+                  },
                 ),
               ),
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

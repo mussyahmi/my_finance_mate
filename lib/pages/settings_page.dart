@@ -45,7 +45,7 @@ class SettingsPageState extends State<SettingsPage> {
     _adMobService.initialization.then((value) {
       setState(() {
         _bannerAd = BannerAd(
-          size: AdSize.fullBanner,
+          size: AdSize.largeBanner,
           adUnitId: _adMobService.bannerSettingAdUnitId!,
           listener: _adMobService.bannerAdListener,
           request: const AdRequest(),
@@ -304,7 +304,7 @@ class SettingsPageState extends State<SettingsPage> {
               children: [
                 const SizedBox(height: 20),
                 SizedBox(
-                  height: 60.0,
+                  height: 100.0,
                   child: AdWidget(ad: _bannerAd!),
                 ),
               ],
