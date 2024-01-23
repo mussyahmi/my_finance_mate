@@ -36,125 +36,129 @@ class _SummaryPageState extends State<SummaryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Category Summary'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.0,
-                    ))
-                : const Icon(Icons.refresh),
-            onPressed: () async {
-              if (_isLoading) return;
-              
-              setState(() {
-                _isLoading = true;
-              });
+    return PopScope(
+      canPop: !_isLoading,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Category Summary'),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.0,
+                      ))
+                  : const Icon(Icons.refresh),
+              onPressed: () async {
+                if (_isLoading) return;
 
-              _showInterstitialAd();
+                setState(() {
+                  _isLoading = true;
+                });
 
-              await Category.recalculateCategoryAndCycleTotalAmount(
-                  widget.cycleId);
+                _showInterstitialAd();
 
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('refresh_dashboard', true);
+                await Category.recalculateCategoryAndCycleTotalAmount(
+                    widget.cycleId);
 
-              setState(() {
-                _isLoading = false;
-              });
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: FutureBuilder<List<Category>>(
-              future: Category.fetchCategories(widget.cycleId, null),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(),
-                      ],
-                    ),
-                  ); //* Display a loading indicator
-                } else if (snapshot.hasError) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: SelectableText(
-                      'Error: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      'No categories found.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ); //* Display a message for no categories
-                } else {
-                  //* Display the list of categories
-                  final categories = snapshot.data!
-                      .where((category) => category.totalAmount != '0.00')
-                      .toList();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('refresh_dashboard', true);
 
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: categories.length,
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-
-                            return ListTile(
-                              title: Text(
-                                category.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              trailing: Text(
-                                '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: category.type == 'spent'
-                                        ? Colors.red
-                                        : Colors.green),
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransactionListPage(
-                                        cycleId: widget.cycleId,
-                                        type: category.type,
-                                        categoryName: category.name),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      )
-                    ],
-                  );
-                }
+                setState(() {
+                  _isLoading = false;
+                });
               },
             ),
-          ),
-        ],
+          ],
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: FutureBuilder<List<Category>>(
+                future: Category.fetchCategories(widget.cycleId, null),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      ),
+                    ); //* Display a loading indicator
+                  } else if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: SelectableText(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Text(
+                        'No categories found.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ); //* Display a message for no categories
+                  } else {
+                    //* Display the list of categories
+                    final categories = snapshot.data!
+                        .where((category) => category.totalAmount != '0.00')
+                        .toList();
+
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: categories.length,
+                            itemBuilder: (context, index) {
+                              final category = categories[index];
+
+                              return ListTile(
+                                title: Text(
+                                  category.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                trailing: Text(
+                                  '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: category.type == 'spent'
+                                          ? Colors.red
+                                          : Colors.green),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TransactionListPage(
+                                          cycleId: widget.cycleId,
+                                          type: category.type,
+                                          categoryName: category.name),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        )
+                      ],
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
