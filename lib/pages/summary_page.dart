@@ -46,7 +46,7 @@ class _SummaryPageState extends State<SummaryPage> {
             categories.insert(
                 i,
                 BannerAd(
-                  size: AdSize.banner,
+                  size: AdSize.fullBanner,
                   adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
                   listener: _adMobService.bannerAdListener,
                   request: const AdRequest(),
@@ -109,7 +109,7 @@ class _SummaryPageState extends State<SummaryPage> {
             if (categories[index] is BannerAd) {
               return Container(
                 margin: const EdgeInsets.symmetric(vertical: 5.0),
-                height: 50.0,
+                height: 60.0,
                 child: AdWidget(ad: categories[index] as BannerAd),
               );
             } else {
