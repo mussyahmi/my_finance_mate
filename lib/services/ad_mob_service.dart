@@ -118,6 +118,24 @@ class AdMobService {
     return null;
   }
 
+  String? get bannerCategorySummaryAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/8368007197';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/6009437164';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
   final BannerAdListener bannerAdListener = BannerAdListener(
     onAdLoaded: (ad) => print('Ad loaded'),
     onAdFailedToLoad: (ad, error) {

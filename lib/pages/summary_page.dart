@@ -17,6 +17,7 @@ class SummaryPage extends StatefulWidget {
 }
 
 class _SummaryPageState extends State<SummaryPage> {
+  List<Object> categories = [];
   bool _isLoading = false;
 
   //* Ad related
@@ -26,11 +27,38 @@ class _SummaryPageState extends State<SummaryPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _adMobService = context.read<AdMobService>();
-    _adMobService.initialization.then((value) {
-      setState(() {
-        _createInterstitialAd();
-      });
+    _fetchCategories();
+  }
+
+  Future<void> _fetchCategories() async {
+    final fetchCategories =
+        await Category.fetchCategories(widget.cycleId, null);
+
+    setState(() {
+      categories = List.from(fetchCategories);
+
+      _adMobService = context.read<AdMobService>();
+      _adMobService.initialization.then(
+        (value) {
+          _createInterstitialAd();
+
+          for (var i = 2; i < categories.length; i += 7) {
+            categories.insert(
+                i,
+                BannerAd(
+                  size: AdSize.banner,
+                  adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
+                  listener: _adMobService.bannerAdListener,
+                  request: const AdRequest(),
+                )..load());
+
+            if (i >= 16) {
+              //* max 3 ads
+              break;
+            }
+          }
+        },
+      );
     });
   }
 
@@ -74,90 +102,46 @@ class _SummaryPageState extends State<SummaryPage> {
             ),
           ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: FutureBuilder<List<Category>>(
-                future: Category.fetchCategories(widget.cycleId, null),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: Column(
-                        children: [
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ); //* Display a loading indicator
-                  } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 10.0),
-                      child: SelectableText(
-                        'Error: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 10.0),
-                      child: Text(
-                        'No categories found.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ); //* Display a message for no categories
-                  } else {
-                    //* Display the list of categories
-                    final categories = snapshot.data!
-                        .where((category) => category.totalAmount != '0.00')
-                        .toList();
+        body: ListView.builder(
+          shrinkWrap: true,
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            if (categories[index] is BannerAd) {
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 5.0),
+                height: 50.0,
+                child: AdWidget(ad: categories[index] as BannerAd),
+              );
+            } else {
+              Category category = categories[index] as Category;
 
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: categories.length,
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-
-                              return ListTile(
-                                title: Text(
-                                  category.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                trailing: Text(
-                                  '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: category.type == 'spent'
-                                          ? Colors.red
-                                          : Colors.green),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TransactionListPage(
-                                          cycleId: widget.cycleId,
-                                          type: category.type,
-                                          categoryName: category.name),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        )
-                      ],
-                    );
-                  }
+              return ListTile(
+                title: Text(
+                  category.name,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                trailing: Text(
+                  '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color:
+                          category.type == 'spent' ? Colors.red : Colors.green),
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TransactionListPage(
+                          cycleId: widget.cycleId,
+                          type: category.type,
+                          categoryName: category.name),
+                    ),
+                  );
                 },
-              ),
-            ),
-          ],
+              );
+            }
+          },
         ),
       ),
     );

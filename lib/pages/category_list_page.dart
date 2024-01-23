@@ -70,6 +70,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 listener: adMobService.bannerAdListener,
                 request: const AdRequest(),
               )..load());
+
+          if (i >= 16) {
+            //* max 3 ads
+            break;
+          }
         }
 
         for (var i = 2; i < receivedCategories.length; i += 7) {
@@ -81,6 +86,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 listener: adMobService.bannerAdListener,
                 request: const AdRequest(),
               )..load());
+
+          if (i >= 16) {
+            //* max 3 ads
+            break;
+          }
         }
       });
     });
