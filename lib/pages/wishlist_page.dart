@@ -26,6 +26,10 @@ class _WishlistPageState extends State<WishlistPage> {
   }
 
   Future<void> _fetchWishlist() async {
+    setState(() {
+      wishlist = [];
+    });
+
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where user is not authenticated

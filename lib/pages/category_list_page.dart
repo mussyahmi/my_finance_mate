@@ -50,6 +50,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
   }
 
   Future<void> _fetchCategories() async {
+    setState(() {
+      spentCategories = [];
+      receivedCategories = [];
+    });
+
     final fetchedSpentCategories =
         await Category.fetchCategories(widget.cycleId, 'spent');
     final fetchedReceivedCategories =

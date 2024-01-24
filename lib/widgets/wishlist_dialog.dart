@@ -67,6 +67,8 @@ class WishlistDialogState extends State<WishlistDialog> {
           ),
           ElevatedButton(
             onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+
               final wishlistName = _wishlistNameController.text;
               final wishlistNote = _wishlistNoteController.text;
 
