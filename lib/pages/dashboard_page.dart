@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
+import 'package:my_finance_mate/widgets/cycle_amount.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,7 +34,6 @@ class _DashboardPageState extends State<DashboardPage>
   String? amountReceived;
   String? amountSpent;
   String? openingBalance;
-  bool _isAmountVisible = false;
   bool _isPaused = false;
 
   //* Ad related
@@ -131,142 +131,12 @@ class _DashboardPageState extends State<DashboardPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isAmountVisible = !_isAmountVisible;
-                  });
-                },
-                child: Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.all(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Available Balance',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          !_isAmountVisible ? 'RM ****' : 'RM $amountBalance',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 24,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM $openingBalance'}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                              cycleId: cycleId ?? '',
-                              type: 'received',
-                            ),
-                          ),
-                        );
-                      },
-                      child: Card(
-                        elevation: 3,
-                        margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'Received',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                !_isAmountVisible
-                                    ? 'RM ****'
-                                    : 'RM $amountReceived',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                              cycleId: cycleId ?? '',
-                              type: 'spent',
-                            ),
-                          ),
-                        );
-                      },
-                      child: Card(
-                        elevation: 3,
-                        margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'Spent',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                !_isAmountVisible
-                                    ? 'RM ****'
-                                    : 'RM $amountSpent',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              CycleAmount(
+                cycleId: cycleId ?? '',
+                amountBalance: amountBalance ?? '',
+                openingBalance: openingBalance ?? '',
+                amountReceived: amountReceived ?? '',
+                amountSpent: amountSpent ?? '',
               ),
               if (_bannerAd != null)
                 Column(
