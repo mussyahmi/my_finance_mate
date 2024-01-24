@@ -70,19 +70,42 @@ class WishlistDialogState extends State<WishlistDialog> {
               final wishlistName = _wishlistNameController.text;
               final wishlistNote = _wishlistNoteController.text;
 
-              if (wishlistName.isNotEmpty) {
-                //* Call the function to update to Firebase
-                updateWishlistToFirebase(wishlistName, wishlistNote);
+              final message = _validate(wishlistName);
 
-                //* Close the dialog
-                Navigator.of(context).pop();
+              if (message.isNotEmpty) {
+                final snackBar = SnackBar(
+                  content: Text(
+                    message,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.onError),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+                return;
               }
+
+              //* Call the function to update to Firebase
+              updateWishlistToFirebase(wishlistName, wishlistNote);
+
+              //* Close the dialog
+              Navigator.of(context).pop();
             },
             child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
           ),
         ],
       ),
     );
+  }
+
+  String _validate(String name) {
+    if (name.isEmpty) {
+      return 'Please enter wishlist\'s name.';
+    }
+
+    return '';
   }
 
   //* Function to update wishlist to Firebase Firestore
