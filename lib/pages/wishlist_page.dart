@@ -90,9 +90,12 @@ class _WishlistPageState extends State<WishlistPage> {
           } else {
             Map wish = wishlist[index] as Map;
 
-            return Padding(
+            return Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
+              margin: index == wishlist.length - 1
+                  ? const EdgeInsets.only(bottom: 80)
+                  : null,
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(

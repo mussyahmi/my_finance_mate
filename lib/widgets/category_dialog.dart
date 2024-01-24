@@ -30,6 +30,7 @@ class CategoryDialogState extends State<CategoryDialog> {
       TextEditingController();
   final TextEditingController _categoryNoteController = TextEditingController();
   bool _isBudgetEnabled = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -51,54 +52,63 @@ class CategoryDialogState extends State<CategoryDialog> {
       child: AlertDialog(
         title: Text('${widget.action} Category'),
         content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _categoryNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _categoryNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter category\' name.';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-              if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
-                Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _categoryBudgetController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Budget',
-                        prefixText: 'RM ',
+                if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
+                  Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _categoryBudgetController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Budget',
+                          prefixText: 'RM ',
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                if (widget.type == 'spent')
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isBudgetEnabled,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isBudgetEnabled = value ?? false;
+                          });
+                        },
+                      ),
+                      const Text('Set a Budget'),
+                    ],
+                  ),
+                if (widget.type == 'spent') const SizedBox(height: 10),
+                if (widget.type == 'received') const SizedBox(height: 20),
+                TextField(
+                  controller: _categoryNoteController,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                    labelText: 'Note',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              if (widget.type == 'spent')
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isBudgetEnabled,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isBudgetEnabled = value ?? false;
-                        });
-                      },
-                    ),
-                    const Text('Set a Budget'),
-                  ],
-                ),
-              if (widget.type == 'spent') const SizedBox(height: 10),
-              if (widget.type == 'received') const SizedBox(height: 20),
-              TextField(
-                controller: _categoryNoteController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Note',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         actions: [
@@ -110,12 +120,26 @@ class CategoryDialogState extends State<CategoryDialog> {
           ),
           ElevatedButton(
             onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+
               final categoryName = _categoryNameController.text;
               final categoryBudget = _categoryBudgetController.text;
               final categoryNote = _categoryNoteController.text;
 
-              if (categoryName.isEmpty ||
-                  (_isBudgetEnabled && categoryBudget.isEmpty)) {
+              final message = _validate(categoryName, categoryBudget);
+
+              if (message.isNotEmpty) {
+                final snackBar = SnackBar(
+                  content: Text(
+                    message,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.onError),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
                 return;
               }
 
@@ -131,6 +155,42 @@ class CategoryDialogState extends State<CategoryDialog> {
         ],
       ),
     );
+  }
+
+  String _validate(String name, String budget) {
+    if (name.isEmpty) {
+      return 'Please enter category\'s name.';
+    }
+
+    if (_isBudgetEnabled) {
+      if (budget.isEmpty) {
+        return 'Please enter category\'s budget.';
+      }
+
+      //* Remove any commas from the string
+      String cleanedValue = budget.replaceAll(',', '');
+
+      //* Check if the cleaned value is a valid double
+      if (double.tryParse(cleanedValue) == null) {
+        return 'Please enter a valid number.';
+      }
+
+      //* Check if the value is a positive number
+      if (double.parse(cleanedValue) <= 0) {
+        return 'Please enter a positive value.';
+      }
+
+      //* Custom currency validation (you can modify this based on your requirements)
+      //* Here, we are checking if the value has up to 2 decimal places
+      List<String> splitValue = cleanedValue.split('.');
+      if (splitValue.length > 1 && splitValue[1].length > 2) {
+        return 'Please enter a valid currency value with up to 2 decimal places';
+      }
+
+      _categoryBudgetController.text = cleanedValue;
+    }
+
+    return '';
   }
 
   //* Function to update category to Firebase Firestore
@@ -214,7 +274,7 @@ class CategoryDialogState extends State<CategoryDialog> {
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       // ignore: avoid_print
-      print('Error adding category: $e');
+      print('Error adding transaction: $e');
     }
   }
 

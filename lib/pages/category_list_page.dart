@@ -160,9 +160,12 @@ class _CategoryListPageState extends State<CategoryListPage> {
         } else {
           Category category = categories[index] as Category;
 
-          return Padding(
+          return Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
+            margin: index == categories.length - 1
+                ? const EdgeInsets.only(bottom: 80)
+                : null,
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -259,7 +262,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                     await prefs.setBool(
                                         'refresh_dashboard', true);
 
-                                    setState(() {}); //* Refresh
+                                    _fetchCategories();
 
                                     Navigator.of(context)
                                         .pop(); //* Close the dialog
@@ -306,9 +309,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => TransactionListPage(
-                          cycleId: widget.cycleId,
-                          type: selectedType,
-                          categoryName: category.name),
+                        cycleId: widget.cycleId,
+                        type: selectedType,
+                        categoryName: category.name,
+                      ),
                     ),
                   );
                 },
@@ -331,9 +335,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
           type: selectedType,
           action: action,
           category: category,
-          onCategoryChanged: () {
-            setState(() {}); //* Refresh
-          },
+          onCategoryChanged: _fetchCategories,
         );
       },
     );
