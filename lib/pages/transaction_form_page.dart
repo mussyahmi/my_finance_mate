@@ -433,71 +433,70 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       return;
     }
-    return;
 
-    // //* Get current timestamp
-    // final now = DateTime.now();
+    //* Get current timestamp
+    final now = DateTime.now();
 
-    // //* Get the current user
-    // final user = FirebaseAuth.instance.currentUser;
-    // if (user == null) {
-    //   //todo: Handle the case where the user is not authenticated
-    //   return;
-    // }
+    //* Get the current user
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where the user is not authenticated
+      return;
+    }
 
-    // try {
-    //   //* Reference to the Firestore document to add the transaction
-    //   final userRef =
-    //       FirebaseFirestore.instance.collection('users').doc(user.uid);
-    //   final transactionsRef = userRef.collection('transactions');
+    try {
+      //* Reference to the Firestore document to add the transaction
+      final userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final transactionsRef = userRef.collection('transactions');
 
-    //   List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
+      List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
 
-    //   if (widget.action == 'Add') {
-    //     //* Create a new transaction document
-    //     await transactionsRef.add({
-    //       'cycle_id': widget.cycleId,
-    //       'date_time': dateTime,
-    //       'type': type,
-    //       'category_id': categoryId,
-    //       'category_name': categories
-    //           .firstWhere((category) => category.id == categoryId)
-    //           .name,
-    //       'amount': double.parse(amount).toStringAsFixed(2),
-    //       'note': note,
-    //       'created_at': now,
-    //       'updated_at': now,
-    //       'deleted_at': null,
-    //       'version_json': null,
-    //       'files': downloadURLs,
-    //     });
-    //   } else if (widget.action == 'Edit') {
-    //     await transactionsRef.doc(widget.transaction!.id).update({
-    //       'date_time': dateTime,
-    //       'type': type,
-    //       'category_id': categoryId,
-    //       'category_name': categories
-    //           .firstWhere((category) => category.id == categoryId)
-    //           .name,
-    //       'amount': double.parse(amount).toStringAsFixed(2),
-    //       'note': note,
-    //       'updated_at': now,
-    //       'files': downloadURLs,
-    //     });
-    //   }
+      if (widget.action == 'Add') {
+        //* Create a new transaction document
+        await transactionsRef.add({
+          'cycle_id': widget.cycleId,
+          'date_time': dateTime,
+          'type': type,
+          'category_id': categoryId,
+          'category_name': categories
+              .firstWhere((category) => category.id == categoryId)
+              .name,
+          'amount': double.parse(amount).toStringAsFixed(2),
+          'note': note,
+          'created_at': now,
+          'updated_at': now,
+          'deleted_at': null,
+          'version_json': null,
+          'files': downloadURLs,
+        });
+      } else if (widget.action == 'Edit') {
+        await transactionsRef.doc(widget.transaction!.id).update({
+          'date_time': dateTime,
+          'type': type,
+          'category_id': categoryId,
+          'category_name': categories
+              .firstWhere((category) => category.id == categoryId)
+              .name,
+          'amount': double.parse(amount).toStringAsFixed(2),
+          'note': note,
+          'updated_at': now,
+          'files': downloadURLs,
+        });
+      }
 
-    //   final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
 
-    //   await _updateCycleToFirebase(cyclesRef, type, amount, now);
+      await _updateCycleToFirebase(cyclesRef, type, amount, now);
 
-    //   await _updateCategoryToFirebase(cyclesRef, categoryId, amount, now);
+      await _updateCategoryToFirebase(cyclesRef, categoryId!, amount, now);
 
-    //   Navigator.of(context).pop(true);
-    // } catch (e) {
-    //   //* Handle any errors that occur during the Firestore operation
-    //   print('Error saving transaction: $e');
-    //   //* You can show an error message to the user if needed
-    // }
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      //* Handle any errors that occur during the Firestore operation
+      print('Error saving transaction: $e');
+      //* You can show an error message to the user if needed
+    }
   }
 
   String _validate(String? categoryId, String amount) {
