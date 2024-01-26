@@ -82,6 +82,8 @@ class WishlistDialogState extends State<WishlistDialog> {
                         TextStyle(color: Theme.of(context).colorScheme.onError),
                   ),
                   backgroundColor: Theme.of(context).colorScheme.error,
+                  showCloseIcon: true,
+                  closeIconColor: Theme.of(context).colorScheme.onError,
                 );
 
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);

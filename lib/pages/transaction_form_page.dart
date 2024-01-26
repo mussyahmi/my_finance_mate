@@ -410,76 +410,128 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   Future<void> _updateTransactionToFirebase() async {
     //* Get the values from the form
     String type = selectedType;
-    String categoryId = selectedCategoryId!;
+    String? categoryId = selectedCategoryId;
     String amount = transactionAmountController.text;
     String note = transactionNoteController.text.replaceAll('\n', '\\n');
     DateTime dateTime = selectedDateTime;
 
-    //* Validate the form data (add your own validation logic here)
+    //* Validate the form data
+    final message = _validate(categoryId, amount);
 
-    //* Get current timestamp
-    final now = DateTime.now();
+    if (message.isNotEmpty) {
+      final snackBar = SnackBar(
+        content: Text(
+          message,
+          style: TextStyle(color: Theme.of(context).colorScheme.onError),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        showCloseIcon: true,
+        closeIconColor: Theme.of(context).colorScheme.onError,
+      );
 
-    //* Get the current user
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
       return;
     }
+    return;
 
-    try {
-      //* Reference to the Firestore document to add the transaction
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final transactionsRef = userRef.collection('transactions');
+    // //* Get current timestamp
+    // final now = DateTime.now();
 
-      List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
+    // //* Get the current user
+    // final user = FirebaseAuth.instance.currentUser;
+    // if (user == null) {
+    //   //todo: Handle the case where the user is not authenticated
+    //   return;
+    // }
 
-      if (widget.action == 'Add') {
-        //* Create a new transaction document
-        await transactionsRef.add({
-          'cycle_id': widget.cycleId,
-          'date_time': dateTime,
-          'type': type,
-          'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
-          'amount': double.parse(amount).toStringAsFixed(2),
-          'note': note,
-          'created_at': now,
-          'updated_at': now,
-          'deleted_at': null,
-          'version_json': null,
-          'files': downloadURLs,
-        });
-      } else if (widget.action == 'Edit') {
-        await transactionsRef.doc(widget.transaction!.id).update({
-          'date_time': dateTime,
-          'type': type,
-          'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
-          'amount': double.parse(amount).toStringAsFixed(2),
-          'note': note,
-          'updated_at': now,
-          'files': downloadURLs,
-        });
-      }
+    // try {
+    //   //* Reference to the Firestore document to add the transaction
+    //   final userRef =
+    //       FirebaseFirestore.instance.collection('users').doc(user.uid);
+    //   final transactionsRef = userRef.collection('transactions');
 
-      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+    //   List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
 
-      await _updateCycleToFirebase(cyclesRef, type, amount, now);
+    //   if (widget.action == 'Add') {
+    //     //* Create a new transaction document
+    //     await transactionsRef.add({
+    //       'cycle_id': widget.cycleId,
+    //       'date_time': dateTime,
+    //       'type': type,
+    //       'category_id': categoryId,
+    //       'category_name': categories
+    //           .firstWhere((category) => category.id == categoryId)
+    //           .name,
+    //       'amount': double.parse(amount).toStringAsFixed(2),
+    //       'note': note,
+    //       'created_at': now,
+    //       'updated_at': now,
+    //       'deleted_at': null,
+    //       'version_json': null,
+    //       'files': downloadURLs,
+    //     });
+    //   } else if (widget.action == 'Edit') {
+    //     await transactionsRef.doc(widget.transaction!.id).update({
+    //       'date_time': dateTime,
+    //       'type': type,
+    //       'category_id': categoryId,
+    //       'category_name': categories
+    //           .firstWhere((category) => category.id == categoryId)
+    //           .name,
+    //       'amount': double.parse(amount).toStringAsFixed(2),
+    //       'note': note,
+    //       'updated_at': now,
+    //       'files': downloadURLs,
+    //     });
+    //   }
 
-      await _updateCategoryToFirebase(cyclesRef, categoryId, amount, now);
+    //   final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
 
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      //* Handle any errors that occur during the Firestore operation
-      print('Error saving transaction: $e');
-      //* You can show an error message to the user if needed
+    //   await _updateCycleToFirebase(cyclesRef, type, amount, now);
+
+    //   await _updateCategoryToFirebase(cyclesRef, categoryId, amount, now);
+
+    //   Navigator.of(context).pop(true);
+    // } catch (e) {
+    //   //* Handle any errors that occur during the Firestore operation
+    //   print('Error saving transaction: $e');
+    //   //* You can show an error message to the user if needed
+    // }
+  }
+
+  String _validate(String? categoryId, String amount) {
+    if (categoryId == null || categoryId.isEmpty) {
+      return 'Please choose category.';
     }
+
+    if (amount.isEmpty) {
+      return 'Please enter transaction\'s amount.';
+    }
+
+    //* Remove any commas from the string
+    String cleanedValue = amount.replaceAll(',', '');
+
+    //* Check if the cleaned value is a valid double
+    if (double.tryParse(cleanedValue) == null) {
+      return 'Please enter a valid number.';
+    }
+
+    //* Check if the value is a positive number
+    if (double.parse(cleanedValue) <= 0) {
+      return 'Please enter a positive value.';
+    }
+
+    //* Custom currency validation (you can modify this based on your requirements)
+    //* Here, we are checking if the value has up to 2 decimal places
+    List<String> splitValue = cleanedValue.split('.');
+    if (splitValue.length > 1 && splitValue[1].length > 2) {
+      return 'Please enter a valid currency value with up to 2 decimal places';
+    }
+
+    transactionAmountController.text = cleanedValue;
+
+    return '';
   }
 
   Future<List> _uploadAndDeleteFilesToFirebase(User user) async {
