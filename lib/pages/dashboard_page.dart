@@ -78,7 +78,7 @@ class _DashboardPageState extends State<DashboardPage>
       _isPaused = true;
       print('Paused');
     } else if (state == AppLifecycleState.resumed && _isPaused) {
-      _showAppOpenAd();
+      // _showAppOpenAd();
       _isPaused = false;
       print('Resumed');
     }
@@ -152,6 +152,7 @@ class _DashboardPageState extends State<DashboardPage>
               ForecastBudget(
                 cycleId: cycleId ?? '',
                 amountBalance: amountBalance ?? '0.00',
+                onCategoryChanged: _refreshPage,
               ),
               const SizedBox(height: 20),
               Padding(

@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -118,20 +118,24 @@ class Category {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
+              onPressed: () async {
+                final result = await _deleteHandler(context, onCategoryChanged);
 
-                _deleteHandler(context, onCategoryChanged);
+                if (result) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Delete'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-
-                showCategoryFormDialog(
+              onPressed: () async {
+                final result = await showCategoryFormDialog(
                     context, cycleId, selectedType, 'Edit', onCategoryChanged,
                     category: this);
+
+                if (result) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Edit'),
             ),
@@ -141,13 +145,13 @@ class Category {
     );
   }
 
-  _deleteHandler(context, Function onCategoryChanged) async {
+  Future<bool> _deleteHandler(context, Function onCategoryChanged) async {
     //* Check if there are transactions associated with this category
     final hasTransactions = await this.hasTransactions();
 
     if (hasTransactions) {
       //* If there are transactions, show an error message or handle it accordingly.
-      showDialog(
+      return await showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -157,7 +161,7 @@ class Category {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); //* Close the dialog
+                  Navigator.of(context).pop(false); //* Close the dialog
                 },
                 child: const Text('OK'),
               ),
@@ -167,7 +171,7 @@ class Category {
       );
     } else {
       //* If there are no transactions, proceed with the deletion.
-      showDialog(
+      return await showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -177,7 +181,7 @@ class Category {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); //* Close the dialog
+                  Navigator.of(context).pop(false); //* Close the dialog
                 },
                 child: const Text('Cancel'),
               ),
@@ -213,8 +217,7 @@ class Category {
 
                   onCategoryChanged();
 
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop(); //* Close the dialog
+                  Navigator.of(context).pop(true); //* Close the dialog
                 },
                 child: const Text('Delete'),
               ),
@@ -423,10 +426,14 @@ class Category {
   }
 
   //* Function to show the add/edit category dialog
-  static void showCategoryFormDialog(BuildContext context, String cycleId,
-      String selectedType, String action, Function onCategoryChanged,
-      {Category? category}) {
-    showDialog(
+  static Future<bool> showCategoryFormDialog(
+      BuildContext context,
+      String cycleId,
+      String selectedType,
+      String action,
+      Function onCategoryChanged,
+      {Category? category}) async {
+    return await showDialog(
       context: context,
       builder: (context) {
         return CategoryDialog(

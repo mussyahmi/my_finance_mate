@@ -114,7 +114,7 @@ class CategoryDialogState extends State<CategoryDialog> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); //* Close the dialog
+              Navigator.of(context).pop(false); //* Close the dialog
             },
             child: const Text('Cancel'),
           ),
@@ -148,7 +148,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                   categoryName, categoryBudget, categoryNote);
 
               //* Close the dialog
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true);
             },
             child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
           ),

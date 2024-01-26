@@ -364,7 +364,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         _isLoading = true;
                       });
 
-                      _showInterstitialAd();
+                      // _showInterstitialAd();
 
                       try {
                         await _updateTransactionToFirebase();

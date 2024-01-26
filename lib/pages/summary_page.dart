@@ -87,7 +87,7 @@ class _SummaryPageState extends State<SummaryPage> {
                   _isLoading = true;
                 });
 
-                _showInterstitialAd();
+                // _showInterstitialAd();
 
                 await Category.recalculateCategoryAndCycleTotalAmount(
                     widget.cycleId);
