@@ -10,9 +10,13 @@ enum BudgetFilter { all, ongoing, exceeded, completed }
 class ForecastBudget extends StatefulWidget {
   final String cycleId;
   final String amountBalance;
+  final Function onCategoryChanged;
 
   const ForecastBudget(
-      {super.key, required this.cycleId, required this.amountBalance});
+      {super.key,
+      required this.cycleId,
+      required this.amountBalance,
+      required this.onCategoryChanged});
 
   @override
   State<ForecastBudget> createState() => _ForecastBudgetState();
@@ -205,8 +209,11 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                                       right:
                                           8, //* Adjust the value to position the icon as needed
                                       child: GestureDetector(
-                                        onTap: () => budget
-                                            .showCategorySummaryDialog(context),
+                                        onTap: () =>
+                                            budget.showCategorySummaryDialog(
+                                                context,
+                                                budget.type,
+                                                widget.onCategoryChanged),
                                         child: Icon(
                                           Icons.info,
                                           color: Theme.of(context)
@@ -273,6 +280,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
         note: data['note'],
         budget: data['budget'],
         totalAmount: data['total_amount'],
+        cycleId: widget.cycleId,
         createdAt: (data['created_at'] as Timestamp).toDate(),
         updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );

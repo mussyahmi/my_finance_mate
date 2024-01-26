@@ -4,7 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:my_finance_mate/extensions/string_extension.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../widgets/category_dialog.dart';
 
 class Category {
   final String id;
@@ -13,6 +17,7 @@ class Category {
   final String note;
   final String budget;
   final String totalAmount;
+  final String cycleId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -23,6 +28,7 @@ class Category {
     required this.note,
     required this.budget,
     required this.totalAmount,
+    required this.cycleId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -36,7 +42,8 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategorySummaryDialog(BuildContext context) {
+  void showCategorySummaryDialog(
+      BuildContext context, String selectedType, Function onCategoryChanged) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -79,9 +86,9 @@ class Category {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Total Amount:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Text(
+                          '${type.capitalize()}:',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text('RM$totalAmount'),
                       ],
@@ -112,14 +119,110 @@ class Category {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); //* Close the dialog
+                Navigator.of(context).pop();
+
+                _deleteHandler(context, onCategoryChanged);
               },
-              child: const Text('Close'),
+              child: const Text('Delete'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                showCategoryFormDialog(
+                    context, cycleId, selectedType, 'Edit', onCategoryChanged,
+                    category: this);
+              },
+              child: const Text('Edit'),
             ),
           ],
         );
       },
     );
+  }
+
+  _deleteHandler(context, Function onCategoryChanged) async {
+    //* Check if there are transactions associated with this category
+    final hasTransactions = await this.hasTransactions();
+
+    if (hasTransactions) {
+      //* If there are transactions, show an error message or handle it accordingly.
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Cannot Delete Category'),
+            content: const Text(
+                'There are transactions associated with this category. You cannot delete it.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); //* Close the dialog
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      //* If there are no transactions, proceed with the deletion.
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Confirm Delete'),
+            content:
+                const Text('Are you sure you want to delete this category?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); //* Close the dialog
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  //* Delete the item from Firestore here
+                  final categoryId = id;
+
+                  //* Reference to the Firestore document to delete
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user == null) {
+                    //todo: Handle the case where the user is not authenticated
+                    return;
+                  }
+
+                  final userRef = FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid);
+                  final cyclesRef = userRef.collection('cycles').doc(cycleId);
+                  final categoriesRef = cyclesRef.collection('categories');
+                  final categoryRef = categoriesRef.doc(categoryId);
+
+                  //* Update the 'deleted_at' field with the current timestamp
+                  final now = DateTime.now();
+                  categoryRef.update({
+                    'updated_at': now,
+                    'deleted_at': now,
+                  });
+
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  await prefs.setBool('refresh_dashboard', true);
+
+                  onCategoryChanged();
+
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop(); //* Close the dialog
+                },
+                child: const Text('Delete'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   Future<bool> hasTransactions() async {
@@ -279,6 +382,7 @@ class Category {
               note: doc['note'],
               budget: doc['budget'],
               totalAmount: doc['total_amount'],
+              cycleId: cycleId,
               createdAt: (doc['created_at'] as Timestamp).toDate(),
               updatedAt: (doc['updated_at'] as Timestamp).toDate(),
             ))
@@ -300,6 +404,7 @@ class Category {
             note: doc['note'],
             budget: doc['budget'],
             totalAmount: doc['total_amount'],
+            cycleId: cycleId,
             createdAt: (doc['created_at'] as Timestamp).toDate(),
             updatedAt: (doc['updated_at'] as Timestamp).toDate(),
           );
@@ -315,5 +420,23 @@ class Category {
     fetchedCategories.sort((a, b) => (a.name).compareTo(b.name));
 
     return fetchedCategories;
+  }
+
+  //* Function to show the add/edit category dialog
+  static void showCategoryFormDialog(BuildContext context, String cycleId,
+      String selectedType, String action, Function onCategoryChanged,
+      {Category? category}) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CategoryDialog(
+          cycleId: cycleId,
+          type: selectedType,
+          action: action,
+          category: category,
+          onCategoryChanged: onCategoryChanged,
+        );
+      },
+    );
   }
 }
