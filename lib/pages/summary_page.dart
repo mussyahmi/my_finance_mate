@@ -31,11 +31,13 @@ class _SummaryPageState extends State<SummaryPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final fetchCategories =
+    final List<Category> fetchCategories =
         await Category.fetchCategories(widget.cycleId, null);
 
     setState(() {
-      categories = List.from(fetchCategories);
+      categories = List.from(fetchCategories
+          .where((element) => double.parse(element.totalAmount) > 0)
+          .toList());
 
       _adMobService = context.read<AdMobService>();
       _adMobService.initialization.then(
