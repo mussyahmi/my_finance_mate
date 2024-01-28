@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
+import '../size_config.dart';
 
 class Transaction {
   final String id;
@@ -98,12 +99,19 @@ class Transaction {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    MarkdownBody(
-                      selectable: true,
-                      data: note.replaceAll('\\n', '\n'),
-                      onTapLink: (text, url, title) {
-                        launchUrl(Uri.parse(url!));
-                      },
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: SizeConfig.screenHeight! * 0.2,
+                      ),
+                      child: SingleChildScrollView(
+                        child: MarkdownBody(
+                          selectable: true,
+                          data: note.replaceAll('\n', '  \n'),
+                          onTapLink: (text, url, title) {
+                            launchUrl(Uri.parse(url!));
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/ad_mob_service.dart';
+import '../size_config.dart';
 import '../widgets/wishlist_dialog.dart';
 
 class WishlistPage extends StatefulWidget {
@@ -260,12 +261,19 @@ class _WishlistPageState extends State<WishlistPage> {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    MarkdownBody(
-                      selectable: true,
-                      data: note.replaceAll('\\n', '\n'),
-                      onTapLink: (text, url, title) {
-                        launchUrl(Uri.parse(url!));
-                      },
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: SizeConfig.screenHeight! * 0.2,
+                      ),
+                      child: SingleChildScrollView(
+                        child: MarkdownBody(
+                          selectable: true,
+                          data: note.replaceAll('\n', '  \n'),
+                          onTapLink: (text, url, title) {
+                            launchUrl(Uri.parse(url!));
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),

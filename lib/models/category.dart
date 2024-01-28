@@ -8,6 +8,7 @@ import 'package:my_finance_mate/extensions/string_extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../size_config.dart';
 import '../widgets/category_dialog.dart';
 
 class Category {
@@ -104,12 +105,19 @@ class Category {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    MarkdownBody(
-                      selectable: true,
-                      data: note.replaceAll('\n', '\\\n'),
-                      onTapLink: (text, url, title) {
-                        launchUrl(Uri.parse(url!));
-                      },
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: SizeConfig.screenHeight! * 0.2,
+                      ),
+                      child: SingleChildScrollView(
+                        child: MarkdownBody(
+                          data: note.replaceAll('\n', '  \n'),
+                          selectable: true,
+                          onTapLink: (text, url, title) {
+                            launchUrl(Uri.parse(url!));
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
