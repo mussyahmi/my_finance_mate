@@ -85,17 +85,17 @@ class AddCyclePageState extends State<AddCyclePage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Create New Cycle'),
-          centerTitle: true,
-          automaticallyImplyLeading: false, //* Hide the back icon button
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Create New Cycle'),
+            centerTitle: true,
+            automaticallyImplyLeading: false, //* Hide the back icon button
+          ),
+          body: Column(
+            children: [
+              Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -111,7 +111,7 @@ class AddCyclePageState extends State<AddCyclePage> {
                               lastDate:
                                   DateTime.now().add(const Duration(days: 365)),
                             );
-              
+
                             if (pickedDateRange != null) {
                               setState(() {
                                 selectedDateRange = pickedDateRange;
@@ -147,12 +147,14 @@ class AddCyclePageState extends State<AddCyclePage> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () async {
+                            FocusManager.instance.primaryFocus?.unfocus();
+
                             if (_isLoading) return;
-              
+
                             setState(() {
                               _isLoading = true;
                             });
-              
+
                             try {
                               await _updateTransactionToFirebase();
                             } finally {
@@ -184,66 +186,122 @@ class AddCyclePageState extends State<AddCyclePage> {
                   ),
                 ),
               ),
-            ),
-            if (_bannerAd != null)
-              SizedBox(
-                height: 60.0,
-                child: AdWidget(ad: _bannerAd!),
-              ),
-          ],
+              if (_bannerAd != null)
+                SizedBox(
+                  height: 60.0,
+                  child: AdWidget(ad: _bannerAd!),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Future<void> _updateTransactionToFirebase() async {
-    if (selectedDateRange != null) {
-      final adjustedEndDate = selectedDateRange!.end
-          .add(const Duration(days: 1))
-          .subtract(const Duration(minutes: 1));
+    //* Validate the form data
+    final message = _validate(selectedDateRange, cycleNameController.text,
+        openingBalanceController.text);
 
-      //* Get the current user
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        //todo: Handle the case where user is not authenticated
-        return;
-      }
-
-      //* Get current timestamp
-      final now = DateTime.now();
-
-      //* Create the new cycle document
-      final newCycleDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('cycles')
-          .add({
-        'cycle_no': lastCycleNo + 1,
-        'cycle_name': cycleNameController.text,
-        'start_date': selectedDateRange!.start,
-        'end_date': adjustedEndDate,
-        'created_at': now,
-        'updated_at': now,
-        'deleted_at': null,
-        'opening_balance':
-            double.parse(openingBalanceController.text).toStringAsFixed(2),
-        'amount_balance':
-            double.parse(openingBalanceController.text).toStringAsFixed(2),
-        'amount_received': '0.00',
-        'amount_spent': '0.00',
-      });
-
-      await copyCategoriesFromLastCycle(user, newCycleDoc.id);
-
-      // ignore: use_build_context_synchronously
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-        (route) =>
-            false, //* This line removes all previous routes from the stack
+    if (message.isNotEmpty) {
+      final snackBar = SnackBar(
+        content: Text(
+          message,
+          style: TextStyle(color: Theme.of(context).colorScheme.onError),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        showCloseIcon: true,
+        closeIconColor: Theme.of(context).colorScheme.onError,
       );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+      return;
     }
+
+    final adjustedEndDate = selectedDateRange!.end
+        .add(const Duration(days: 1))
+        .subtract(const Duration(minutes: 1));
+
+    //* Get the current user
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return;
+    }
+
+    //* Get current timestamp
+    final now = DateTime.now();
+
+    //* Create the new cycle document
+    final newCycleDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .add({
+      'cycle_no': lastCycleNo + 1,
+      'cycle_name': cycleNameController.text,
+      'start_date': selectedDateRange!.start,
+      'end_date': adjustedEndDate,
+      'created_at': now,
+      'updated_at': now,
+      'deleted_at': null,
+      'opening_balance':
+          double.parse(openingBalanceController.text).toStringAsFixed(2),
+      'amount_balance':
+          double.parse(openingBalanceController.text).toStringAsFixed(2),
+      'amount_received': '0.00',
+      'amount_spent': '0.00',
+    });
+
+    await copyCategoriesFromLastCycle(user, newCycleDoc.id);
+
+    // ignore: use_build_context_synchronously
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const DashboardPage()),
+      (route) => false, //* This line removes all previous routes from the stack
+    );
+  }
+
+  String _validate(
+      DateTimeRange? selectedDateRange, String cycleName, String amount) {
+    if (selectedDateRange == null) {
+      return 'Please select date range.';
+    }
+
+    if (cycleName.isEmpty) {
+      return 'Please enter cycle\'s name.';
+    }
+
+    if (amount.isEmpty) {
+      return 'Please enter opening balance\'s amount.';
+    }
+
+    //* Remove any commas from the string
+    String cleanedValue = amount.replaceAll(',', '');
+
+    //* Check if the cleaned value is a valid double
+    if (double.tryParse(cleanedValue) == null) {
+      return 'Please enter a valid number.';
+    }
+
+    //* Check if the value is a positive number
+    if (double.parse(cleanedValue) <= 0) {
+      return 'Please enter a positive value.';
+    }
+
+    //* Custom currency validation (you can modify this based on your requirements)
+    //* Here, we are checking if the value has up to 2 decimal places
+    List<String> splitValue = cleanedValue.split('.');
+    if (splitValue.length > 1 && splitValue[1].length > 2) {
+      return 'Please enter a valid currency value with up to 2 decimal places';
+    }
+
+    openingBalanceController.text = cleanedValue;
+
+    return '';
   }
 
   Future<void> copyCategoriesFromLastCycle(User user, String newCycleId) async {

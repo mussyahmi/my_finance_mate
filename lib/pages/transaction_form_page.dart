@@ -86,14 +86,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !_isLoading,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('${widget.action} Transaction'),
-          centerTitle: true,
-        ),
-        body: GestureDetector(
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: SingleChildScrollView(
+      child: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('${widget.action} Transaction'),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -358,6 +358,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   const SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () async {
+                      FocusManager.instance.primaryFocus?.unfocus();
+
                       if (_isLoading) return;
 
                       setState(() {
