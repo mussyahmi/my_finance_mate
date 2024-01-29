@@ -111,16 +111,14 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
               return Column(
                 children: [
-                  SizedBox(
-                    height: 100,
+                  Container(
+                    constraints: const BoxConstraints(
+                      maxHeight: 300,
+                    ),
                     child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
                       itemCount: budgets.length,
                       itemBuilder: (context, index) {
                         final budget = budgets[index];
-                        final titleTextWidth = budget.name.length *
-                            12.0; //* Adjust the multiplier as needed
                         double amountBalance =
                             double.parse(budget.amountBalance());
 
@@ -144,86 +142,77 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                               );
                             },
                             child: Card(
-                              child: SizedBox(
-                                width:
-                                    titleTextWidth > 200 ? titleTextWidth : 200,
-                                child: Stack(
-                                  children: [
-                                    ListTile(
-                                      key: Key(budget.id),
-                                      title: Text(
-                                        budget.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
-                                      subtitle: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Spent: RM ${budget.totalAmount}',
-                                              ),
-                                              Text(
-                                                '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
-                                              ),
-                                            ],
-                                          ),
-                                          LinearProgressIndicator(
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                                    Radius.circular(8.0)),
-                                            value: budget.progressPercentage(),
-                                            backgroundColor: Colors.grey[300],
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                              () {
-                                                double progress =
-                                                    budget.progressPercentage();
-                                                if (progress == 1.0) {
-                                                  return Colors
-                                                      .green; //* Change color when budget is exactly 1
-                                                } else if (progress > 1.0) {
-                                                  return Colors
-                                                      .red; //* Change color when budget is greater than 1
-                                                } else {
-                                                  return Colors
-                                                      .orange; //* Change color when budget is less than 1
-                                                }
-                                              }(),
+                              child: Stack(
+                                children: [
+                                  ListTile(
+                                    key: Key(budget.id),
+                                    title: Text(
+                                      budget.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    subtitle: Column(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Text(
+                                              'Spent: RM ${budget.totalAmount}',
                                             ),
-                                          ),
-                                          const SizedBox(height: 30),
-                                        ],
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top:
-                                          8, //* Adjust the value to position the icon as needed
-                                      right:
-                                          8, //* Adjust the value to position the icon as needed
-                                      child: GestureDetector(
-                                        onTap: () =>
-                                            budget.showCategorySummaryDialog(
-                                                context,
-                                                budget.type,
-                                                widget.onCategoryChanged),
-                                        child: Icon(
-                                          Icons.info,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary, //* Change the color as needed
+                                            Text(
+                                              '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
+                                            ),
+                                          ],
                                         ),
+                                        const SizedBox(height: 8.0),
+                                        LinearProgressIndicator(
+                                          value: budget.progressPercentage(),
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            () {
+                                              double progress =
+                                                  budget.progressPercentage();
+                                              if (progress == 1.0) {
+                                                return Colors
+                                                    .green; //* Change color when budget is exactly 1
+                                              } else if (progress > 1.0) {
+                                                return Colors
+                                                    .red; //* Change color when budget is greater than 1
+                                              } else {
+                                                return Colors
+                                                    .orange; //* Change color when budget is less than 1
+                                              }
+                                            }(),
+                                          ),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(8.0)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top:
+                                        8, //* Adjust the value to position the icon as needed
+                                    right:
+                                        16, //* Adjust the value to position the icon as needed
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          budget.showCategorySummaryDialog(
+                                              context,
+                                              budget.type,
+                                              widget.onCategoryChanged),
+                                      child: Icon(
+                                        Icons.info,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary, //* Change the color as needed
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),

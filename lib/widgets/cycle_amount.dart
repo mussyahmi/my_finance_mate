@@ -72,8 +72,8 @@ class _CycleAmountState extends State<CycleAmount> {
                 ),
               ),
               Positioned(
-                top: 0,
-                right: 0,
+                top: 4,
+                right: 4,
                 child: IconButton(
                   iconSize: 20,
                   onPressed: () {
@@ -82,9 +82,7 @@ class _CycleAmountState extends State<CycleAmount> {
                     });
                   },
                   icon: Icon(
-                    _isAmountVisible
-                        ? Icons.visibility
-                        : Icons.visibility_off,
+                    _isAmountVisible ? Icons.visibility : Icons.visibility_off,
                   ),
                 ),
               )

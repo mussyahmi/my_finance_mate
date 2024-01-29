@@ -211,8 +211,9 @@ class _DashboardPageState extends State<DashboardPage>
                     //* Display the list of transactions
                     final transactions = snapshot.data;
                     return Container(
-                      constraints: BoxConstraints.loose(
-                          Size(SizeConfig.screenWidth!, 300)),
+                      constraints: const BoxConstraints(
+                        maxHeight: 300,
+                      ),
                       child: ListView.builder(
                         shrinkWrap: true,
                         itemCount: transactions!.length,
