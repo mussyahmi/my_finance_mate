@@ -78,7 +78,7 @@ class _DashboardPageState extends State<DashboardPage>
       _isPaused = true;
       print('Paused');
     } else if (state == AppLifecycleState.resumed && _isPaused) {
-      // _showAppOpenAd();
+      _showAppOpenAd();
       _isPaused = false;
       print('Resumed');
     }
