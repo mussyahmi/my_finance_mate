@@ -9,10 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/ad_mob_service.dart';
-import 'category_list_page.dart';
 import 'login_page.dart';
-import 'wishlist_page.dart';
-import 'summary_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final String cycleId;
@@ -79,88 +76,11 @@ class SettingsPageState extends State<SettingsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: ListTile(
-                    leading: const Icon(Icons.category),
-                    title: const Text('Category List'),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryListPage(cycleId: widget.cycleId),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: ListTile(
-                    leading: const Icon(Icons.analytics),
-                    title: const Text('Category Summary'),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SummaryPage(
-                                  cycleId: widget.cycleId,
-                                )),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: ListTile(
-                    title: const Text('Wishlist'),
-                    leading: const Icon(Icons.favorite),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const WishlistPage()),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                Card(
                   child: ListTile(
                     title: const Text('Toggle Theme Mode'),
                     trailing: Icon(savedThemeMode == AdaptiveThemeMode.light
@@ -175,25 +95,17 @@ class SettingsPageState extends State<SettingsPage> {
                         //* sets theme mode to dark
                         AdaptiveTheme.of(context).setLight();
                       }
-      
+
                       AdaptiveThemeMode? result =
                           await AdaptiveTheme.getThemeMode();
-      
+
                       setState(() {
                         savedThemeMode = result;
                       });
                     },
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                Card(
                   child: ListTile(
                     title: const Text('Theme Colors'),
                     subtitle: Column(
@@ -209,8 +121,7 @@ class SettingsPageState extends State<SettingsPage> {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Row(
                               children: [
                                 themeColorSelector(
@@ -229,12 +140,10 @@ class SettingsPageState extends State<SettingsPage> {
                                     context: context, color: Colors.cyan),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
-                                    context: context,
-                                    color: Colors.deepOrange),
+                                    context: context, color: Colors.deepOrange),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
-                                    context: context,
-                                    color: Colors.deepPurple),
+                                    context: context, color: Colors.deepPurple),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
                                     context: context, color: Colors.green),
@@ -243,12 +152,10 @@ class SettingsPageState extends State<SettingsPage> {
                                     context: context, color: Colors.indigo),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
-                                    context: context,
-                                    color: Colors.lightBlue),
+                                    context: context, color: Colors.lightBlue),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
-                                    context: context,
-                                    color: Colors.lightGreen),
+                                    context: context, color: Colors.lightGreen),
                                 const SizedBox(width: 8),
                                 themeColorSelector(
                                     context: context, color: Colors.lime),

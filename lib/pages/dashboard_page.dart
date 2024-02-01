@@ -13,10 +13,12 @@ import '../size_config.dart';
 import '../widgets/cycle_amount.dart';
 import '../widgets/forecast_budget.dart';
 import 'add_cycle_page.dart';
+import 'category_list_page.dart';
 import 'transaction_form_page.dart';
 import 'settings_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
+import 'wishlist_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -27,6 +29,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
+  int selectedIndex = 0;
   late SharedPreferences prefs;
   String? cycleId;
   String? cycleName;
@@ -102,253 +105,281 @@ class _DashboardPageState extends State<DashboardPage>
     SizeConfig().init(context);
 
     return Scaffold(
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        title: Text(cycleName ?? 'Dashboard'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SettingsPage(cycleId: cycleId ?? '')),
-              );
-
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              if (prefs.getBool('refresh_dashboard') ?? false) {
-                await prefs.remove('refresh_dashboard');
-                await _refreshPage();
-              }
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshPage,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CycleAmount(
-                cycleId: cycleId ?? '',
-                amountBalance: amountBalance ?? '',
-                openingBalance: openingBalance ?? '',
-                amountReceived: amountReceived ?? '',
-                amountSpent: amountSpent ?? '',
-              ),
-              if (_bannerAd != null)
-                Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 250.0,
-                      child: AdWidget(ad: _bannerAd!),
+      body: [
+        NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              title: Text(cycleName ?? 'Dashboard'),
+              centerTitle: true,
+              scrolledUnderElevation: 9999,
+              floating: true,
+              snap: true,
+            ),
+          ],
+          body: RefreshIndicator(
+            onRefresh: _refreshPage,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CycleAmount(
+                    cycleId: cycleId ?? '',
+                    amountBalance: amountBalance ?? '',
+                    openingBalance: openingBalance ?? '',
+                    amountReceived: amountReceived ?? '',
+                    amountSpent: amountSpent ?? '',
+                  ),
+                  if (_bannerAd != null)
+                    Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 250.0,
+                          child: AdWidget(ad: _bannerAd!),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              const SizedBox(height: 20),
-              ForecastBudget(
-                cycleId: cycleId ?? '',
-                amountBalance: amountBalance ?? '0.00',
-                onCategoryChanged: _refreshPage,
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Transaction List',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  const SizedBox(height: 20),
+                  ForecastBudget(
+                    cycleId: cycleId ?? '',
+                    amountBalance: amountBalance ?? '0.00',
+                    onCategoryChanged: _refreshPage,
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Transaction List',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TransactionListPage(
+                                      cycleId: cycleId ?? ''),
+                                ),
+                              );
+                            },
+                            child: const Text('View All'))
+                      ],
                     ),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  TransactionListPage(cycleId: cycleId ?? ''),
-                            ),
-                          );
-                        },
-                        child: const Text('View All'))
-                  ],
-                ),
-              ),
-              FutureBuilder<List<t.Transaction>>(
-                future: _fetchTransactions(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Column(
-                        children: [
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ); //* Display a loading indicator
-                  } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: SelectableText(
-                        'Error: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        'No transactions found.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ); //* Display a message for no transactions
-                  } else {
-                    //* Display the list of transactions
-                    final transactions = snapshot.data;
-                    return Container(
-                      constraints: const BoxConstraints(
-                        maxHeight: 300,
-                      ),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: transactions!.length,
-                        itemBuilder: (context, index) {
-                          final transaction = transactions[index];
-                          return Dismissible(
-                            key: Key(transaction
-                                .id), //* Unique key for each transaction
-                            background: Container(
-                              color: Colors
-                                  .green, //* Background color for edit action
-                              alignment: Alignment.centerLeft,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Icon(
-                                  Icons.edit,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            secondaryBackground: Container(
-                              color: Colors
-                                  .red, //* Background color for delete action
-                              alignment: Alignment.centerRight,
-                              child: const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              if (direction == DismissDirection.startToEnd) {
-                                //* Edit action
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransactionFormPage(
-                                      cycleId: transaction.cycleId,
-                                      action: 'Edit',
-                                      transaction: transaction,
+                  ),
+                  FutureBuilder<List<t.Transaction>>(
+                    future: _fetchTransactions(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        ); //* Display a loading indicator
+                      } else if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: SelectableText(
+                            'Error: ${snapshot.error}',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            'No transactions found.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ); //* Display a message for no transactions
+                      } else {
+                        //* Display the list of transactions
+                        final transactions = snapshot.data;
+                        return Container(
+                          constraints: const BoxConstraints(
+                            maxHeight: 300,
+                          ),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: transactions!.length,
+                            itemBuilder: (context, index) {
+                              final transaction = transactions[index];
+                              return Dismissible(
+                                key: Key(transaction
+                                    .id), //* Unique key for each transaction
+                                background: Container(
+                                  color: Colors
+                                      .green, //* Background color for edit action
+                                  alignment: Alignment.centerLeft,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                );
+                                ),
+                                secondaryBackground: Container(
+                                  color: Colors
+                                      .red, //* Background color for delete action
+                                  alignment: Alignment.centerRight,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                confirmDismiss: (direction) async {
+                                  if (direction ==
+                                      DismissDirection.startToEnd) {
+                                    //* Edit action
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionFormPage(
+                                          cycleId: transaction.cycleId,
+                                          action: 'Edit',
+                                          transaction: transaction,
+                                        ),
+                                      ),
+                                    );
 
-                                if (result == true) {
-                                  await _refreshPage();
-                                  return true;
-                                } else {
+                                    if (result == true) {
+                                      await _refreshPage();
+                                      return true;
+                                    } else {
+                                      return false;
+                                    }
+                                  } else if (direction ==
+                                      DismissDirection.endToStart) {
+                                    //* Delete action
+                                    final result = await transaction
+                                        .deleteTransaction(context);
+
+                                    if (result == true) {
+                                      await _refreshPage();
+                                      return true;
+                                    } else {
+                                      return false;
+                                    }
+                                  }
+
                                   return false;
-                                }
-                              } else if (direction ==
-                                  DismissDirection.endToStart) {
-                                //* Delete action
-                                final result = await transaction
-                                    .deleteTransaction(context);
-
-                                if (result == true) {
-                                  await _refreshPage();
-                                  return true;
-                                } else {
-                                  return false;
-                                }
-                              }
-
-                              return false;
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Card(
+                                    child: ListTile(
+                                      title: Text(
+                                        transaction.categoryName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            DateFormat('EE, d MMM yyyy h:mm aa')
+                                                .format(transaction.dateTime),
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          ),
+                                          Text(
+                                            transaction.note.split('\\n')[0],
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Text(
+                                        '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: transaction.type == 'spent'
+                                                ? Colors.red
+                                                : Colors.green),
+                                      ),
+                                      onTap: () {
+                                        //* Show the transaction summary dialog when tapped
+                                        transaction
+                                            .showTransactionSummaryDialog(
+                                                context);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
                             },
-                            child: ListTile(
-                              title: Text(
-                                transaction.categoryName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    DateFormat('EE, d MMM yyyy h:mm aa')
-                                        .format(transaction.dateTime),
-                                    style: const TextStyle(fontSize: 14),
-                                  ),
-                                  Text(
-                                    transaction.note.split('\\n')[0],
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              trailing: Text(
-                                '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: transaction.type == 'spent'
-                                        ? Colors.red
-                                        : Colors.green),
-                              ),
-                              onTap: () {
-                                //* Show the transaction summary dialog when tapped
-                                transaction
-                                    .showTransactionSummaryDialog(context);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }
-                },
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 80),
+                ],
               ),
-              const SizedBox(height: 80),
-            ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  TransactionFormPage(cycleId: cycleId ?? '', action: 'Add'),
-            ),
-          );
+        Container(),
+        CategoryListPage(cycleId: cycleId ?? ''),
+        const WishlistPage(),
+        SettingsPage(cycleId: cycleId ?? ''),
+      ][selectedIndex],
+      floatingActionButton: selectedIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TransactionFormPage(
+                        cycleId: cycleId ?? '', action: 'Add'),
+                  ),
+                );
 
-          if (result == true) {
-            await _refreshPage();
-          }
+                if (result == true) {
+                  await _refreshPage();
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Transaction'),
+            )
+          : null,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        destinations: const [
+          NavigationDestination(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(
+              icon: Icon(Icons.wallet), label: 'Account List'),
+          NavigationDestination(
+              icon: Icon(Icons.category), label: 'Category List'),
+          NavigationDestination(icon: Icon(Icons.favorite), label: 'Wishlist'),
+          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
+        ],
+        onDestinationSelected: (value) {
+          setState(() {
+            selectedIndex = value;
+          });
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Transaction'),
+        elevation: 9999,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
       ),
     );
   }

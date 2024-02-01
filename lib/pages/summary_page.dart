@@ -48,7 +48,7 @@ class _SummaryPageState extends State<SummaryPage> {
             categories.insert(
                 i,
                 BannerAd(
-                  size: AdSize.fullBanner,
+                  size: AdSize.banner,
                   adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
                   listener: _adMobService.bannerAdListener,
                   request: const AdRequest(),
@@ -69,81 +69,95 @@ class _SummaryPageState extends State<SummaryPage> {
     return PopScope(
       canPop: !_isLoading,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Category Summary'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.0,
-                      ))
-                  : const Icon(Icons.refresh),
-              onPressed: () async {
-                if (_isLoading) return;
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              title: const Text('Category Summary'),
+              centerTitle: true,
+              scrolledUnderElevation: 9999,
+              floating: true,
+              snap: true,
+              actions: [
+                IconButton(
+                  icon: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.0,
+                          ))
+                      : const Icon(Icons.refresh),
+                  onPressed: () async {
+                    if (_isLoading) return;
 
-                setState(() {
-                  _isLoading = true;
-                });
+                    setState(() {
+                      _isLoading = true;
+                    });
 
-                _showInterstitialAd();
+                    _showInterstitialAd();
 
-                await Category.recalculateCategoryAndCycleTotalAmount(
-                    widget.cycleId);
+                    await Category.recalculateCategoryAndCycleTotalAmount(
+                        widget.cycleId);
 
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('refresh_dashboard', true);
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.setBool('refresh_dashboard', true);
 
-                setState(() {
-                  _isLoading = false;
-                });
-              },
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  },
+                ),
+              ],
             ),
           ],
-        ),
-        body: ListView.builder(
-          shrinkWrap: true,
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            if (categories[index] is BannerAd) {
-              return Container(
-                margin: const EdgeInsets.symmetric(vertical: 5.0),
-                height: 60.0,
-                child: AdWidget(ad: categories[index] as BannerAd),
-              );
-            } else {
-              Category category = categories[index] as Category;
+          body: ListView.builder(
+            shrinkWrap: true,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              if (categories[index] is BannerAd) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 5.0),
+                  height: 50.0,
+                  child: AdWidget(ad: categories[index] as BannerAd),
+                );
+              } else {
+                Category category = categories[index] as Category;
 
-              return ListTile(
-                title: Text(
-                  category.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                trailing: Text(
-                  '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                  style: TextStyle(
-                      fontSize: 16,
-                      color:
-                          category.type == 'spent' ? Colors.red : Colors.green),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TransactionListPage(
-                          cycleId: widget.cycleId,
-                          type: category.type,
-                          categoryName: category.name),
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Card(
+                    child: ListTile(
+                      title: Text(
+                        category.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      trailing: Text(
+                        '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: category.type == 'spent'
+                                ? Colors.red
+                                : Colors.green),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionListPage(
+                                cycleId: widget.cycleId,
+                                type: category.type,
+                                categoryName: category.name),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              );
-            }
-          },
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );

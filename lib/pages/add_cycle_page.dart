@@ -89,9 +89,9 @@ class AddCyclePageState extends State<AddCyclePage> {
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Scaffold(
           appBar: AppBar(
+            automaticallyImplyLeading: false, //* Hide the back icon button
             title: const Text('Create New Cycle'),
             centerTitle: true,
-            automaticallyImplyLeading: false, //* Hide the back icon button
           ),
           body: Column(
             children: [

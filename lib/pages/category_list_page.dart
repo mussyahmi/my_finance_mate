@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:my_finance_mate/pages/summary_page.dart';
 import 'package:provider/provider.dart';
 
 import '../services/ad_mob_service.dart';
@@ -115,27 +116,47 @@ class _CategoryListPageState extends State<CategoryListPage> {
             });
 
             return Scaffold(
-              appBar: AppBar(
-                title: const Text('Category List'),
-                centerTitle: true,
-                bottom: const TabBar(
-                  tabs: [
-                    Tab(
-                      icon: Icon(Icons.file_upload_outlined),
-                      text: 'Spent',
+              body: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  SliverAppBar(
+                    title: const Text('Category List'),
+                    centerTitle: true,
+                    scrolledUnderElevation: 9999,
+                    floating: true,
+                    snap: true,
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.analytics),
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SummaryPage(cycleId: widget.cycleId)),
+                          );
+                        },
+                      ),
+                    ],
+                    bottom: const TabBar(
+                      tabs: [
+                        Tab(
+                          icon: Icon(Icons.file_upload_outlined),
+                          text: 'Spent',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.file_download_outlined),
+                          text: 'Received',
+                        ),
+                      ],
                     ),
-                    Tab(
-                      icon: Icon(Icons.file_download_outlined),
-                      text: 'Received',
-                    ),
+                  ),
+                ],
+                body: TabBarView(
+                  children: [
+                    _buildCategoryList(context, spentCategories),
+                    _buildCategoryList(context, receivedCategories),
                   ],
                 ),
-              ),
-              body: TabBarView(
-                children: [
-                  _buildCategoryList(context, spentCategories),
-                  _buildCategoryList(context, receivedCategories),
-                ],
               ),
               floatingActionButton: FloatingActionButton.extended(
                 onPressed: () {
@@ -164,19 +185,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
           Category category = categories[index] as Category;
 
           return Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             margin: index == categories.length - 1
                 ? const EdgeInsets.only(bottom: 80)
                 : null,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.grey,
-                  width: 1.0,
-                ),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
+            child: Card(
               child: ListTile(
                 title: Text(category.name),
                 trailing: IconButton(

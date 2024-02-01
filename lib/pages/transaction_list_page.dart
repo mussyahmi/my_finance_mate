@@ -41,273 +41,291 @@ class _TransactionListPageState extends State<TransactionListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        title: const Text('Transaction List'),
-        centerTitle: true,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          //* Filters (Dropdowns)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    final pickedDateRange = await showDateRangePicker(
-                      context: context,
-                      initialDateRange: selectedDateRange,
-                      firstDate:
-                          DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            title: const Text('Transaction List'),
+            centerTitle: true,
+            scrolledUnderElevation: 9999,
+            floating: true,
+            snap: true,
+            bottom: PreferredSize(
+              preferredSize: const Size(double.infinity, 200.0),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final pickedDateRange = await showDateRangePicker(
+                          context: context,
+                          initialDateRange: selectedDateRange,
+                          firstDate: DateTime.now()
+                              .subtract(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
 
-                    if (pickedDateRange != null) {
-                      setState(() {
-                        selectedDateRange = pickedDateRange;
-                      });
-                    }
-                  },
-                  child: Text(
-                    selectedDateRange != null
-                        ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                        : 'Select Date Range',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                //* Type Dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedType,
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedType = newValue as String;
-                      selectedCategoryName = null;
-                    });
-                    _fetchCategories();
-                  },
-                  items: ['spent', 'received'].map((type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child:
-                          Text('${type[0].toUpperCase()}${type.substring(1)}'),
-                    );
-                  }).toList(),
-                  decoration: const InputDecoration(
-                    labelText: 'Type',
-                  ),
-                ),
-                //* Category Dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedCategoryName,
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedCategoryName = newValue;
-                    });
-                  },
-                  items: categories.map((category) {
-                    return DropdownMenuItem<String>(
-                      value: category.name,
-                      child: Text(category.name),
-                    );
-                  }).toList(),
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(
-            color: Colors.grey,
-            height: 36,
-          ),
-          //* Transaction List
-          Expanded(
-            child: FutureBuilder<List<t.Transaction>>(
-              future: fetchFilteredTransactions(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(),
-                      ],
-                    ),
-                  ); //* Display a loading indicator
-                } else if (snapshot.hasError) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: SelectableText(
-                      'Error: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      'No transactions found.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ); //* Display a message for no transactions
-                } else {
-                  //* Display the list of transactions
-                  final transactions = snapshot.data;
-                  double total = 0;
-
-                  if (selectedCategoryName != null) {
-                    for (var transaction in transactions!) {
-                      if (transaction.type == 'spent') {
-                        total -= double.parse(transaction.amount);
-                      } else {
-                        total += double.parse(transaction.amount);
-                      }
-                    }
-                  }
-
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: transactions!.length,
-                          itemBuilder: (context, index) {
-                            final transaction = transactions[index];
-                            return Dismissible(
-                              key: Key(transaction
-                                  .id), //* Unique key for each transaction
-                              background: Container(
-                                color: Colors
-                                    .green, //* Background color for edit action
-                                alignment: Alignment.centerLeft,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Icon(
-                                    Icons.edit,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              secondaryBackground: Container(
-                                color: Colors
-                                    .red, //* Background color for delete action
-                                alignment: Alignment.centerRight,
-                                child: const Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: Icon(
-                                    Icons.delete,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              confirmDismiss: (direction) async {
-                                if (direction == DismissDirection.startToEnd) {
-                                  //* Edit action
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => TransactionFormPage(
-                                        cycleId: transaction.cycleId,
-                                        action: 'Edit',
-                                        transaction: transaction,
-                                      ),
-                                    ),
-                                  );
-
-                                  if (result == true) {
-                                    setState(() {});
-                                    return true;
-                                  } else {
-                                    return false;
-                                  }
-                                } else if (direction ==
-                                    DismissDirection.endToStart) {
-                                  //* Delete action
-                                  bool result = await transaction
-                                      .deleteTransaction(context);
-
-                                  return result;
-                                }
-
-                                return false;
-                              },
-                              child: ListTile(
-                                title: Text(
-                                  transaction.categoryName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      DateFormat('EE, d MMM yyyy h:mm aa')
-                                          .format(transaction.dateTime),
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    Text(
-                                      transaction.note.split('\\n')[0],
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontStyle: FontStyle.italic,
-                                          color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                                trailing: Text(
-                                  '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: transaction.type == 'spent'
-                                          ? Colors.red
-                                          : Colors.green),
-                                ),
-                                onTap: () {
-                                  //* Show the transaction summary dialog when tapped
-                                  transaction
-                                      .showTransactionSummaryDialog(context);
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                        if (pickedDateRange != null) {
+                          setState(() {
+                            selectedDateRange = pickedDateRange;
+                          });
+                        }
+                      },
+                      child: Text(
+                        selectedDateRange != null
+                            ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                            : 'Select Date Range',
+                        textAlign: TextAlign.center,
                       ),
-                      if (selectedCategoryName != null)
-                        Column(
-                          children: [
-                            const Divider(
-                              color: Colors.grey,
-                              height: 36,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 16.0),
-                              child: Text(
-                                'Total: ${total < 0 ? '-' : ''}RM${total.abs().toStringAsFixed(2)}',
-                                textAlign: TextAlign.end,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  );
-                }
-              },
+                    ),
+                    //* Type Dropdown
+                    DropdownButtonFormField<String>(
+                      value: selectedType,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedType = newValue as String;
+                          selectedCategoryName = null;
+                        });
+                        _fetchCategories();
+                      },
+                      items: ['spent', 'received'].map((type) {
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Text(
+                              '${type[0].toUpperCase()}${type.substring(1)}'),
+                        );
+                      }).toList(),
+                      decoration: const InputDecoration(
+                        labelText: 'Type',
+                      ),
+                    ),
+                    //* Category Dropdown
+                    DropdownButtonFormField<String>(
+                      value: selectedCategoryName,
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCategoryName = newValue;
+                        });
+                      },
+                      items: categories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category.name,
+                          child: Text(category.name),
+                        );
+                      }).toList(),
+                      decoration: const InputDecoration(
+                        labelText: 'Category',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            //* Transaction List
+            Expanded(
+              child: FutureBuilder<List<t.Transaction>>(
+                future: fetchFilteredTransactions(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      ),
+                    ); //* Display a loading indicator
+                  } else if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: SelectableText(
+                        'Error: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'No transactions found.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ); //* Display a message for no transactions
+                  } else {
+                    //* Display the list of transactions
+                    final transactions = snapshot.data;
+                    double total = 0;
+
+                    if (selectedCategoryName != null) {
+                      for (var transaction in transactions!) {
+                        if (transaction.type == 'spent') {
+                          total -= double.parse(transaction.amount);
+                        } else {
+                          total += double.parse(transaction.amount);
+                        }
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: transactions!.length,
+                            itemBuilder: (context, index) {
+                              final transaction = transactions[index];
+                              return Dismissible(
+                                key: Key(transaction
+                                    .id), //* Unique key for each transaction
+                                background: Container(
+                                  color: Colors
+                                      .green, //* Background color for edit action
+                                  alignment: Alignment.centerLeft,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                secondaryBackground: Container(
+                                  color: Colors
+                                      .red, //* Background color for delete action
+                                  alignment: Alignment.centerRight,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Icon(
+                                      Icons.delete,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                confirmDismiss: (direction) async {
+                                  if (direction ==
+                                      DismissDirection.startToEnd) {
+                                    //* Edit action
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionFormPage(
+                                          cycleId: transaction.cycleId,
+                                          action: 'Edit',
+                                          transaction: transaction,
+                                        ),
+                                      ),
+                                    );
+
+                                    if (result == true) {
+                                      setState(() {});
+                                      return true;
+                                    } else {
+                                      return false;
+                                    }
+                                  } else if (direction ==
+                                      DismissDirection.endToStart) {
+                                    //* Delete action
+                                    bool result = await transaction
+                                        .deleteTransaction(context);
+
+                                    return result;
+                                  }
+
+                                  return false;
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Card(
+                                    child: ListTile(
+                                      title: Text(
+                                        transaction.categoryName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            DateFormat('EE, d MMM yyyy h:mm aa')
+                                                .format(transaction.dateTime),
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          ),
+                                          Text(
+                                            transaction.note.split('\\n')[0],
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Text(
+                                        '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: transaction.type == 'spent'
+                                                ? Colors.red
+                                                : Colors.green),
+                                      ),
+                                      onTap: () {
+                                        //* Show the transaction summary dialog when tapped
+                                        transaction
+                                            .showTransactionSummaryDialog(
+                                                context);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        if (selectedCategoryName != null)
+                          Column(
+                            children: [
+                              const Divider(
+                                color: Colors.grey,
+                                height: 36,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, right: 16.0, bottom: 16.0),
+                                child: Text(
+                                  'Total: ${total < 0 ? '-' : ''}RM${total.abs().toStringAsFixed(2)}',
+                                  textAlign: TextAlign.end,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

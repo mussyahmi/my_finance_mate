@@ -61,7 +61,7 @@ class WishlistDialogState extends State<WishlistDialog> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); //* Close the dialog
+              Navigator.of(context).pop(false); //* Close the dialog
             },
             child: const Text('Cancel'),
           ),
@@ -95,7 +95,7 @@ class WishlistDialogState extends State<WishlistDialog> {
               updateWishlistToFirebase(wishlistName, wishlistNote);
 
               //* Close the dialog
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(true);
             },
             child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
           ),
