@@ -121,12 +121,11 @@ class _WishlistPageState extends State<WishlistPage> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showWishlistFormDialog(context, 'Add');
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Wishlist'),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -158,13 +158,12 @@ class _CategoryListPageState extends State<CategoryListPage> {
                   ],
                 ),
               ),
-              floatingActionButton: FloatingActionButton.extended(
+              floatingActionButton: FloatingActionButton(
                 onPressed: () {
                   Category.showCategoryFormDialog(context, widget.cycleId,
                       selectedType, 'Add', _fetchCategories);
                 },
-                icon: const Icon(Icons.add),
-                label: const Text('Category'),
+                child: const Icon(Icons.add),
               ),
             );
           },

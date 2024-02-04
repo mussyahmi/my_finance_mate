@@ -348,7 +348,7 @@ class _DashboardPageState extends State<DashboardPage>
         SettingsPage(cycleId: cycleId ?? ''),
       ][selectedIndex],
       floatingActionButton: selectedIndex == 0
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
               onPressed: () async {
                 if (person!.transactionsMade >= person!.transactionLimit) {
                   await showDialog(
@@ -385,11 +385,11 @@ class _DashboardPageState extends State<DashboardPage>
                           cycleId: cycleId ?? '', action: 'Add'),
                     ),
                   );
+
+                  await _refreshPage();
                 }
               },
-              icon: const Icon(Icons.add),
-              label: Text(
-                  'Transaction${person != null ? ' (${person?.transactionsMade ?? '0'}/${person?.transactionLimit ?? '5'})' : ''}'),
+              child: const Icon(Icons.add),
             )
           : null,
       bottomNavigationBar: NavigationBar(
