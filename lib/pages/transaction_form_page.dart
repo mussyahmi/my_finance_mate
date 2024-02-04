@@ -485,6 +485,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'version_json': null,
           'files': downloadURLs,
         });
+
+        //* Update transactions made
+        final userDoc = await userRef.get();
+
+        await userRef
+            .update({'transactions_made': userDoc['transactions_made'] + 1});
       } else if (widget.action == 'Edit') {
         await transactionsRef.doc(widget.transaction!.id).update({
           'date_time': dateTime,

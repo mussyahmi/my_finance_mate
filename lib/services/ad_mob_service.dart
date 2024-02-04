@@ -199,4 +199,22 @@ class AdMobService {
 
     return null;
   }
+
+  String? get rewardedAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784~4330288324';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784~4499192177';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/5224354917';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/1712485313';
+      }
+    }
+
+    return null;
+  }
 }

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/cycle_amount.dart';
@@ -29,8 +30,9 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
-  int selectedIndex = 0;
   late SharedPreferences prefs;
+  int selectedIndex = 0;
+  Person? person;
   String? cycleId;
   String? cycleName;
   String? amountBalance;
@@ -43,6 +45,7 @@ class _DashboardPageState extends State<DashboardPage>
   late AdMobService _adMobService;
   BannerAd? _bannerAd;
   AppOpenAd? _appOpenAd;
+  RewardedAd? _rewardedAd;
 
   @override
   void initState() {
@@ -71,6 +74,7 @@ class _DashboardPageState extends State<DashboardPage>
     });
 
     _createAppOpenAd();
+    _createRewardedAd();
   }
 
   @override
@@ -95,6 +99,7 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _refreshPage() async {
+    await _fetchUser();
     await _fetchCycle();
     setState(() {});
   }
@@ -345,20 +350,46 @@ class _DashboardPageState extends State<DashboardPage>
       floatingActionButton: selectedIndex == 0
           ? FloatingActionButton.extended(
               onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TransactionFormPage(
-                        cycleId: cycleId ?? '', action: 'Add'),
-                  ),
-                );
+                if (person!.transactionsMade >= person!.transactionLimit) {
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Whoops!'),
+                        content: const Text(
+                            'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); //* Close the dialog
+                            },
+                            child: const Text('Close'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _showRewardedAd();
 
-                if (result == true) {
-                  await _refreshPage();
+                              Navigator.of(context).pop(); //* Close the dialog
+                            },
+                            child: const Text('Watch Ads'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TransactionFormPage(
+                          cycleId: cycleId ?? '', action: 'Add'),
+                    ),
+                  );
                 }
               },
               icon: const Icon(Icons.add),
-              label: const Text('Transaction'),
+              label: Text(
+                  'Transaction${person != null ? ' (${person?.transactionsMade ?? '0'}/${person?.transactionLimit ?? '5'})' : ''}'),
             )
           : null,
       bottomNavigationBar: NavigationBar(
@@ -436,6 +467,34 @@ class _DashboardPageState extends State<DashboardPage>
     result.sort((a, b) => (b.dateTime).compareTo(a.dateTime));
 
     return result;
+  }
+
+  Future<void> _fetchUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    final userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      setState(() {
+        person = Person(
+          id: userDoc.id,
+          fullName: userDoc['full_name'],
+          nickname: userDoc['nickname'],
+          email: userDoc['email'],
+          photoUrl: userDoc['photo_url'],
+          lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
+          transactionLimit: 5,
+          transactionsMade: userDoc['transactions_made'],
+        );
+      });
+    }
   }
 
   Future<void> _fetchCycle() async {
@@ -518,6 +577,48 @@ class _DashboardPageState extends State<DashboardPage>
 
       _appOpenAd!.show();
       _appOpenAd = null;
+    }
+  }
+
+  void _createRewardedAd() {
+    RewardedAd.load(
+      adUnitId: _adMobService.rewardedAdUnitId!,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          setState(() {
+            _rewardedAd = null;
+          });
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null) {
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+      );
+
+      _rewardedAd!.show(
+        onUserEarnedReward: (ad, reward) async {
+          await person!.resetTransactionLimit();
+
+          await _refreshPage();
+        },
+      );
     }
   }
 }
