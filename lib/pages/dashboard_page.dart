@@ -378,7 +378,9 @@ class _DashboardPageState extends State<DashboardPage>
                     },
                   );
                 } else {
-                  await Navigator.push(
+                  bool result = false;
+
+                  result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => TransactionFormPage(
@@ -386,7 +388,9 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                   );
 
-                  await _refreshPage();
+                  if (result) {
+                    await _refreshPage();
+                  }
                 }
               },
               child: const Icon(Icons.add),
@@ -478,20 +482,43 @@ class _DashboardPageState extends State<DashboardPage>
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-
     final userDoc = await userRef.get();
 
     if (userDoc.exists) {
+      final transactionsRef = userRef.collection('transactions');
+      final transactionQuery = await transactionsRef
+          .where('deleted_at', isNull: true)
+          .orderBy('date_time',
+              descending: true) //* Sort by dateTime in descending order
+          .get();
+
+      final latestTransaction = transactionQuery.docs.first;
+
+      DateTime today = DateTime.now();
+      DateTime latestTansactionDate =
+          (latestTransaction['date_time'] as Timestamp).toDate();
+
+      int transactionMade = userDoc['transactions_made'];
+
+      if (!(latestTansactionDate.year == today.year &&
+              latestTansactionDate.month == today.month &&
+              latestTansactionDate.day == today.day) &&
+          transactionMade > 0) {
+        await Person.resetTransactionLimit(user.uid);
+
+        transactionMade = 0;
+      }
+
       setState(() {
         person = Person(
-          id: userDoc.id,
+          uid: userDoc.id,
           fullName: userDoc['full_name'],
           nickname: userDoc['nickname'],
           email: userDoc['email'],
           photoUrl: userDoc['photo_url'],
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           transactionLimit: 5,
-          transactionsMade: userDoc['transactions_made'],
+          transactionsMade: transactionMade,
         );
       });
     }
@@ -614,7 +641,7 @@ class _DashboardPageState extends State<DashboardPage>
 
       _rewardedAd!.show(
         onUserEarnedReward: (ad, reward) async {
-          await person!.resetTransactionLimit();
+          await Person.resetTransactionLimit(person!.uid);
 
           await _refreshPage();
         },

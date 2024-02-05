@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Person {
-  String id;
+  String uid;
   String fullName;
   String nickname;
   String email;
@@ -12,7 +12,7 @@ class Person {
   int transactionsMade;
 
   Person({
-    required this.id,
+    required this.uid,
     required this.fullName,
     required this.nickname,
     required this.email,
@@ -22,15 +22,8 @@ class Person {
     required this.transactionsMade,
   });
 
-  Future<void> resetTransactionLimit() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
+  static Future<void> resetTransactionLimit(String userUid) async {
+    final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
 
     //* Update transactions made
     await userRef.update({'transactions_made': 0});
