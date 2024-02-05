@@ -8,12 +8,14 @@ import '../pages/transaction_list_page.dart';
 enum BudgetFilter { all, ongoing, exceeded, completed }
 
 class ForecastBudget extends StatefulWidget {
+  final bool isLoading;
   final String cycleId;
   final String amountBalance;
   final Function onCategoryChanged;
 
   const ForecastBudget(
       {super.key,
+      required this.isLoading,
       required this.cycleId,
       required this.amountBalance,
       required this.onCategoryChanged});
@@ -51,7 +53,8 @@ class _ForecastBudgetState extends State<ForecastBudget> {
         FutureBuilder<List<Category>>(
           future: _fetchBudgets(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting ||
+                widget.isLoading) {
               return const Padding(
                 padding: EdgeInsets.only(bottom: 16.0),
                 child: Column(
@@ -246,6 +249,10 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       //todo: Handle the case where the user is not authenticated.
+      return [];
+    }
+
+    if (widget.cycleId.isEmpty) {
       return [];
     }
 

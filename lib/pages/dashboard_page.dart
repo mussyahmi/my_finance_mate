@@ -39,6 +39,7 @@ class _DashboardPageState extends State<DashboardPage>
   String? amountReceived;
   String? amountSpent;
   String? openingBalance;
+  bool _isLoading = false;
   bool _isPaused = false;
 
   //* Ad related
@@ -99,9 +100,14 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _refreshPage() async {
+    setState(() {
+      _isLoading = true;
+    });
     await _fetchUser();
     await _fetchCycle();
-    setState(() {});
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -146,6 +152,7 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                   const SizedBox(height: 20),
                   ForecastBudget(
+                    isLoading: _isLoading,
                     cycleId: cycleId ?? '',
                     amountBalance: amountBalance ?? '0.00',
                     onCategoryChanged: _refreshPage,
@@ -178,7 +185,8 @@ class _DashboardPageState extends State<DashboardPage>
                   FutureBuilder<List<t.Transaction>>(
                     future: _fetchTransactions(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                      if (snapshot.connectionState == ConnectionState.waiting ||
+                          _isLoading) {
                         return const Padding(
                           padding: EdgeInsets.only(bottom: 16.0),
                           child: Column(
@@ -509,18 +517,16 @@ class _DashboardPageState extends State<DashboardPage>
         transactionMade = 0;
       }
 
-      setState(() {
-        person = Person(
-          uid: userDoc.id,
-          fullName: userDoc['full_name'],
-          nickname: userDoc['nickname'],
-          email: userDoc['email'],
-          photoUrl: userDoc['photo_url'],
-          lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
-          transactionLimit: 5,
-          transactionsMade: transactionMade,
-        );
-      });
+      person = Person(
+        uid: userDoc.id,
+        fullName: userDoc['full_name'],
+        nickname: userDoc['nickname'],
+        email: userDoc['email'],
+        photoUrl: userDoc['photo_url'],
+        lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
+        transactionLimit: 5,
+        transactionsMade: transactionMade,
+      );
     }
   }
 
@@ -555,14 +561,12 @@ class _DashboardPageState extends State<DashboardPage>
         );
       } else {
         //* Get latest cycle
-        setState(() {
-          cycleId = lastCycleDoc.id;
-          cycleName = lastCycleDoc['cycle_name'];
-          amountBalance = lastCycleDoc['amount_balance'];
-          amountReceived = lastCycleDoc['amount_received'];
-          amountSpent = lastCycleDoc['amount_spent'];
-          openingBalance = lastCycleDoc['opening_balance'];
-        });
+        cycleId = lastCycleDoc.id;
+        cycleName = lastCycleDoc['cycle_name'];
+        amountBalance = lastCycleDoc['amount_balance'];
+        amountReceived = lastCycleDoc['amount_received'];
+        amountSpent = lastCycleDoc['amount_spent'];
+        openingBalance = lastCycleDoc['opening_balance'];
       }
     } else {
       //* No cycles found, redirect to add cycle page
