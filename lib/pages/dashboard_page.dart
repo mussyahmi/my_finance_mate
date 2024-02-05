@@ -522,10 +522,10 @@ class _DashboardPageState extends State<DashboardPage>
 
       person = Person(
         uid: userDoc.id,
-        fullName: userDoc['full_name'],
-        nickname: userDoc['nickname'],
+        fullName: userDoc['full_name'] ?? '',
+        nickname: userDoc['nickname'] ?? '',
         email: userDoc['email'],
-        photoUrl: userDoc['photo_url'],
+        photoUrl: userDoc['photo_url'] ?? '',
         lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
         transactionLimit: 5,
         transactionsMade: transactionMade,
