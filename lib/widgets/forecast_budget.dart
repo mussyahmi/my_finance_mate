@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -80,35 +82,8 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                 ),
               ); //* Display a message for no budgets
             } else {
-              //* Filter categories based on the selected filter
-              List<Category> filteredBudgets;
-              switch (currentFilter) {
-                case BudgetFilter.ongoing:
-                  filteredBudgets = snapshot.data!
-                      .where(
-                          (budget) => double.parse(budget.amountBalance()) > 0)
-                      .toList();
-                  break;
-                case BudgetFilter.exceeded:
-                  filteredBudgets = snapshot.data!
-                      .where(
-                          (budget) => double.parse(budget.amountBalance()) < 0)
-                      .toList();
-                  break;
-                case BudgetFilter.completed:
-                  filteredBudgets = snapshot.data!
-                      .where(
-                          (budget) => double.parse(budget.amountBalance()) <= 0)
-                      .toList();
-                  break;
-                case BudgetFilter.all:
-                default:
-                  filteredBudgets = snapshot.data!;
-                  break;
-              }
-
               //* Display the list of budgets
-              final budgets = filteredBudgets;
+              final budgets = snapshot.data!;
               final amountBalanceAfterBudget =
                   _getAmountBalanceAfterBudget(budgets);
 
@@ -118,6 +93,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                     constraints: const BoxConstraints(
                       maxHeight: 300,
                     ),
+                    height: min(300, budgets.length * 120),
                     child: ListView.builder(
                       itemCount: budgets.length,
                       itemBuilder: (context, index) {
@@ -287,7 +263,31 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     //* Sort the list by 'updated_at' in descending order (most recent first)
     result.sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
 
-    return result;
+    //* Filter categories based on the selected filter
+    List<Category> filteredBudgets;
+    switch (currentFilter) {
+      case BudgetFilter.ongoing:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) > 0)
+            .toList();
+        break;
+      case BudgetFilter.exceeded:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) < 0)
+            .toList();
+        break;
+      case BudgetFilter.completed:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) <= 0)
+            .toList();
+        break;
+      case BudgetFilter.all:
+      default:
+        filteredBudgets = result;
+        break;
+    }
+
+    return filteredBudgets;
   }
 
   void _showFilterDialog() {

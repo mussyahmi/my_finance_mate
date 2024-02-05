@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -218,6 +220,7 @@ class _DashboardPageState extends State<DashboardPage>
                           constraints: const BoxConstraints(
                             maxHeight: 300,
                           ),
+                          height: min(300, transactions!.length * 120),
                           child: ListView.builder(
                             shrinkWrap: true,
                             itemCount: transactions!.length,
