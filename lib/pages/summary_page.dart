@@ -4,13 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
+import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'transaction_list_page.dart';
 
 class SummaryPage extends StatefulWidget {
-  final String cycleId;
+  final Cycle cycle;
 
-  const SummaryPage({super.key, required this.cycleId});
+  const SummaryPage({super.key, required this.cycle});
 
   @override
   State<SummaryPage> createState() => _SummaryPageState();
@@ -32,7 +33,7 @@ class _SummaryPageState extends State<SummaryPage> {
 
   Future<void> _fetchCategories() async {
     final List<Category> fetchCategories =
-        await Category.fetchCategories(widget.cycleId, null);
+        await Category.fetchCategories(widget.cycle.id, null);
 
     setState(() {
       categories = List.from(fetchCategories
@@ -97,7 +98,7 @@ class _SummaryPageState extends State<SummaryPage> {
                     _showInterstitialAd();
 
                     await Category.recalculateCategoryAndCycleTotalAmount(
-                        widget.cycleId);
+                        widget.cycle.id);
 
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
@@ -146,7 +147,7 @@ class _SummaryPageState extends State<SummaryPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionListPage(
-                                cycleId: widget.cycleId,
+                                cycle: widget.cycle,
                                 type: category.type,
                                 categoryName: category.name),
                           ),

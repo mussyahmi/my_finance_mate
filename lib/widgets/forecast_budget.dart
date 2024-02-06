@@ -5,21 +5,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../models/category.dart';
+import '../models/cycle.dart';
 import '../pages/transaction_list_page.dart';
 
 enum BudgetFilter { all, ongoing, exceeded, completed }
 
 class ForecastBudget extends StatefulWidget {
   final bool isLoading;
-  final String cycleId;
-  final String amountBalance;
+  final Cycle? cycle;
   final Function onCategoryChanged;
 
   const ForecastBudget(
       {super.key,
       required this.isLoading,
-      required this.cycleId,
-      required this.amountBalance,
+      this.cycle,
       required this.onCategoryChanged});
 
   @override
@@ -114,7 +113,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => TransactionListPage(
-                                      cycleId: widget.cycleId,
+                                      cycle: widget.cycle!,
                                       type: 'spent',
                                       categoryName: budget.name),
                                 ),
@@ -228,13 +227,13 @@ class _ForecastBudgetState extends State<ForecastBudget> {
       return [];
     }
 
-    if (widget.cycleId.isEmpty) {
+    if (widget.cycle == null) {
       return [];
     }
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+    final cyclesRef = userRef.collection('cycles').doc(widget.cycle!.id);
     final categoriesRef = cyclesRef.collection('categories');
 
     final categoryQuery = await categoriesRef
@@ -252,7 +251,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
         note: data['note'],
         budget: data['budget'],
         totalAmount: data['total_amount'],
-        cycleId: widget.cycleId,
+        cycleId: widget.cycle!.id,
         createdAt: (data['created_at'] as Timestamp).toDate(),
         updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );
@@ -365,7 +364,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
   }
 
   String _getAmountBalanceAfterBudget(List<Category> budgets) {
-    double budgetBalance = double.parse(widget.amountBalance);
+    double budgetBalance = double.parse(widget.cycle!.amountBalance);
 
     for (var budget in budgets) {
       if (budget.budget != '0.00') {

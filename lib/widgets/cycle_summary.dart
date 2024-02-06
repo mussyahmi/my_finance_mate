@@ -1,28 +1,21 @@
 import 'package:flutter/material.dart';
 
+import '../models/cycle.dart';
 import '../pages/transaction_list_page.dart';
 
-class CycleAmount extends StatefulWidget {
-  final String cycleId;
-  final String amountBalance;
-  final String openingBalance;
-  final String amountReceived;
-  final String amountSpent;
+class CycleSummary extends StatefulWidget {
+  final Cycle? cycle;
 
-  const CycleAmount({
+  const CycleSummary({
     super.key,
-    required this.cycleId,
-    required this.amountBalance,
-    required this.openingBalance,
-    required this.amountReceived,
-    required this.amountSpent,
+    required this.cycle,
   });
 
   @override
-  State<CycleAmount> createState() => _CycleAmountState();
+  State<CycleSummary> createState() => _CycleSummaryState();
 }
 
-class _CycleAmountState extends State<CycleAmount> {
+class _CycleSummaryState extends State<CycleSummary> {
   bool _isAmountVisible = false;
 
   @override
@@ -52,7 +45,7 @@ class _CycleAmountState extends State<CycleAmount> {
                     Text(
                       !_isAmountVisible
                           ? 'RM ****'
-                          : 'RM ${widget.amountBalance}',
+                          : 'RM ${widget.cycle?.amountBalance ?? '0.00'}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -61,7 +54,7 @@ class _CycleAmountState extends State<CycleAmount> {
                       ),
                     ),
                     Text(
-                      'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${widget.openingBalance}'}',
+                      'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${widget.cycle?.openingBalance ?? '0.00'}'}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12,
@@ -94,17 +87,19 @@ class _CycleAmountState extends State<CycleAmount> {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TransactionListPage(
-                        cycleId: widget.cycleId,
-                        type: 'received',
-                      ),
-                    ),
-                  );
-                },
+                onTap: widget.cycle != null
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionListPage(
+                              cycle: widget.cycle!,
+                              type: 'received',
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
                 child: Card(
                   elevation: 3,
                   margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
@@ -123,7 +118,7 @@ class _CycleAmountState extends State<CycleAmount> {
                         Text(
                           !_isAmountVisible
                               ? 'RM ****'
-                              : 'RM ${widget.amountReceived}',
+                              : 'RM ${widget.cycle?.amountReceived ?? '0.00'}',
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.green,
@@ -138,17 +133,19 @@ class _CycleAmountState extends State<CycleAmount> {
             ),
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TransactionListPage(
-                        cycleId: widget.cycleId,
-                        type: 'spent',
-                      ),
-                    ),
-                  );
-                },
+                onTap: widget.cycle != null
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionListPage(
+                              cycle: widget.cycle!,
+                              type: 'spent',
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
                 child: Card(
                   elevation: 3,
                   margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
@@ -167,7 +164,7 @@ class _CycleAmountState extends State<CycleAmount> {
                         Text(
                           !_isAmountVisible
                               ? 'RM ****'
-                              : 'RM ${widget.amountSpent}',
+                              : 'RM ${widget.cycle?.amountSpent ?? '0.00'}',
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.red,

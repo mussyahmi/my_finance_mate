@@ -14,7 +14,7 @@ import '../models/cycle.dart';
 import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
-import '../widgets/cycle_amount.dart';
+import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'add_cycle_page.dart';
 import 'category_list_page.dart';
@@ -36,12 +36,7 @@ class _DashboardPageState extends State<DashboardPage>
   late SharedPreferences prefs;
   int selectedIndex = 0;
   Person? person;
-  String? cycleId;
-  String? cycleName;
-  String? amountBalance;
-  String? amountReceived;
-  String? amountSpent;
-  String? openingBalance;
+  Cycle? cycle;
   bool _isLoading = false;
   bool _isPaused = false;
 
@@ -123,11 +118,15 @@ class _DashboardPageState extends State<DashboardPage>
         NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
-              title: Text(cycleName ?? 'Dashboard'),
+              title: Text(cycle?.cycleName ?? 'Dashboard'),
               centerTitle: true,
               scrolledUnderElevation: 9999,
               floating: true,
               snap: true,
+              actions: [
+                IconButton(
+                    onPressed: () {}, icon: const Icon(Icons.edit_calendar))
+              ],
             ),
           ],
           body: RefreshIndicator(
@@ -136,13 +135,7 @@ class _DashboardPageState extends State<DashboardPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CycleAmount(
-                    cycleId: cycleId ?? '',
-                    amountBalance: amountBalance ?? '',
-                    openingBalance: openingBalance ?? '',
-                    amountReceived: amountReceived ?? '',
-                    amountSpent: amountSpent ?? '',
-                  ),
+                  CycleSummary(cycle: cycle),
                   if (_bannerAd != null)
                     Column(
                       children: [
@@ -156,8 +149,7 @@ class _DashboardPageState extends State<DashboardPage>
                   const SizedBox(height: 20),
                   ForecastBudget(
                     isLoading: _isLoading,
-                    cycleId: cycleId ?? '',
-                    amountBalance: amountBalance ?? '0.00',
+                    cycle: cycle,
                     onCategoryChanged: _refreshPage,
                   ),
                   const SizedBox(height: 20),
@@ -176,8 +168,8 @@ class _DashboardPageState extends State<DashboardPage>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => TransactionListPage(
-                                      cycleId: cycleId ?? ''),
+                                  builder: (context) =>
+                                      TransactionListPage(cycle: cycle!),
                                 ),
                               );
                             },
@@ -257,13 +249,16 @@ class _DashboardPageState extends State<DashboardPage>
                                 confirmDismiss: (direction) async {
                                   if (direction ==
                                       DismissDirection.startToEnd) {
+                                    final transactionCycle =
+                                        await transaction.cycle();
+
                                     //* Edit action
                                     final result = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             TransactionFormPage(
-                                          cycleId: transaction.cycleId,
+                                          cycle: transactionCycle!,
                                           action: 'Edit',
                                           transaction: transaction,
                                         ),
@@ -355,9 +350,9 @@ class _DashboardPageState extends State<DashboardPage>
           ),
         ),
         Container(),
-        CategoryListPage(cycleId: cycleId ?? ''),
+        cycle != null ? CategoryListPage(cycle: cycle!) : Container(),
         const WishlistPage(),
-        SettingsPage(cycleId: cycleId ?? ''),
+        const SettingsPage(),
       ][selectedIndex],
       floatingActionButton: selectedIndex == 0
           ? FloatingActionButton(
@@ -395,8 +390,8 @@ class _DashboardPageState extends State<DashboardPage>
                   result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TransactionFormPage(
-                          cycleId: cycleId ?? '', action: 'Add'),
+                      builder: (context) =>
+                          TransactionFormPage(cycle: cycle!, action: 'Add'),
                     ),
                   );
 
@@ -575,15 +570,9 @@ class _DashboardPageState extends State<DashboardPage>
               builder: (context) =>
                   AddCyclePage(isFirstCycle: false, lastCycle: lastCycle)),
         );
-      } else {
-        //* Get latest cycle
-        cycleId = lastCycleDoc.id;
-        cycleName = lastCycleDoc['cycle_name'];
-        amountBalance = lastCycleDoc['amount_balance'];
-        amountReceived = lastCycleDoc['amount_received'];
-        amountSpent = lastCycleDoc['amount_spent'];
-        openingBalance = lastCycleDoc['opening_balance'];
       }
+
+      cycle = lastCycle;
     } else {
       //* No cycles found, redirect to add cycle page
       await Navigator.push(

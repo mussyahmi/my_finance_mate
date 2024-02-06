@@ -4,21 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import '../models/category.dart';
 import 'summary_page.dart';
 import 'transaction_list_page.dart';
 
 class CategoryListPage extends StatefulWidget {
-  final String cycleId;
+  final Cycle cycle;
   final String? type;
   final bool? isFromTransactionForm;
 
   const CategoryListPage(
-      {super.key,
-      required this.cycleId,
-      this.type,
-      this.isFromTransactionForm});
+      {super.key, required this.cycle, this.type, this.isFromTransactionForm});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -36,7 +34,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isFromTransactionForm != null) {
         Category.showCategoryFormDialog(
-            context, widget.cycleId, selectedType, 'Add', _fetchCategories);
+            context, widget.cycle.id, selectedType, 'Add', _fetchCategories);
       }
     });
   }
@@ -54,9 +52,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
     });
 
     final fetchedSpentCategories =
-        await Category.fetchCategories(widget.cycleId, 'spent');
+        await Category.fetchCategories(widget.cycle.id, 'spent');
     final fetchedReceivedCategories =
-        await Category.fetchCategories(widget.cycleId, 'received');
+        await Category.fetchCategories(widget.cycle.id, 'received');
 
     setState(() {
       spentCategories = List.from(fetchedSpentCategories);
@@ -132,7 +130,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    SummaryPage(cycleId: widget.cycleId)),
+                                    SummaryPage(cycle: widget.cycle)),
                           );
                         },
                       ),
@@ -160,7 +158,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () {
-                  Category.showCategoryFormDialog(context, widget.cycleId,
+                  Category.showCategoryFormDialog(context, widget.cycle.id,
                       selectedType, 'Add', _fetchCategories);
                 },
                 child: const Icon(Icons.add),
@@ -200,7 +198,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => TransactionListPage(
-                        cycleId: widget.cycleId,
+                        cycle: widget.cycle,
                         type: selectedType,
                         categoryName: category.name,
                       ),

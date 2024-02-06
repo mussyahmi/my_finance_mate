@@ -14,20 +14,23 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/category.dart';
+import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
 
 class TransactionFormPage extends StatefulWidget {
-  final String cycleId;
+  final Cycle cycle;
   final String action;
   final t.Transaction? transaction;
-  const TransactionFormPage(
-      {super.key,
-      required this.cycleId,
-      required this.action,
-      this.transaction});
+
+  const TransactionFormPage({
+    super.key,
+    required this.cycle,
+    required this.action,
+    this.transaction,
+  });
 
   @override
   TransactionFormPageState createState() => TransactionFormPageState();
@@ -134,8 +137,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         final selectedDate = await showDatePicker(
                           context: context,
                           initialDate: selectedDateTime,
-                          firstDate: DateTime(2000), //todo: cycle's start date
-                          lastDate: DateTime(2101), //todo: cycle's end date
+                          firstDate: widget.cycle.startDate,
+                          lastDate: widget.cycle.endDate,
                         );
                         if (selectedDate != null) {
                           final selectedTime = await showTimePicker(
@@ -173,7 +176,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return CategoryListPage(
-                                cycleId: widget.cycleId,
+                                cycle: widget.cycle,
                                 type: selectedType,
                                 isFromTransactionForm: true,
                               );
@@ -415,7 +418,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
   Future<void> _fetchCategories() async {
     final fetchedCategories =
-        await Category.fetchCategories(widget.cycleId, selectedType);
+        await Category.fetchCategories(widget.cycle.id, selectedType);
 
     setState(() {
       categories = fetchedCategories;
@@ -470,7 +473,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       if (widget.action == 'Add') {
         //* Create a new transaction document
         await transactionsRef.add({
-          'cycle_id': widget.cycleId,
+          'cycle_id': widget.cycle.id,
           'date_time': dateTime,
           'type': type,
           'category_id': categoryId,
@@ -506,7 +509,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
       }
 
-      final cyclesRef = userRef.collection('cycles').doc(widget.cycleId);
+      final cyclesRef = userRef.collection('cycles').doc(widget.cycle.id);
 
       await _updateCycleToFirebase(cyclesRef, type, amount, now);
 

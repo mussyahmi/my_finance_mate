@@ -12,9 +12,7 @@ import '../services/ad_mob_service.dart';
 import 'login_page.dart';
 
 class SettingsPage extends StatefulWidget {
-  final String cycleId;
-
-  const SettingsPage({Key? key, required this.cycleId}) : super(key: key);
+  const SettingsPage({Key? key}) : super(key: key);
 
   @override
   SettingsPageState createState() => SettingsPageState();
@@ -186,22 +184,25 @@ class SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: () {
-                    _signOut();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
-                      (route) =>
-                          false, //* This line removes all previous routes from the stack
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _signOut();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
+                        (route) =>
+                            false, //* This line removes all previous routes from the stack
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    child: const Text('Sign Out'),
                   ),
-                  child: const Text('Sign Out'),
                 ),
               ],
             ),

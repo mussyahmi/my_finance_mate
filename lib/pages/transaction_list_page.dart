@@ -1,18 +1,21 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 import '../models/category.dart';
+import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 
 class TransactionListPage extends StatefulWidget {
-  final String cycleId;
+  final Cycle cycle;
   final String? type;
   final String? categoryName;
   const TransactionListPage(
-      {super.key, required this.cycleId, this.type, this.categoryName});
+      {super.key, required this.cycle, this.type, this.categoryName});
 
   @override
   State<TransactionListPage> createState() => _TransactionListPageState();
@@ -31,10 +34,13 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Future<void> initAsync() async {
+    selectedDateRange = DateTimeRange(
+      start: widget.cycle.startDate,
+      end: widget.cycle.endDate,
+    );
     selectedType = widget.type;
     selectedCategoryName = widget.categoryName;
 
-    await _fetchCycle();
     await _fetchCategories();
   }
 
@@ -212,13 +218,16 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                 confirmDismiss: (direction) async {
                                   if (direction ==
                                       DismissDirection.startToEnd) {
+                                    final transactionCycle =
+                                        await transaction.cycle();
+
                                     //* Edit action
                                     final result = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             TransactionFormPage(
-                                          cycleId: transaction.cycleId,
+                                          cycle: transactionCycle!,
                                           action: 'Edit',
                                           transaction: transaction,
                                         ),
@@ -330,34 +339,9 @@ class _TransactionListPageState extends State<TransactionListPage> {
     );
   }
 
-  Future<void> _fetchCycle() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final lastCycleQuery =
-        cyclesRef.orderBy('cycle_no', descending: true).limit(1);
-    final lastCycleSnapshot = await lastCycleQuery.get();
-
-    final lastCycleDoc = lastCycleSnapshot.docs.first;
-
-    setState(() {
-      selectedDateRange = DateTimeRange(
-        start: (lastCycleDoc['start_date'] as Timestamp).toDate(),
-        end: (lastCycleDoc['end_date'] as Timestamp).toDate(),
-      );
-    });
-  }
-
   Future<void> _fetchCategories() async {
     final fetchedCategories =
-        await Category.fetchCategories(widget.cycleId, selectedType, true);
+        await Category.fetchCategories(widget.cycle.id, selectedType, true);
 
     setState(() {
       categories = fetchedCategories;

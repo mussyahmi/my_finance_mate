@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
 import '../size_config.dart';
+import 'cycle.dart';
 
 class Transaction {
   final String id;
@@ -312,5 +313,37 @@ class Transaction {
     } catch (e) {
       print('Error deleting file: $e');
     }
+  }
+
+  Future<Cycle?> cycle() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      //todo: Handle the case where user is not authenticated
+      return null;
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final cycleRef = userRef.collection('cycles').doc(cycleId);
+
+    final cycleDoc = await cycleRef.get();
+
+    if (cycleDoc.exists) {
+      final Map<String, dynamic> data = cycleDoc.data()!;
+
+      return Cycle(
+        id: cycleDoc.id,
+        cycleNo: data['cycle_no'],
+        cycleName: data['cycle_name'],
+        openingBalance: data['opening_balance'],
+        amountBalance: data['amount_balance'],
+        amountReceived: data['amount_received'],
+        amountSpent: data['amount_spent'],
+        startDate: (data['start_date'] as Timestamp).toDate(),
+        endDate: (data['end_date'] as Timestamp).toDate(),
+      );
+    }
+
+    return null;
   }
 }
