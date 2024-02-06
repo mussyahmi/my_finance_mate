@@ -5,13 +5,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
 
 class AddCyclePage extends StatefulWidget {
   final bool isFirstCycle;
+  final Cycle? lastCycle;
 
-  const AddCyclePage({super.key, required this.isFirstCycle});
+  const AddCyclePage({
+    super.key,
+    required this.isFirstCycle,
+    this.lastCycle,
+  });
 
   @override
   AddCyclePageState createState() => AddCyclePageState();
@@ -21,8 +27,6 @@ class AddCyclePageState extends State<AddCyclePage> {
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
   DateTimeRange? selectedDateRange;
-  String? lastCycleId;
-  String? lastCycleBalance;
   int lastCycleNo = 0;
   bool _isLoading = false;
 
@@ -34,8 +38,23 @@ class AddCyclePageState extends State<AddCyclePage> {
   void initState() {
     super.initState();
     if (!widget.isFirstCycle) {
-      //* Fetch the last cycle's balance and number if it's not the first cycle
-      fetchLastCycleData();
+      setState(() {
+        lastCycleNo = widget.lastCycle!.cycleNo;
+        cycleNameController.text = widget.lastCycle!.cycleName;
+        openingBalanceController.text = widget.lastCycle!.amountBalance;
+        selectedDateRange = DateTimeRange(
+          start: widget.lastCycle!.endDate.add(
+            const Duration(days: 1),
+          ),
+          end: widget.lastCycle!.endDate.add(
+            Duration(
+                days: widget.lastCycle!.endDate
+                        .difference(widget.lastCycle!.startDate)
+                        .inDays -
+                    1),
+          ),
+        );
+      });
     }
   }
 
@@ -53,32 +72,6 @@ class AddCyclePageState extends State<AddCyclePage> {
         )..load();
       });
     });
-  }
-
-  Future<void> fetchLastCycleData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final lastCycleQuery =
-        cyclesRef.orderBy('cycle_no', descending: true).limit(1);
-    final lastCycleSnapshot = await lastCycleQuery.get();
-
-    if (lastCycleSnapshot.docs.isNotEmpty) {
-      final lastCycleDoc = lastCycleSnapshot.docs.first;
-      setState(() {
-        lastCycleId = lastCycleDoc.id;
-        lastCycleBalance =
-            openingBalanceController.text = lastCycleDoc['amount_balance'];
-        lastCycleNo = lastCycleDoc['cycle_no'];
-      });
-    }
   }
 
   @override
@@ -106,10 +99,14 @@ class AddCyclePageState extends State<AddCyclePage> {
                           onPressed: () async {
                             final pickedDateRange = await showDateRangePicker(
                               context: context,
-                              firstDate: DateTime.now()
-                                  .subtract(const Duration(days: 365)),
+                              firstDate: widget.isFirstCycle
+                                  ? DateTime.now()
+                                      .subtract(const Duration(days: 365))
+                                  : widget.lastCycle!.endDate
+                                      .add(const Duration(days: 1)),
                               lastDate:
                                   DateTime.now().add(const Duration(days: 365)),
+                              initialDateRange: selectedDateRange,
                             );
 
                             if (pickedDateRange != null) {
@@ -255,7 +252,10 @@ class AddCyclePageState extends State<AddCyclePage> {
       'amount_spent': '0.00',
     });
 
-    await copyCategoriesFromLastCycle(user, newCycleDoc.id);
+    if (!widget.isFirstCycle) {
+      await copyCategoriesFromLastCycle(
+          user, widget.lastCycle!.id, newCycleDoc.id);
+    }
 
     // ignore: use_build_context_synchronously
     Navigator.pushAndRemoveUntil(
@@ -304,7 +304,8 @@ class AddCyclePageState extends State<AddCyclePage> {
     return '';
   }
 
-  Future<void> copyCategoriesFromLastCycle(User user, String newCycleId) async {
+  Future<void> copyCategoriesFromLastCycle(
+      User user, String lastCycleId, String newCycleId) async {
     final categoriesRef = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)

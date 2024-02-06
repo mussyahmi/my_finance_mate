@@ -1,6 +1,6 @@
 class Cycle {
   String id;
-  String cycleNo;
+  int cycleNo;
   String cycleName;
   String openingBalance;
   String amountBalance;

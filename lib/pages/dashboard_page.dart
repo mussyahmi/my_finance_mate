@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/cycle.dart';
 import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
@@ -105,8 +106,8 @@ class _DashboardPageState extends State<DashboardPage>
     setState(() {
       _isLoading = true;
     });
-    await _fetchUser();
     await _fetchCycle();
+    await _fetchUser();
     setState(() {
       _isLoading = false;
     });
@@ -223,7 +224,7 @@ class _DashboardPageState extends State<DashboardPage>
                           height: min(300, transactions!.length * 120),
                           child: ListView.builder(
                             shrinkWrap: true,
-                            itemCount: transactions!.length,
+                            itemCount: transactions.length,
                             itemBuilder: (context, index) {
                               final transaction = transactions[index];
                               return Dismissible(
@@ -501,19 +502,20 @@ class _DashboardPageState extends State<DashboardPage>
           .where('deleted_at', isNull: true)
           .orderBy('date_time',
               descending: true) //* Sort by dateTime in descending order
+          .limit(1)
           .get();
 
-      final latestTransaction = transactionQuery.docs.first;
+      final lastTransaction = transactionQuery.docs.first;
 
       DateTime today = DateTime.now();
-      DateTime latestTansactionDate =
-          (latestTransaction['date_time'] as Timestamp).toDate();
+      DateTime lastTansactionDate =
+          (lastTransaction['date_time'] as Timestamp).toDate();
 
       int transactionMade = userDoc['transactions_made'];
 
-      if (!(latestTansactionDate.year == today.year &&
-              latestTansactionDate.month == today.month &&
-              latestTansactionDate.day == today.day) &&
+      if (!(lastTansactionDate.year == today.year &&
+              lastTansactionDate.month == today.month &&
+              lastTansactionDate.day == today.day) &&
           transactionMade > 0) {
         await Person.resetTransactionLimit(user.uid);
 
@@ -552,15 +554,26 @@ class _DashboardPageState extends State<DashboardPage>
 
     if (lastCycleSnapshot.docs.isNotEmpty) {
       final lastCycleDoc = lastCycleSnapshot.docs.first;
-      final endDateTimestamp = lastCycleDoc['end_date'] as Timestamp;
-      final endDate = endDateTimestamp.toDate();
 
-      if (endDate.isBefore(currentDate)) {
+      Cycle lastCycle = Cycle(
+        id: lastCycleDoc.id,
+        cycleNo: lastCycleDoc['cycle_no'],
+        cycleName: lastCycleDoc['cycle_name'],
+        openingBalance: lastCycleDoc['opening_balance'],
+        amountBalance: lastCycleDoc['amount_balance'],
+        amountReceived: lastCycleDoc['amount_received'],
+        amountSpent: lastCycleDoc['amount_spent'],
+        startDate: (lastCycleDoc['start_date'] as Timestamp).toDate(),
+        endDate: (lastCycleDoc['end_date'] as Timestamp).toDate(),
+      );
+
+      if (lastCycle.endDate.isBefore(currentDate)) {
         //* Last cycle has ended, redirect to add cycle page
         await Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => const AddCyclePage(isFirstCycle: false)),
+              builder: (context) =>
+                  AddCyclePage(isFirstCycle: false, lastCycle: lastCycle)),
         );
       } else {
         //* Get latest cycle
