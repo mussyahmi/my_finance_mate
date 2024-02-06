@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
@@ -102,10 +101,6 @@ class _SummaryPageState extends State<SummaryPage> {
 
                     await Category.recalculateCategoryAndCycleTotalAmount(
                         widget.cycle.id);
-
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    await prefs.setBool('refresh_dashboard', true);
 
                     setState(() {
                       _isLoading = false;

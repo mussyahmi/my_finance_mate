@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:my_finance_mate/extensions/string_extension.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../size_config.dart';
@@ -218,10 +217,6 @@ class Category {
                     'updated_at': now,
                     'deleted_at': now,
                   });
-
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  await prefs.setBool('refresh_dashboard', true);
 
                   onCategoryChanged();
 
