@@ -61,19 +61,21 @@ class _DashboardPageState extends State<DashboardPage>
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
 
-    _adMobService.initialization.then((value) {
-      setState(() {
-        _bannerAd = BannerAd(
-          size: AdSize.mediumRectangle,
-          adUnitId: _adMobService.bannerDasboardAdUnitId!,
-          listener: _adMobService.bannerAdListener,
-          request: const AdRequest(),
-        )..load();
+    if (_adMobService.status) {
+      _adMobService.initialization.then((value) {
+        setState(() {
+          _bannerAd = BannerAd(
+            size: AdSize.mediumRectangle,
+            adUnitId: _adMobService.bannerDasboardAdUnitId!,
+            listener: _adMobService.bannerAdListener,
+            request: const AdRequest(),
+          )..load();
+        });
       });
-    });
 
-    _createAppOpenAd();
-    _createRewardedAd();
+      _createAppOpenAd();
+      _createRewardedAd();
+    }
   }
 
   @override
@@ -84,7 +86,7 @@ class _DashboardPageState extends State<DashboardPage>
       _isPaused = true;
       print('Paused');
     } else if (state == AppLifecycleState.resumed && _isPaused) {
-      _showAppOpenAd();
+      if (_adMobService.status) _showAppOpenAd();
       _isPaused = false;
       print('Resumed');
     }
@@ -374,7 +376,7 @@ class _DashboardPageState extends State<DashboardPage>
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              _showRewardedAd();
+                              if (_adMobService.status) _showRewardedAd();
 
                               Navigator.of(context).pop(); //* Close the dialog
                             },

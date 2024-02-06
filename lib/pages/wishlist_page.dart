@@ -63,18 +63,21 @@ class _WishlistPageState extends State<WishlistPage> {
       wishlist = List.from(fetchedWishlist);
 
       final adMobService = context.read<AdMobService>();
-      adMobService.initialization.then((value) {
-        for (var i = 2; i < wishlist.length; i += 7) {
-          wishlist.insert(
-              i,
-              BannerAd(
-                size: AdSize.banner,
-                adUnitId: adMobService.bannerWishlistAdUnitId!,
-                listener: adMobService.bannerAdListener,
-                request: const AdRequest(),
-              )..load());
-        }
-      });
+
+      if (adMobService.status) {
+        adMobService.initialization.then((value) {
+          for (var i = 2; i < wishlist.length; i += 7) {
+            wishlist.insert(
+                i,
+                BannerAd(
+                  size: AdSize.banner,
+                  adUnitId: adMobService.bannerWishlistAdUnitId!,
+                  listener: adMobService.bannerAdListener,
+                  request: const AdRequest(),
+                )..load());
+          }
+        });
+      }
     });
   }
 

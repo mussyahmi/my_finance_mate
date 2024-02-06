@@ -61,11 +61,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
-    _adMobService.initialization.then((value) {
-      setState(() {
-        _createInterstitialAd();
+
+    if (_adMobService.status) {
+      _adMobService.initialization.then((value) {
+        setState(() {
+          _createInterstitialAd();
+        });
       });
-    });
+    }
   }
 
   Future<void> initAsync() async {
@@ -380,7 +383,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           _isLoading = true;
                         });
 
-                        _showInterstitialAd();
+                        if (_adMobService.status) _showInterstitialAd();
 
                         try {
                           await _updateTransactionToFirebase();
@@ -492,8 +495,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         //* Update transactions made
         final userDoc = await userRef.get();
 
-        await userRef
-            .update({'transactions_made': userDoc['transactions_made'] + 1});
+        if (_adMobService.status) {
+          await userRef
+              .update({'transactions_made': userDoc['transactions_made'] + 1});
+        }
       } else if (widget.action == 'Edit') {
         await transactionsRef.doc(widget.transaction!.id).update({
           'date_time': dateTime,

@@ -62,16 +62,19 @@ class AddCyclePageState extends State<AddCyclePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
-    _adMobService.initialization.then((value) {
-      setState(() {
-        _bannerAd = BannerAd(
-          size: AdSize.fullBanner,
-          adUnitId: _adMobService.bannerDasboardAdUnitId!,
-          listener: _adMobService.bannerAdListener,
-          request: const AdRequest(),
-        )..load();
+
+    if (_adMobService.status) {
+      _adMobService.initialization.then((value) {
+        setState(() {
+          _bannerAd = BannerAd(
+            size: AdSize.fullBanner,
+            adUnitId: _adMobService.bannerDasboardAdUnitId!,
+            listener: _adMobService.bannerAdListener,
+            request: const AdRequest(),
+          )..load();
+        });
       });
-    });
+    }
   }
 
   @override

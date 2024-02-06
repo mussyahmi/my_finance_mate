@@ -41,27 +41,30 @@ class _SummaryPageState extends State<SummaryPage> {
           .toList());
 
       _adMobService = context.read<AdMobService>();
-      _adMobService.initialization.then(
-        (value) {
-          _createInterstitialAd();
 
-          for (var i = 2; i < categories.length; i += 7) {
-            categories.insert(
-                i,
-                BannerAd(
-                  size: AdSize.banner,
-                  adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
-                  listener: _adMobService.bannerAdListener,
-                  request: const AdRequest(),
-                )..load());
+      if (_adMobService.status) {
+        _adMobService.initialization.then(
+          (value) {
+            _createInterstitialAd();
 
-            if (i >= 16) {
-              //* max 3 ads
-              break;
+            for (var i = 2; i < categories.length; i += 7) {
+              categories.insert(
+                  i,
+                  BannerAd(
+                    size: AdSize.banner,
+                    adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
+                    listener: _adMobService.bannerAdListener,
+                    request: const AdRequest(),
+                  )..load());
+
+              if (i >= 16) {
+                //* max 3 ads
+                break;
+              }
             }
-          }
-        },
-      );
+          },
+        );
+      }
     });
   }
 
@@ -95,7 +98,7 @@ class _SummaryPageState extends State<SummaryPage> {
                       _isLoading = true;
                     });
 
-                    _showInterstitialAd();
+                    if (_adMobService.status) _showInterstitialAd();
 
                     await Category.recalculateCategoryAndCycleTotalAmount(
                         widget.cycle.id);

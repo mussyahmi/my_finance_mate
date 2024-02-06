@@ -61,39 +61,42 @@ class _CategoryListPageState extends State<CategoryListPage> {
       receivedCategories = List.from(fetchedReceivedCategories);
 
       final adMobService = context.read<AdMobService>();
-      adMobService.initialization.then((value) {
-        for (var i = 2; i < spentCategories.length; i += 7) {
-          spentCategories.insert(
-              i,
-              BannerAd(
-                size: AdSize.banner,
-                adUnitId: adMobService.bannerCategoryListAdUnitId!,
-                listener: adMobService.bannerAdListener,
-                request: const AdRequest(),
-              )..load());
 
-          if (i >= 16) {
-            //* max 3 ads
-            break;
+      if (adMobService.status) {
+        adMobService.initialization.then((value) {
+          for (var i = 2; i < spentCategories.length; i += 7) {
+            spentCategories.insert(
+                i,
+                BannerAd(
+                  size: AdSize.banner,
+                  adUnitId: adMobService.bannerCategoryListAdUnitId!,
+                  listener: adMobService.bannerAdListener,
+                  request: const AdRequest(),
+                )..load());
+
+            if (i >= 16) {
+              //* max 3 ads
+              break;
+            }
           }
-        }
 
-        for (var i = 2; i < receivedCategories.length; i += 7) {
-          receivedCategories.insert(
-              i,
-              BannerAd(
-                size: AdSize.banner,
-                adUnitId: adMobService.bannerCategoryListAdUnitId!,
-                listener: adMobService.bannerAdListener,
-                request: const AdRequest(),
-              )..load());
+          for (var i = 2; i < receivedCategories.length; i += 7) {
+            receivedCategories.insert(
+                i,
+                BannerAd(
+                  size: AdSize.banner,
+                  adUnitId: adMobService.bannerCategoryListAdUnitId!,
+                  listener: adMobService.bannerAdListener,
+                  request: const AdRequest(),
+                )..load());
 
-          if (i >= 16) {
-            //* max 3 ads
-            break;
+            if (i >= 16) {
+              //* max 3 ads
+              break;
+            }
           }
-        }
-      });
+        });
+      }
     });
   }
 
