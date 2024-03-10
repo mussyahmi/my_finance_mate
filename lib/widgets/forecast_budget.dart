@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
@@ -26,7 +27,32 @@ class ForecastBudget extends StatefulWidget {
 }
 
 class _ForecastBudgetState extends State<ForecastBudget> {
+  late SharedPreferences prefs;
   BudgetFilter currentFilter = BudgetFilter.all;
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    SharedPreferences? sharedPreferences =
+        await SharedPreferences.getInstance();
+    final savedFilter = sharedPreferences.getString('forecast_filter');
+
+    setState(() {
+      prefs = sharedPreferences;
+      currentFilter = savedFilter != null
+          ? BudgetFilter.values.firstWhere(
+              (filter) => filter.toString() == savedFilter,
+              orElse: () => BudgetFilter
+                  .all, //* Set a default filter if savedFilter is null or invalid
+            )
+          : BudgetFilter
+              .all; //* Set a default filter if 'forecast_filter' is not saved
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -357,7 +383,13 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     );
   }
 
-  void _applyFilter(BudgetFilter filter) {
+  void _applyFilter(BudgetFilter filter) async {print(filter
+            .toString());
+    await prefs.setString(
+        'forecast_filter',
+        filter
+            .toString()); //* Store the string representation of the enum value
+
     setState(() {
       currentFilter = filter;
     });
