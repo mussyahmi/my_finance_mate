@@ -38,21 +38,27 @@ class AddCyclePageState extends State<AddCyclePage> {
   void initState() {
     super.initState();
     if (!widget.isFirstCycle) {
+      //* Set the start date to be 1 day after the end date at 12 AM
+      DateTime startDate =
+          widget.lastCycle!.endDate.add(const Duration(days: 1));
+      startDate =
+          DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
+
+      DateTime endDate = widget.lastCycle!.endDate.add(Duration(
+          days: widget.lastCycle!.endDate
+                  .difference(widget.lastCycle!.startDate)
+                  .inDays -
+              1));
+      endDate =
+          DateTime(endDate.year, endDate.month, endDate.day, 0, 0);
+
       setState(() {
         lastCycleNo = widget.lastCycle!.cycleNo;
         cycleNameController.text = widget.lastCycle!.cycleName;
         openingBalanceController.text = widget.lastCycle!.amountBalance;
         selectedDateRange = DateTimeRange(
-          start: widget.lastCycle!.endDate.add(
-            const Duration(days: 1),
-          ),
-          end: widget.lastCycle!.endDate.add(
-            Duration(
-                days: widget.lastCycle!.endDate
-                        .difference(widget.lastCycle!.startDate)
-                        .inDays -
-                    1),
-          ),
+          start: startDate,
+          end: endDate,
         );
       });
     }
