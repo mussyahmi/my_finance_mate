@@ -100,7 +100,7 @@ class _ChartPageState extends State<ChartPage> {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           const SliverAppBar(
-            title: Text('Subtype Chart'),
+            title: Text('Chart'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
             floating: true,
@@ -111,8 +111,20 @@ class _ChartPageState extends State<ChartPage> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Card(
+                  elevation: 3,
+                  child: ListTile(
+                    title: Text(
+                      'Total of $totalTransaction transaction${totalTransaction > 0 ? 's' : ''}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
                 SizedBox(
                   height: SizeConfig.screenHeight! * 1 / 2,
                   child: _isLoading
@@ -199,26 +211,10 @@ class _ChartPageState extends State<ChartPage> {
                           ),
                         ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Card(
-                      child: ListTile(
-                        title: Text(
-                          'Total of $totalTransaction transaction${totalTransaction > 0 ? 's' : ''}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    _card('needs', needsTotal),
-                    _card('wants', wantsTotal),
-                    _card('savings', savingsTotal),
-                    _card('others', othersTotal),
-                  ],
-                ),
+                _card('needs', needsTotal),
+                _card('wants', wantsTotal),
+                _card('savings', savingsTotal),
+                _card('others', othersTotal),
               ],
             ),
           ),

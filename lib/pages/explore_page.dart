@@ -88,7 +88,7 @@ class ExplorePageState extends State<ExplorePage> {
               children: [
                 Card(
                   child: ListTile(
-                    title: const Text('Subtype Chart'),
+                    title: const Text('Chart'),
                     trailing: const Icon(Icons.pie_chart),
                     onTap: widget.cycle != null
                         ? () async {
