@@ -8,17 +8,22 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
+import 'chart_page.dart';
 import 'login_page.dart';
+import 'summary_page.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class ExplorePage extends StatefulWidget {
+  final Cycle cycle;
+
+  const ExplorePage({Key? key, required this.cycle}) : super(key: key);
 
   @override
-  SettingsPageState createState() => SettingsPageState();
+  ExplorePageState createState() => ExplorePageState();
 }
 
-class SettingsPageState extends State<SettingsPage> {
+class ExplorePageState extends State<ExplorePage> {
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.deepPurple;
@@ -70,7 +75,7 @@ class SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Explore'),
         centerTitle: true,
       ),
       body: Column(
@@ -81,6 +86,34 @@ class SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Card(
+                  child: ListTile(
+                    title: const Text('Subtype Chart'),
+                    trailing: const Icon(Icons.pie_chart),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ChartPage(cycle: widget.cycle)),
+                      );
+                    },
+                  ),
+                ),
+                Card(
+                  child: ListTile(
+                    title: const Text('Category Summary'),
+                    trailing: const Icon(Icons.analytics),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                SummaryPage(cycle: widget.cycle)),
+                      );
+                    },
+                  ),
+                ),
                 Card(
                   child: ListTile(
                     title: const Text('Toggle Theme Mode'),

@@ -383,8 +383,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     );
   }
 
-  void _applyFilter(BudgetFilter filter) async {print(filter
-            .toString());
+  void _applyFilter(BudgetFilter filter) async {
     await prefs.setString(
         'forecast_filter',
         filter

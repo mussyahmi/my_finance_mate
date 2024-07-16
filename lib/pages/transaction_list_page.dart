@@ -13,9 +13,15 @@ import 'transaction_form_page.dart';
 class TransactionListPage extends StatefulWidget {
   final Cycle cycle;
   final String? type;
+  final String? subType;
   final String? categoryName;
-  const TransactionListPage(
-      {super.key, required this.cycle, this.type, this.categoryName});
+  const TransactionListPage({
+    super.key,
+    required this.cycle,
+    this.type,
+    this.subType,
+    this.categoryName,
+  });
 
   @override
   State<TransactionListPage> createState() => _TransactionListPageState();
@@ -55,81 +61,83 @@ class _TransactionListPageState extends State<TransactionListPage> {
             scrolledUnderElevation: 9999,
             floating: true,
             snap: true,
-            bottom: PreferredSize(
-              preferredSize: const Size(double.infinity, 200.0),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 16.0, right: 16.0, bottom: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        final pickedDateRange = await showDateRangePicker(
-                          context: context,
-                          initialDateRange: selectedDateRange,
-                          firstDate: DateTime.now()
-                              .subtract(const Duration(days: 365)),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
-                        );
+            bottom: widget.subType == null
+                ? PreferredSize(
+                    preferredSize: const Size(double.infinity, 200.0),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16.0, right: 16.0, bottom: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              final pickedDateRange = await showDateRangePicker(
+                                context: context,
+                                initialDateRange: selectedDateRange,
+                                firstDate: DateTime.now()
+                                    .subtract(const Duration(days: 365)),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365)),
+                              );
 
-                        if (pickedDateRange != null) {
-                          setState(() {
-                            selectedDateRange = pickedDateRange;
-                          });
-                        }
-                      },
-                      child: Text(
-                        selectedDateRange != null
-                            ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                            : 'Select Date Range',
-                        textAlign: TextAlign.center,
+                              if (pickedDateRange != null) {
+                                setState(() {
+                                  selectedDateRange = pickedDateRange;
+                                });
+                              }
+                            },
+                            child: Text(
+                              selectedDateRange != null
+                                  ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                                  : 'Select Date Range',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          //* Type Dropdown
+                          DropdownButtonFormField<String>(
+                            value: selectedType,
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedType = newValue as String;
+                                selectedCategoryName = null;
+                              });
+                              _fetchCategories();
+                            },
+                            items: ['spent', 'received'].map((type) {
+                              return DropdownMenuItem(
+                                value: type,
+                                child: Text(
+                                    '${type[0].toUpperCase()}${type.substring(1)}'),
+                              );
+                            }).toList(),
+                            decoration: const InputDecoration(
+                              labelText: 'Type',
+                            ),
+                          ),
+                          //* Category Dropdown
+                          DropdownButtonFormField<String>(
+                            value: selectedCategoryName,
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedCategoryName = newValue;
+                              });
+                            },
+                            items: categories.map((category) {
+                              return DropdownMenuItem<String>(
+                                value: category.name,
+                                child: Text(category.name),
+                              );
+                            }).toList(),
+                            decoration: const InputDecoration(
+                              labelText: 'Category',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    //* Type Dropdown
-                    DropdownButtonFormField<String>(
-                      value: selectedType,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedType = newValue as String;
-                          selectedCategoryName = null;
-                        });
-                        _fetchCategories();
-                      },
-                      items: ['spent', 'received'].map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          child: Text(
-                              '${type[0].toUpperCase()}${type.substring(1)}'),
-                        );
-                      }).toList(),
-                      decoration: const InputDecoration(
-                        labelText: 'Type',
-                      ),
-                    ),
-                    //* Category Dropdown
-                    DropdownButtonFormField<String>(
-                      value: selectedCategoryName,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedCategoryName = newValue;
-                        });
-                      },
-                      items: categories.map((category) {
-                        return DropdownMenuItem<String>(
-                          value: category.name,
-                          child: Text(category.name),
-                        );
-                      }).toList(),
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : null,
           ),
         ],
         body: Column(
@@ -170,7 +178,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     final transactions = snapshot.data;
                     double total = 0;
 
-                    if (selectedCategoryName != null) {
+                    if (selectedCategoryName != null ||
+                        widget.subType != null) {
                       for (var transaction in transactions!) {
                         if (transaction.type == 'spent') {
                           total -= double.parse(transaction.amount);
@@ -304,7 +313,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             },
                           ),
                         ),
-                        if (selectedCategoryName != null)
+                        if (selectedCategoryName != null ||
+                            widget.subType != null)
                           Column(
                             children: [
                               const Divider(
@@ -368,16 +378,27 @@ class _TransactionListPageState extends State<TransactionListPage> {
           .where('date_time', isLessThanOrEqualTo: selectedDateRange!.end);
     }
 
-    if (selectedType != null) {
-      query = query.where('type', isEqualTo: selectedType);
-    }
+    if (widget.subType != null) {
+      query = query.where('type', isEqualTo: 'spent');
 
-    if (selectedCategoryName != null) {
-      query = query.where('category_name', isEqualTo: selectedCategoryName);
+      if (widget.subType != 'others') {
+        query = query.where('subType', isEqualTo: widget.subType);
+      }
+    } else {
+      if (selectedType != null) {
+        query = query.where('type', isEqualTo: selectedType);
+      }
+
+      if (selectedCategoryName != null) {
+        query = query.where('category_name', isEqualTo: selectedCategoryName);
+      }
     }
 
     final querySnapshot = await query.get();
-    final transactions = querySnapshot.docs.map((doc) async {
+
+    List<t.Transaction> transactions = [];
+
+    for (var doc in querySnapshot.docs) {
       final data = doc.data();
 
       //* Fetch the category name based on the categoryId
@@ -392,21 +413,47 @@ class _TransactionListPageState extends State<TransactionListPage> {
       final categoryName = categoryDoc['name'] as String;
 
       //* Map data to your Transaction class
-      return t.Transaction(
-        id: doc.id,
-        cycleId: data['cycle_id'],
-        dateTime: (data['date_time'] as Timestamp).toDate(),
-        type: data['type'] as String,
-        categoryId: data['category_id'],
-        categoryName: categoryName,
-        amount: data['amount'] as String,
-        note: data['note'] as String,
-        files: data['files'] != null ? data['files'] as List : [],
-        //* Add other transaction properties as needed
-      );
-    }).toList();
+      if (widget.subType == 'others') {
+        if (!data.containsKey('subType') || data['subType'] == null) {
+          transactions = [
+            ...transactions,
+            t.Transaction(
+              id: doc.id,
+              cycleId: data['cycle_id'],
+              dateTime: (data['date_time'] as Timestamp).toDate(),
+              type: data['type'] as String,
+              subType: data['subType'],
+              categoryId: data['category_id'],
+              categoryName: categoryName,
+              amount: data['amount'] as String,
+              note: data['note'] as String,
+              files: data['files'] != null ? data['files'] as List : [],
+              //* Add other transaction properties as needed
+            )
+          ];
+        }
+      } else {
+        transactions = [
+          ...transactions,
+          t.Transaction(
+            id: doc.id,
+            cycleId: data['cycle_id'],
+            dateTime: (data['date_time'] as Timestamp).toDate(),
+            type: data['type'] as String,
+            subType: data['subType'],
+            categoryId: data['category_id'],
+            categoryName: categoryName,
+            amount: data['amount'] as String,
+            note: data['note'] as String,
+            files: data['files'] != null ? data['files'] as List : [],
+            //* Add other transaction properties as needed
+          )
+        ];
+      }
+    }
+    // }).toList();
 
-    var result = await Future.wait(transactions);
+    var result = transactions;
 
     //* Sort the list as needed
     result.sort((a, b) => b.dateTime.compareTo(a.dateTime));

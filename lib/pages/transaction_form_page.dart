@@ -38,6 +38,7 @@ class TransactionFormPage extends StatefulWidget {
 
 class TransactionFormPageState extends State<TransactionFormPage> {
   String selectedType = 'spent';
+  String? selectedSubType;
   String? selectedCategoryId;
   List<Category> categories = [];
   TextEditingController transactionAmountController = TextEditingController();
@@ -76,6 +77,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
+      selectedSubType = widget.transaction!.subType;
       transactionAmountController.text = widget.transaction!.amount;
       transactionNoteController.text =
           widget.transaction!.note.replaceAll('\\n', '\n');
@@ -134,7 +136,35 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         _fetchCategories();
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    if (selectedType == 'spent')
+                      SegmentedButton(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'needs',
+                            label: Text('Needs'),
+                          ),
+                          ButtonSegment(
+                            value: 'wants',
+                            label: Text('Wants'),
+                          ),
+                          ButtonSegment(
+                            value: 'savings',
+                            label: Text('Savings'),
+                          ),
+                        ],
+                        selected: {selectedSubType},
+                        onSelectionChanged: (newSelection) {
+                          print(newSelection);
+                          setState(() {
+                            selectedSubType = newSelection.isNotEmpty
+                                ? newSelection.first
+                                : null;
+                          });
+                        },
+                        emptySelectionAllowed: true,
+                      ),
+                    const SizedBox(height: 15),
                     ElevatedButton(
                       onPressed: () async {
                         final selectedDate = await showDatePicker(
@@ -431,6 +461,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   Future<void> _updateTransactionToFirebase() async {
     //* Get the values from the form
     String type = selectedType;
+    String? subType = selectedSubType;
     String? categoryId = selectedCategoryId;
     String amount = transactionAmountController.text;
     String note = transactionNoteController.text.replaceAll('\n', '\\n');
@@ -479,6 +510,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           'cycle_id': widget.cycle.id,
           'date_time': dateTime,
           'type': type,
+          'subType': selectedType == 'spent' ? subType : null,
           'category_id': categoryId,
           'category_name': categories
               .firstWhere((category) => category.id == categoryId)
@@ -503,6 +535,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         await transactionsRef.doc(widget.transaction!.id).update({
           'date_time': dateTime,
           'type': type,
+          'subType': selectedType == 'spent' ? subType : null,
           'category_id': categoryId,
           'category_name': categories
               .firstWhere((category) => category.id == categoryId)

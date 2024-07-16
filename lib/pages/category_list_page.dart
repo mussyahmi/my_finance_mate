@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import '../models/category.dart';
-import 'summary_page.dart';
 import 'transaction_list_page.dart';
 
 class CategoryListPage extends StatefulWidget {
@@ -119,26 +118,13 @@ class _CategoryListPageState extends State<CategoryListPage> {
             return Scaffold(
               body: NestedScrollView(
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  SliverAppBar(
-                    title: const Text('Category List'),
+                  const SliverAppBar(
+                    title: Text('Category List'),
                     centerTitle: true,
                     scrolledUnderElevation: 9999,
                     floating: true,
                     snap: true,
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.analytics),
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    SummaryPage(cycle: widget.cycle)),
-                          );
-                        },
-                      ),
-                    ],
-                    bottom: const TabBar(
+                    bottom: TabBar(
                       tabs: [
                         Tab(
                           icon: Icon(Icons.file_upload_outlined),

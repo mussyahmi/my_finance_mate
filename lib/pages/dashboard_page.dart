@@ -18,7 +18,7 @@ import '../widgets/forecast_budget.dart';
 import 'add_cycle_page.dart';
 import 'category_list_page.dart';
 import 'transaction_form_page.dart';
-import 'settings_page.dart';
+import 'explore_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
 import 'wishlist_page.dart';
@@ -352,7 +352,7 @@ class _DashboardPageState extends State<DashboardPage>
         Container(),
         cycle != null ? CategoryListPage(cycle: cycle!) : Container(),
         const WishlistPage(),
-        const SettingsPage(),
+        ExplorePage(cycle: cycle!),
       ][selectedIndex],
       floatingActionButton: selectedIndex == 0
           ? FloatingActionButton(
@@ -413,7 +413,7 @@ class _DashboardPageState extends State<DashboardPage>
           NavigationDestination(
               icon: Icon(Icons.category), label: 'Category List'),
           NavigationDestination(icon: Icon(Icons.favorite), label: 'Wishlist'),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
+          NavigationDestination(icon: Icon(Icons.explore), label: 'Explore'),
         ],
         onDestinationSelected: (value) {
           setState(() {
@@ -443,6 +443,7 @@ class _DashboardPageState extends State<DashboardPage>
             descending: true) //* Sort by dateTime in descending order
         .limit(10) //* Limit to 10 items
         .get();
+
     final transactions = transactionQuery.docs.map((doc) async {
       final data = doc.data();
 
@@ -463,6 +464,7 @@ class _DashboardPageState extends State<DashboardPage>
         cycleId: data['cycle_id'],
         dateTime: (data['date_time'] as Timestamp).toDate(),
         type: data['type'] as String,
+        subType: data['subType'],
         categoryId: data['category_id'],
         categoryName: categoryName,
         amount: data['amount'] as String,

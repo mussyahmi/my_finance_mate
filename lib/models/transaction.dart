@@ -17,6 +17,7 @@ class Transaction {
   final String cycleId;
   final DateTime dateTime;
   final String type;
+  final String? subType;
   final String categoryId;
   final String categoryName;
   final String amount;
@@ -28,6 +29,7 @@ class Transaction {
     required this.dateTime,
     required this.cycleId,
     required this.type,
+    required this.subType,
     required this.categoryId,
     required this.categoryName,
     required this.amount,
