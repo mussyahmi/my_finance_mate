@@ -99,12 +99,49 @@ class _ChartPageState extends State<ChartPage> {
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          const SliverAppBar(
-            title: Text('Chart'),
+          SliverAppBar(
+            title: const Text('Chart'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
             floating: true,
             snap: true,
+            actions: [
+              IconButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return const SizedBox(
+                        height: 150,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Recommendations',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              SizedBox(height: 20),
+                              Text(
+                                  '1. Needs (50%), Wants (30%), Savings (20%)'),
+                              SizedBox(height: 5),
+                              Text(
+                                  '2. Needs (60%), Wants (30%), Savings (10%)'),
+                              SizedBox(height: 5),
+                              Text(
+                                  '3. Needs (70%), Wants (20%), Savings (10%)'),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(Icons.info),
+              ),
+            ],
           ),
         ],
         body: SingleChildScrollView(
@@ -116,6 +153,7 @@ class _ChartPageState extends State<ChartPage> {
                 Card(
                   elevation: 3,
                   child: ListTile(
+                    dense: true,
                     title: Text(
                       'Total of $totalTransaction transaction${totalTransaction > 0 ? 's' : ''}',
                       style: const TextStyle(
@@ -211,10 +249,10 @@ class _ChartPageState extends State<ChartPage> {
                           ),
                         ),
                 ),
-                _card('needs', needsTotal),
-                _card('wants', wantsTotal),
-                _card('savings', savingsTotal),
-                _card('others', othersTotal),
+                _card('needs', needsPercentage, needsTotal),
+                _card('wants', wantsPercentage, wantsTotal),
+                _card('savings', savingsPercentage, savingsTotal),
+                _card('others', othersPercentage, othersTotal),
               ],
             ),
           ),
@@ -231,16 +269,23 @@ class _ChartPageState extends State<ChartPage> {
       radius: 100,
       title: title,
       titlePositionPercentageOffset: 1.3,
-      badgeWidget: Text(
-        '${percentage.toStringAsFixed(2)}%',
-      ),
     );
   }
 
-  Card _card(String subtype, double amount) {
+  Card _card(String subtype, double percentage, double amount) {
     return Card(
       child: ListTile(
-          title: Text('Total $subtype'),
+          dense: true,
+          title:
+              Text('Total ${subtype[0].toUpperCase()}${subtype.substring(1)}'),
+          subtitle: Text(
+            'Percentage: ${percentage.toStringAsFixed(2)}%',
+            style: const TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey,
+            ),
+          ),
           trailing: Text(
             'RM${amount.toStringAsFixed(2)}',
             style: const TextStyle(
