@@ -135,6 +135,7 @@ class _DashboardPageState extends State<DashboardPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 20),
                   CycleSummary(cycle: cycle),
                   if (_bannerAd != null)
                     Column(
@@ -146,13 +147,13 @@ class _DashboardPageState extends State<DashboardPage>
                         ),
                       ],
                     ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   ForecastBudget(
                     isLoading: _isLoading,
                     cycle: cycle,
                     onCategoryChanged: _refreshPage,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(

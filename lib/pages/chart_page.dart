@@ -109,7 +109,7 @@ class _ChartPageState extends State<ChartPage> {
         ],
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -200,12 +200,23 @@ class _ChartPageState extends State<ChartPage> {
                         ),
                 ),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Total transactions: $totalTransaction'),
-                    Text('Total wants: RM${wantsTotal.toStringAsFixed(2)}'),
-                    Text('Total needs: RM${needsTotal.toStringAsFixed(2)}'),
-                    Text('Total savings: RM${savingsTotal.toStringAsFixed(2)}'),
-                    Text('Total others: RM${othersTotal.toStringAsFixed(2)}'),
+                    Card(
+                      child: ListTile(
+                        title: Text(
+                          'Total of $totalTransaction transaction${totalTransaction > 0 ? 's' : ''}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    _card('needs', needsTotal),
+                    _card('wants', wantsTotal),
+                    _card('savings', savingsTotal),
+                    _card('others', othersTotal),
                   ],
                 ),
               ],
@@ -227,6 +238,31 @@ class _ChartPageState extends State<ChartPage> {
       badgeWidget: Text(
         '${percentage.toStringAsFixed(2)}%',
       ),
+    );
+  }
+
+  Card _card(String subtype, double amount) {
+    return Card(
+      child: ListTile(
+          title: Text('Total $subtype'),
+          trailing: Text(
+            'RM${amount.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.red,
+            ),
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TransactionListPage(
+                  cycle: widget.cycle,
+                  subType: subtype,
+                ),
+              ),
+            );
+          }),
     );
   }
 }

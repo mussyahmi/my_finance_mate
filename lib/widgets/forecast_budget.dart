@@ -76,7 +76,6 @@ class _ForecastBudgetState extends State<ForecastBudget> {
             ],
           ),
         ),
-        const SizedBox(height: 10),
         FutureBuilder<List<Category>>(
           future: _fetchBudgets(),
           builder: (context, snapshot) {
