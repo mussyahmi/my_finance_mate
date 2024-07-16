@@ -259,6 +259,9 @@ class _LoginPageState extends State<LoginPage> {
           'device_info_json': deviceInfoJson,
         });
 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_login_with', 'email');
+
         //* Navigate to the DashboardPage after sign-in
         // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
@@ -320,6 +323,9 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         print('Google Sign-In Successful');
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_login_with', 'google');
 
         //* Navigate to the DashboardPage after sign-in
         // ignore: use_build_context_synchronously
@@ -428,6 +434,46 @@ class _LoginPageState extends State<LoginPage> {
         passwordController.text = savedPassword;
         _isRememberMeChecked = true; //* Update the checkbox state
       });
+    }
+
+    _autoLogin();
+  }
+
+  void _autoLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? lastLoginWith = prefs.getString('last_login_with');
+
+    if (lastLoginWith == 'email' &&
+        emailController.text.trim().isNotEmpty &&
+        passwordController.text.trim().isNotEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _signInWithEmailAndPassword(
+          emailController.text.trim(),
+          passwordController.text.trim(),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } else if (lastLoginWith == 'google') {
+      setState(() {
+        _isLoading2 = true; //* Set loading state to true
+      });
+
+      try {
+        //* Use the context from the Builder widget
+        // ignore: use_build_context_synchronously
+        await _signInWithGoogle(context);
+      } finally {
+        setState(() {
+          _isLoading2 = false; //* Set loading state to false
+        });
+      }
     }
   }
 }
