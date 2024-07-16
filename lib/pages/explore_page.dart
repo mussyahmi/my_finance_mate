@@ -15,7 +15,7 @@ import 'login_page.dart';
 import 'summary_page.dart';
 
 class ExplorePage extends StatefulWidget {
-  final Cycle cycle;
+  final Cycle? cycle;
 
   const ExplorePage({Key? key, required this.cycle}) : super(key: key);
 
@@ -90,28 +90,32 @@ class ExplorePageState extends State<ExplorePage> {
                   child: ListTile(
                     title: const Text('Subtype Chart'),
                     trailing: const Icon(Icons.pie_chart),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                ChartPage(cycle: widget.cycle)),
-                      );
-                    },
+                    onTap: widget.cycle != null
+                        ? () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChartPage(cycle: widget.cycle!)),
+                            );
+                          }
+                        : null,
                   ),
                 ),
                 Card(
                   child: ListTile(
                     title: const Text('Category Summary'),
                     trailing: const Icon(Icons.analytics),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                SummaryPage(cycle: widget.cycle)),
-                      );
-                    },
+                    onTap: widget.cycle != null
+                        ? () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      SummaryPage(cycle: widget.cycle!)),
+                            );
+                          }
+                        : null,
                   ),
                 ),
                 Card(

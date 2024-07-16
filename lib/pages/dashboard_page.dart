@@ -352,7 +352,7 @@ class _DashboardPageState extends State<DashboardPage>
         Container(),
         cycle != null ? CategoryListPage(cycle: cycle!) : Container(),
         const WishlistPage(),
-        ExplorePage(cycle: cycle!),
+        ExplorePage(cycle: cycle),
       ][selectedIndex],
       floatingActionButton: selectedIndex == 0
           ? FloatingActionButton(
