@@ -114,7 +114,7 @@ class _ChartPageState extends State<ChartPage> {
                     context: context,
                     builder: (context) {
                       return const CustomDraggableScrollableSheet(
-                        initialSize:0.1,
+                        initialSize: 0.4,
                         title: Column(
                           children: [
                             Text(
