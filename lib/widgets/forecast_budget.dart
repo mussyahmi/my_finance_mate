@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../pages/transaction_list_page.dart';
+import '../extensions/string_extension.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 enum BudgetFilter { all, ongoing, exceeded, completed }
 
@@ -69,9 +71,35 @@ class _ForecastBudgetState extends State<ForecastBudget> {
               ),
               TextButton.icon(
                 icon: const Icon(Icons.filter_list),
-                onPressed: _showFilterDialog,
-                label: Text(currentFilter.name[0].toUpperCase() +
-                    currentFilter.name.substring(1)),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return CustomDraggableScrollableSheet(
+                        initialSize: 0.8,
+                        title: const Column(
+                          children: [
+                            Text(
+                              'Select Filter',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                        contents: Column(
+                          children: [
+                            _listTile('all'),
+                            _listTile('ongoing'),
+                            _listTile('exceeded'),
+                            _listTile('completed'),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                label: Text(currentFilter.name.capitalize()),
               )
             ],
           ),
@@ -119,6 +147,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                     ),
                     height: min(300, budgets.length * 120),
                     child: ListView.builder(
+                      padding: EdgeInsets.zero,
                       itemCount: budgets.length,
                       itemBuilder: (context, index) {
                         final budget = budgets[index];
@@ -202,11 +231,10 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                                     right:
                                         16, //* Adjust the value to position the icon as needed
                                     child: GestureDetector(
-                                      onTap: () =>
-                                          budget.showCategorySummaryDialog(
-                                              context,
-                                              budget.type,
-                                              widget.onCategoryChanged),
+                                      onTap: () => budget.showCategoryDetails(
+                                          context,
+                                          budget.type,
+                                          widget.onCategoryChanged),
                                       child: Icon(
                                         Icons.info,
                                         color: Theme.of(context)
@@ -314,74 +342,6 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     return filteredBudgets;
   }
 
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Filter'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('All'),
-                onTap: () {
-                  _applyFilter(BudgetFilter.all);
-                  Navigator.pop(context);
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                selected: currentFilter == BudgetFilter.all,
-                selectedColor: Theme.of(context).colorScheme.onPrimary,
-                selectedTileColor: Theme.of(context).colorScheme.primary,
-              ),
-              ListTile(
-                title: const Text('Ongoing'),
-                onTap: () {
-                  _applyFilter(BudgetFilter.ongoing);
-                  Navigator.pop(context);
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                selected: currentFilter == BudgetFilter.ongoing,
-                selectedColor: Theme.of(context).colorScheme.onPrimary,
-                selectedTileColor: Theme.of(context).colorScheme.primary,
-              ),
-              ListTile(
-                title: const Text('Exceeded'),
-                onTap: () {
-                  _applyFilter(BudgetFilter.exceeded);
-                  Navigator.pop(context);
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                selected: currentFilter == BudgetFilter.exceeded,
-                selectedColor: Theme.of(context).colorScheme.onPrimary,
-                selectedTileColor: Theme.of(context).colorScheme.primary,
-              ),
-              ListTile(
-                title: const Text('Completed'),
-                onTap: () {
-                  _applyFilter(BudgetFilter.completed);
-                  Navigator.pop(context);
-                },
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                selected: currentFilter == BudgetFilter.completed,
-                selectedColor: Theme.of(context).colorScheme.onPrimary,
-                selectedTileColor: Theme.of(context).colorScheme.primary,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void _applyFilter(BudgetFilter filter) async {
     await prefs.setString(
         'forecast_filter',
@@ -410,5 +370,30 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     }
 
     return budgetBalance.toStringAsFixed(2);
+  }
+
+  ListTile _listTile(String type) {
+    BudgetFilter budgetFilter = BudgetFilter.values
+        .firstWhere((e) => e.toString().split('.').last == type);
+
+    return ListTile(
+      title: Text(
+        type.capitalize(),
+        style: TextStyle(
+            fontWeight: currentFilter == budgetFilter
+                ? FontWeight.bold
+                : FontWeight.normal),
+      ),
+      onTap: () {
+        _applyFilter(budgetFilter);
+        Navigator.pop(context);
+      },
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      selected: currentFilter == budgetFilter,
+      selectedColor: Theme.of(context).colorScheme.onPrimary,
+      selectedTileColor: Theme.of(context).colorScheme.primary,
+    );
   }
 }

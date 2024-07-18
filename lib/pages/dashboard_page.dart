@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -125,7 +123,29 @@ class _DashboardPageState extends State<DashboardPage>
               snap: true,
               actions: [
                 IconButton(
-                    onPressed: () {}, icon: const Icon(Icons.edit_calendar))
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text(
+                              'Coming Soon!',
+                              textAlign: TextAlign.center,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .pop(false); //* Close the dialog
+                                },
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.edit_calendar))
               ],
             ),
           ],
@@ -209,137 +229,124 @@ class _DashboardPageState extends State<DashboardPage>
                         ); //* Display a message for no transactions
                       } else {
                         //* Display the list of transactions
-                        final transactions = snapshot.data;
-                        return Container(
-                          constraints: const BoxConstraints(
-                            maxHeight: 300,
-                          ),
-                          height: min(300, transactions!.length * 120),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: transactions.length,
-                            itemBuilder: (context, index) {
-                              final transaction = transactions[index];
-                              return Dismissible(
-                                key: Key(transaction
-                                    .id), //* Unique key for each transaction
-                                background: Container(
-                                  color: Colors
-                                      .green, //* Background color for edit action
-                                  alignment: Alignment.centerLeft,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                    ),
+                        final transactions = snapshot.data!;
+                        return Column(
+                          children: transactions.map<Widget>((transaction) {
+                            return Dismissible(
+                              key: Key(transaction
+                                  .id), //* Unique key for each transaction
+                              background: Container(
+                                color: Colors
+                                    .green, //* Background color for edit action
+                                alignment: Alignment.centerLeft,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
                                   ),
                                 ),
-                                secondaryBackground: Container(
-                                  color: Colors
-                                      .red, //* Background color for delete action
-                                  alignment: Alignment.centerRight,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
+                              ),
+                              secondaryBackground: Container(
+                                color: Colors
+                                    .red, //* Background color for delete action
+                                alignment: Alignment.centerRight,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
                                   ),
                                 ),
-                                confirmDismiss: (direction) async {
-                                  if (direction ==
-                                      DismissDirection.startToEnd) {
-                                    final transactionCycle =
-                                        await transaction.cycle();
+                              ),
+                              confirmDismiss: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  final transactionCycle =
+                                      await transaction.cycle();
 
-                                    //* Edit action
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TransactionFormPage(
-                                          cycle: transactionCycle!,
-                                          action: 'Edit',
-                                          transaction: transaction,
-                                        ),
+                                  //* Edit action
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TransactionFormPage(
+                                        cycle: transactionCycle!,
+                                        action: 'Edit',
+                                        transaction: transaction,
                                       ),
-                                    );
+                                    ),
+                                  );
 
-                                    if (result == true) {
-                                      await _refreshPage();
-                                      return true;
-                                    } else {
-                                      return false;
-                                    }
-                                  } else if (direction ==
-                                      DismissDirection.endToStart) {
-                                    //* Delete action
-                                    final result = await transaction
-                                        .deleteTransaction(context);
-
-                                    if (result == true) {
-                                      await _refreshPage();
-                                      return true;
-                                    } else {
-                                      return false;
-                                    }
+                                  if (result == true) {
+                                    await _refreshPage();
+                                    return true;
+                                  } else {
+                                    return false;
                                   }
+                                } else if (direction ==
+                                    DismissDirection.endToStart) {
+                                  //* Delete action
+                                  final result = await transaction
+                                      .deleteTransaction(context);
 
-                                  return false;
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Card(
-                                    child: ListTile(
-                                      title: Text(
-                                        transaction.categoryName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            DateFormat('EE, d MMM yyyy h:mm aa')
-                                                .format(transaction.dateTime),
-                                            style:
-                                                const TextStyle(fontSize: 14),
-                                          ),
-                                          Text(
-                                            transaction.note.split('\\n')[0],
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                fontStyle: FontStyle.italic,
-                                                color: Colors.grey),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Text(
-                                        '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: transaction.type == 'spent'
-                                                ? Colors.red
-                                                : Colors.green),
-                                      ),
-                                      onTap: () {
-                                        //* Show the transaction summary dialog when tapped
-                                        transaction
-                                            .showTransactionSummaryDialog(
-                                                context);
-                                      },
+                                  if (result == true) {
+                                    await _refreshPage();
+                                    return true;
+                                  } else {
+                                    return false;
+                                  }
+                                }
+
+                                return false;
+                              },
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      transaction.categoryName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
                                     ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          DateFormat('EE, d MMM yyyy h:mm aa')
+                                              .format(transaction.dateTime),
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        Text(
+                                          transaction.note.split('\\n')[0],
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Text(
+                                      '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: transaction.type == 'spent'
+                                              ? Colors.red
+                                              : Colors.green),
+                                    ),
+                                    onTap: () {
+                                      //* Show the transaction summary dialog when tapped
+                                      transaction
+                                          .showTransactionDetails(context);
+                                    },
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          }).toList(),
                         );
                       }
                     },
@@ -350,7 +357,9 @@ class _DashboardPageState extends State<DashboardPage>
             ),
           ),
         ),
-        Container(),
+        const Center(
+          child: Text('Coming Soon!'),
+        ),
         cycle != null ? CategoryListPage(cycle: cycle!) : Container(),
         const WishlistPage(),
         ExplorePage(cycle: cycle),

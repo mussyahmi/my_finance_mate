@@ -4,11 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:my_finance_mate/extensions/string_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../size_config.dart';
 import '../widgets/category_dialog.dart';
+import '../extensions/string_extension.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class Category {
   final String id;
@@ -42,16 +42,56 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategorySummaryDialog(
+  void showCategoryDetails(
       BuildContext context, String selectedType, Function onCategoryChanged) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Category Summary'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) {
+        return CustomDraggableScrollableSheet(
+          initialSize: 0.45,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Category Details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () async {
+                      final result =
+                          await _deleteHandler(context, onCategoryChanged);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      final result = await showCategoryFormDialog(context,
+                          cycleId, selectedType, 'Edit', onCategoryChanged,
+                          category: this);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+          contents: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,6 +133,24 @@ class Category {
                         Text('RM$totalAmount'),
                       ],
                     ),
+                    if (budget.isNotEmpty && budget != '0.00')
+                      Column(
+                        children: [
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Balance:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'RM${(double.parse(budget) - double.parse(totalAmount)).toStringAsFixed(2)}',
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               if (note.isNotEmpty)
@@ -104,49 +162,17 @@ class Category {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: SizeConfig.screenHeight! * 0.2,
-                      ),
-                      child: SingleChildScrollView(
-                        child: MarkdownBody(
-                          data: note.replaceAll('\n', '  \n'),
-                          selectable: true,
-                          onTapLink: (text, url, title) {
-                            launchUrl(Uri.parse(url!));
-                          },
-                        ),
-                      ),
+                    MarkdownBody(
+                      data: note.replaceAll('\n', '  \n'),
+                      selectable: true,
+                      onTapLink: (text, url, title) {
+                        launchUrl(Uri.parse(url!));
+                      },
                     ),
                   ],
                 ),
-              //* Add more transaction details as needed
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                final result = await _deleteHandler(context, onCategoryChanged);
-
-                if (result) {
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Delete'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final result = await showCategoryFormDialog(
-                    context, cycleId, selectedType, 'Edit', onCategoryChanged,
-                    category: this);
-
-                if (result) {
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Edit'),
-            ),
-          ],
         );
       },
     );

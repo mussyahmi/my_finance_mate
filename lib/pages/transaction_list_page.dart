@@ -9,6 +9,7 @@ import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
+import '../extensions/string_extension.dart';
 
 class TransactionListPage extends StatefulWidget {
   final Cycle cycle;
@@ -107,8 +108,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             items: ['spent', 'received'].map((type) {
                               return DropdownMenuItem(
                                 value: type,
-                                child: Text(
-                                    '${type[0].toUpperCase()}${type.substring(1)}'),
+                                child: Text(type.capitalize()),
                               );
                             }).toList(),
                             decoration: const InputDecoration(
@@ -303,7 +303,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                       onTap: () {
                                         //* Show the transaction summary dialog when tapped
                                         transaction
-                                            .showTransactionSummaryDialog(
+                                            .showTransactionDetails(
                                                 context);
                                       },
                                     ),

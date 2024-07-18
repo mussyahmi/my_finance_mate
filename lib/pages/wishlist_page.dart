@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/wishlist_dialog.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -115,7 +116,7 @@ class _WishlistPageState extends State<WishlistPage> {
                   child: ListTile(
                     title: Text(wish['name']),
                     trailing: IconButton(
-                        onPressed: () => showWishlistSummaryDialog(wish),
+                        onPressed: () => showWishlistDetails(wish),
                         icon: const Icon(Icons.info)),
                   ),
                 ),
@@ -148,18 +149,57 @@ class _WishlistPageState extends State<WishlistPage> {
     );
   }
 
-  void showWishlistSummaryDialog(Map wish) {
+  void showWishlistDetails(Map wish) {
     final String name = wish['name'];
     final String note = wish['note'];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Wishlist Summary'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) {
+        return CustomDraggableScrollableSheet(
+          initialSize: 0.45,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Category Details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () async {
+                      final result = await _deleteHandler(wish['id']);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      final result = await _showWishlistFormDialog(
+                          context, 'Edit',
+                          wish: wish);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          contents: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -182,7 +222,7 @@ class _WishlistPageState extends State<WishlistPage> {
                     ),
                     Container(
                       constraints: BoxConstraints(
-                        maxHeight: SizeConfig.screenHeight! * 0.2,
+                        maxHeight: SizeConfig.screenHeight! * 0.32,
                       ),
                       child: SingleChildScrollView(
                         child: MarkdownBody(
@@ -196,32 +236,8 @@ class _WishlistPageState extends State<WishlistPage> {
                     ),
                   ],
                 ),
-              //* Add more wishlist details as needed
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                final result = await _deleteHandler(wish['id']);
-
-                if (result) {
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Delete'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final result =
-                    await _showWishlistFormDialog(context, 'Edit', wish: wish);
-
-                if (result) {
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Edit'),
-            ),
-          ],
         );
       },
     );

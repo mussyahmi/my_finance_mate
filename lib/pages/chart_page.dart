@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../models/cycle.dart';
 import '../size_config.dart';
 import 'transaction_list_page.dart';
+import '../extensions/string_extension.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class ChartPage extends StatefulWidget {
   final Cycle cycle;
@@ -111,29 +113,26 @@ class _ChartPageState extends State<ChartPage> {
                   showModalBottomSheet(
                     context: context,
                     builder: (context) {
-                      return const SizedBox(
-                        height: 150,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Recommendations',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                              SizedBox(height: 20),
-                              Text(
-                                  '1. Needs (50%), Wants (30%), Savings (20%)'),
-                              SizedBox(height: 5),
-                              Text(
-                                  '2. Needs (60%), Wants (30%), Savings (10%)'),
-                              SizedBox(height: 5),
-                              Text(
-                                  '3. Needs (70%), Wants (20%), Savings (10%)'),
-                            ],
-                          ),
+                      return const CustomDraggableScrollableSheet(
+                        initialSize:0.1,
+                        title: Column(
+                          children: [
+                            Text(
+                              'Recommendations',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                        contents: Column(
+                          children: [
+                            Text('1. Needs (50%), Wants (30%), Savings (20%)'),
+                            SizedBox(height: 5),
+                            Text('2. Needs (60%), Wants (30%), Savings (10%)'),
+                            SizedBox(height: 5),
+                            Text('3. Needs (70%), Wants (20%), Savings (10%)'),
+                          ],
                         ),
                       );
                     },
@@ -276,8 +275,7 @@ class _ChartPageState extends State<ChartPage> {
     return Card(
       child: ListTile(
           dense: true,
-          title:
-              Text('Total ${subtype[0].toUpperCase()}${subtype.substring(1)}'),
+          title: Text('Total ${subtype.capitalize()}'),
           subtitle: Text(
             'Percentage: ${percentage.toStringAsFixed(2)}%',
             style: const TextStyle(

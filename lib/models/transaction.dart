@@ -11,6 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../pages/image_view_page.dart';
 import '../size_config.dart';
 import 'cycle.dart';
+import '../extensions/string_extension.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class Transaction {
   final String id;
@@ -37,15 +39,22 @@ class Transaction {
     required this.files,
   });
 
-  void showTransactionSummaryDialog(BuildContext context) {
-    showDialog(
+  void showTransactionDetails(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Transaction Summary'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) {
+        return CustomDraggableScrollableSheet(
+          initialSize: 0.65,
+          title: const Column(
+            children: [
+              Text(
+                'Transaction Details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
+          contents: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -90,7 +99,7 @@ class Transaction {
                     'Type:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text('${type[0].toUpperCase()}${type.substring(1)}'),
+                  Text(type.capitalize()),
                 ],
               ),
               if (note.isNotEmpty)
@@ -166,17 +175,8 @@ class Transaction {
                     ),
                   ],
                 ),
-              //* Add more transaction details as needed
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); //* Close the dialog
-              },
-              child: const Text('Close'),
-            ),
-          ],
         );
       },
     );

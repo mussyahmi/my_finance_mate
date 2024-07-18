@@ -179,7 +179,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
               child: ListTile(
                 title: Text(category.name),
                 trailing: IconButton(
-                    onPressed: () => category.showCategorySummaryDialog(
+                    onPressed: () => category.showCategoryDetails(
                         context, selectedType, _fetchCategories),
                     icon: const Icon(Icons.info)),
                 onTap: () {
