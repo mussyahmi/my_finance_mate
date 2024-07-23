@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
-import '../pages/transaction_list_page.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 
@@ -161,90 +160,60 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TransactionListPage(
-                                      cycle: widget.cycle!,
-                                      type: 'spent',
-                                      categoryName: budget.name),
-                                ),
-                              );
-                            },
-                            child: Card(
-                              child: Stack(
+                          child: Card(
+                            child: ListTile(
+                              key: Key(budget.id),
+                              title: Text(
+                                budget.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              subtitle: Column(
                                 children: [
-                                  ListTile(
-                                    key: Key(budget.id),
-                                    title: Text(
-                                      budget.name,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
-                                    subtitle: Column(
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            Text(
-                                              'Spent: RM ${budget.totalAmount}',
-                                            ),
-                                            Text(
-                                              '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8.0),
-                                        LinearProgressIndicator(
-                                          value: budget.progressPercentage(),
-                                          backgroundColor: Colors.grey[300],
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            () {
-                                              double progress =
-                                                  budget.progressPercentage();
-                                              if (progress == 1.0) {
-                                                return Colors
-                                                    .green; //* Change color when budget is exactly 1
-                                              } else if (progress > 1.0) {
-                                                return Colors
-                                                    .red; //* Change color when budget is greater than 1
-                                              } else {
-                                                return Colors
-                                                    .orange; //* Change color when budget is less than 1
-                                              }
-                                            }(),
-                                          ),
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(8.0)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top:
-                                        8, //* Adjust the value to position the icon as needed
-                                    right:
-                                        16, //* Adjust the value to position the icon as needed
-                                    child: GestureDetector(
-                                      onTap: () => budget.showCategoryDetails(
-                                          context,
-                                          budget.type,
-                                          widget.onCategoryChanged),
-                                      child: Icon(
-                                        Icons.info,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary, //* Change the color as needed
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        'Spent: RM ${budget.totalAmount}',
                                       ),
+                                      Text(
+                                        '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                  LinearProgressIndicator(
+                                    value: budget.progressPercentage(),
+                                    backgroundColor: Colors.grey[300],
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      () {
+                                        double progress =
+                                            budget.progressPercentage();
+                                        if (progress == 1.0) {
+                                          return Colors
+                                              .green; //* Change color when budget is exactly 1
+                                        } else if (progress > 1.0) {
+                                          return Colors
+                                              .red; //* Change color when budget is greater than 1
+                                        } else {
+                                          return Colors
+                                              .orange; //* Change color when budget is less than 1
+                                        }
+                                      }(),
                                     ),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8.0)),
                                   ),
                                 ],
                               ),
+                              onTap: () {
+                                budget.showCategoryDetails(
+                                    context,
+                                    widget.cycle!,
+                                    budget.type,
+                                    widget.onCategoryChanged);
+                              },
                             ),
                           ),
                         );

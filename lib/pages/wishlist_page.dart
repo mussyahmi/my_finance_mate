@@ -115,9 +115,7 @@ class _WishlistPageState extends State<WishlistPage> {
                 child: Card(
                   child: ListTile(
                     title: Text(wish['name']),
-                    trailing: IconButton(
-                        onPressed: () => showWishlistDetails(wish),
-                        icon: const Icon(Icons.info)),
+                    onTap: () => showWishlistDetails(wish),
                   ),
                 ),
               );

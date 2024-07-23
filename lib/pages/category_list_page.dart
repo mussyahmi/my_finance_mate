@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import '../models/category.dart';
-import 'transaction_list_page.dart';
 
 class CategoryListPage extends StatefulWidget {
   final Cycle cycle;
@@ -178,21 +177,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
             child: Card(
               child: ListTile(
                 title: Text(category.name),
-                trailing: IconButton(
-                    onPressed: () => category.showCategoryDetails(
-                        context, selectedType, _fetchCategories),
-                    icon: const Icon(Icons.info)),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TransactionListPage(
-                        cycle: widget.cycle,
-                        type: selectedType,
-                        categoryName: category.name,
-                      ),
-                    ),
-                  );
+                  category.showCategoryDetails(
+                      context, widget.cycle, selectedType, _fetchCategories);
                 },
               ),
             ),

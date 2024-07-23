@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../pages/transaction_list_page.dart';
 import '../widgets/category_dialog.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import 'cycle.dart';
 
 class Category {
   final String id;
@@ -42,8 +44,8 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategoryDetails(
-      BuildContext context, String selectedType, Function onCategoryChanged) {
+  void showCategoryDetails(BuildContext context, Cycle cycle,
+      String selectedType, Function onCategoryChanged) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -58,7 +60,7 @@ class Category {
               ),
               Row(
                 children: [
-                  IconButton(
+                  IconButton.filledTonal(
                     onPressed: () async {
                       final result =
                           await _deleteHandler(context, onCategoryChanged);
@@ -72,7 +74,7 @@ class Category {
                       color: Colors.red,
                     ),
                   ),
-                  IconButton(
+                  IconButton.filledTonal(
                     onPressed: () async {
                       final result = await showCategoryFormDialog(context,
                           cycleId, selectedType, 'Edit', onCategoryChanged,
@@ -85,6 +87,20 @@ class Category {
                     icon: Icon(
                       Icons.edit,
                       color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TransactionListPage(
+                              cycle: cycle, type: 'spent', categoryName: name),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.list,
                     ),
                   ),
                 ],

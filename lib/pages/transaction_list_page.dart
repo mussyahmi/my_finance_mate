@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
-import 'transaction_form_page.dart';
 import '../extensions/string_extension.dart';
 
 class TransactionListPage extends StatefulWidget {
@@ -197,116 +196,50 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             itemCount: transactions!.length,
                             itemBuilder: (context, index) {
                               final transaction = transactions[index];
-                              return Dismissible(
-                                key: Key(transaction
-                                    .id), //* Unique key for each transaction
-                                background: Container(
-                                  color: Colors
-                                      .green, //* Background color for edit action
-                                  alignment: Alignment.centerLeft,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      transaction.categoryName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
                                     ),
-                                  ),
-                                ),
-                                secondaryBackground: Container(
-                                  color: Colors
-                                      .red, //* Background color for delete action
-                                  alignment: Alignment.centerRight,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                confirmDismiss: (direction) async {
-                                  if (direction ==
-                                      DismissDirection.startToEnd) {
-                                    final transactionCycle =
-                                        await transaction.cycle();
-
-                                    //* Edit action
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TransactionFormPage(
-                                          cycle: transactionCycle!,
-                                          action: 'Edit',
-                                          transaction: transaction,
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          DateFormat('EE, d MMM yyyy h:mm aa')
+                                              .format(transaction.dateTime),
+                                          style: const TextStyle(fontSize: 14),
                                         ),
-                                      ),
-                                    );
-
-                                    if (result == true) {
-                                      setState(() {});
-                                      return true;
-                                    } else {
-                                      return false;
-                                    }
-                                  } else if (direction ==
-                                      DismissDirection.endToStart) {
-                                    //* Delete action
-                                    bool result = await transaction
-                                        .deleteTransaction(context);
-
-                                    return result;
-                                  }
-
-                                  return false;
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Card(
-                                    child: ListTile(
-                                      title: Text(
-                                        transaction.categoryName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            DateFormat('EE, d MMM yyyy h:mm aa')
-                                                .format(transaction.dateTime),
-                                            style:
-                                                const TextStyle(fontSize: 14),
-                                          ),
-                                          Text(
-                                            transaction.note.split('\\n')[0],
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                fontStyle: FontStyle.italic,
-                                                color: Colors.grey),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Text(
-                                        '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: transaction.type == 'spent'
-                                                ? Colors.red
-                                                : Colors.green),
-                                      ),
-                                      onTap: () {
-                                        //* Show the transaction summary dialog when tapped
-                                        transaction
-                                            .showTransactionDetails(
-                                                context);
-                                      },
+                                        Text(
+                                          transaction.note.split('\\n')[0],
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
                                     ),
+                                    trailing: Text(
+                                      '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: transaction.type == 'spent'
+                                              ? Colors.red
+                                              : Colors.green),
+                                    ),
+                                    onTap: () {
+                                      //* Show the transaction summary dialog when tapped
+                                      transaction.showTransactionDetails(
+                                          context, () => setState(() {}));
+                                    },
                                   ),
                                 ),
                               );

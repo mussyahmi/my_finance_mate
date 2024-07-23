@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
+import '../pages/transaction_form_page.dart';
 import '../size_config.dart';
 import 'cycle.dart';
 import '../extensions/string_extension.dart';
@@ -39,19 +40,64 @@ class Transaction {
     required this.files,
   });
 
-  void showTransactionDetails(BuildContext context) {
+  void showTransactionDetails(
+      BuildContext context, Function onTransactionChanged) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return CustomDraggableScrollableSheet(
           initialSize: 0.65,
-          title: const Column(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Transaction Details',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              SizedBox(height: 10),
+              Row(
+                children: [
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final result = await deleteTransaction(context);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                        onTransactionChanged();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final transactionCycle = await cycle();
+
+                      //* Edit action
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TransactionFormPage(
+                            cycle: transactionCycle!,
+                            action: 'Edit',
+                            transaction: this,
+                          ),
+                        ),
+                      );
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                        onTransactionChanged();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
           contents: Column(
@@ -287,7 +333,6 @@ class Transaction {
                   });
                 }
 
-                // ignore: use_build_context_synchronously
                 Navigator.of(context).pop(true); //* Close the dialog
               },
               child: const Text('Delete'),
