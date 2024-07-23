@@ -140,6 +140,19 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
               return Column(
                 children: [
+                  if (currentFilter == BudgetFilter.all ||
+                      currentFilter == BudgetFilter.ongoing)
+                    Column(
+                      children: [
+                        Text(
+                          'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
                   Container(
                     constraints: const BoxConstraints(
                       maxHeight: 300,
@@ -220,19 +233,6 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                       },
                     ),
                   ),
-                  if (currentFilter == BudgetFilter.all ||
-                      currentFilter == BudgetFilter.ongoing)
-                    Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Text(
-                          'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    )
                 ],
               );
             }
