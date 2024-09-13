@@ -19,6 +19,8 @@ import '../services/ad_mob_service.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
+import '../extensions/firestore_extensions.dart';
+
 
 class TransactionFormPage extends StatefulWidget {
   final Cycle cycle;
@@ -525,7 +527,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         });
 
         //* Update transactions made
-        final userDoc = await userRef.get();
+        final userDoc = await userRef.getSavy();
 
         if (_adMobService.status) {
           await userRef
@@ -632,10 +634,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     return downloadURLs;
   }
 
-  Future<void> _updateCycleToFirebase(DocumentReference cyclesRef, String type,
+  Future<void> _updateCycleToFirebase(DocumentReference<Map<String, dynamic>> cyclesRef, String type,
       String amount, DateTime now) async {
     //* Fetch the current cycle document
-    final cycleDoc = await cyclesRef.get();
+    final cycleDoc = await cyclesRef.getSavy();
 
     if (cycleDoc.exists) {
       final cycleData = cycleDoc.data() as Map<String, dynamic>;
@@ -683,7 +685,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           .doc(widget.transaction!.categoryId);
 
       //* Fetch the category document
-      final prevCategoryDoc = await prevCategoryRef.get();
+      final prevCategoryDoc = await prevCategoryRef.getSavy();
 
       if (prevCategoryDoc.exists) {
         final prevCategoryData = prevCategoryDoc.data() as Map<String, dynamic>;
@@ -702,7 +704,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     final newCategoryRef = cyclesRef.collection('categories').doc(categoryId);
 
     //* Fetch the category document
-    final newCategoryDoc = await newCategoryRef.get();
+    final newCategoryDoc = await newCategoryRef.getSavy();
 
     if (newCategoryDoc.exists) {
       final newCategoryData = newCategoryDoc.data() as Map<String, dynamic>;

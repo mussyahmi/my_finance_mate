@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
+import '../extensions/firestore_extensions.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -238,7 +239,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       final userRef = FirebaseFirestore.instance.collection('users');
-      final userDoc = await userRef.doc(authResult.user!.uid).get();
+      final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
 
       if (userDoc.exists) {
         if (_isRememberMeChecked) {
@@ -290,7 +291,7 @@ class _LoginPageState extends State<LoginPage> {
 
         //* Check if the user already exists in the Firestore collection
         final userRef = FirebaseFirestore.instance.collection('users');
-        final userDoc = await userRef.doc(authResult.user!.uid).get();
+        final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
 
         //* Get current timestamp
         final now = DateTime.now();

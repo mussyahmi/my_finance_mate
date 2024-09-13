@@ -21,6 +21,7 @@ import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
 import 'wishlist_page.dart';
 import 'cycle_page.dart';
+import '../extensions/firestore_extensions.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -377,7 +378,7 @@ class _DashboardPageState extends State<DashboardPage>
         .orderBy('date_time',
             descending: true) //* Sort by dateTime in descending order
         .limit(10) //* Limit to 10 items
-        .get();
+        .getSavy();
 
     final transactions = transactionQuery.docs.map((doc) async {
       final data = doc.data();
@@ -389,7 +390,7 @@ class _DashboardPageState extends State<DashboardPage>
           .doc(data['cycle_id'])
           .collection('categories')
           .doc(data['category_id'])
-          .get();
+          .getSavy();
 
       final categoryName = categoryDoc['name'] as String;
 
@@ -426,7 +427,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final userDoc = await userRef.get();
+    final userDoc = await userRef.getSavy();
 
     if (userDoc.exists) {
       final transactionsRef = userRef.collection('transactions');
@@ -435,7 +436,7 @@ class _DashboardPageState extends State<DashboardPage>
           .orderBy('date_time',
               descending: true) //* Sort by dateTime in descending order
           .limit(1)
-          .get();
+          .getSavy();
 
       final lastTransaction = transactionQuery.docs.first;
 
@@ -482,7 +483,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     final lastCycleQuery =
         cyclesRef.orderBy('cycle_no', descending: true).limit(1);
-    final lastCycleSnapshot = await lastCycleQuery.get();
+    final lastCycleSnapshot = await lastCycleQuery.getSavy();
 
     if (lastCycleSnapshot.docs.isNotEmpty) {
       final lastCycleDoc = lastCycleSnapshot.docs.first;

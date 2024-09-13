@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../models/cycle.dart';
+import '../extensions/firestore_extensions.dart';
 
 class CycleListPage extends StatefulWidget {
   final Cycle? cycle;
@@ -126,7 +127,7 @@ class _CycleListPageState extends State<CycleListPage> {
     final cyclesQuery = await cyclesRef
         .where('deleted_at', isNull: true)
         .orderBy('cycle_no', descending: true)
-        .get();
+        .getSavy();
 
     final cycles = cyclesQuery.docs.map((doc) async {
       final data = doc.data();

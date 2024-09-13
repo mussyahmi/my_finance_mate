@@ -12,6 +12,7 @@ import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/wishlist_dialog.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../extensions/firestore_extensions.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -45,7 +46,7 @@ class _WishlistPageState extends State<WishlistPage> {
     final wishlistRef = userRef.collection('wishlist');
 
     final wishlistSnapshot =
-        await wishlistRef.where('deleted_at', isNull: true).get();
+        await wishlistRef.where('deleted_at', isNull: true).getSavy();
 
     final fetchedWishlist = wishlistSnapshot.docs
         .map((doc) => {

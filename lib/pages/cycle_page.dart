@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../models/cycle.dart';
 import '../widgets/cycle_summary.dart';
 import 'cycle_list_page.dart';
+import '../extensions/firestore_extensions.dart';
 
 class CyclePage extends StatefulWidget {
   final Cycle? cycle;
@@ -195,7 +196,7 @@ class _CyclePageState extends State<CyclePage> {
         .where('deleted_at', isNull: true)
         .orderBy('cycle_no', descending: true)
         .limit(5) //* Limit to 5 items
-        .get();
+        .getSavy();
 
     final cycles = cyclesQuery.docs.map((doc) async {
       final data = doc.data();

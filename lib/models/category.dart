@@ -11,6 +11,7 @@ import '../widgets/category_dialog.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import 'cycle.dart';
+import '../extensions/firestore_extensions.dart';
 
 class Category {
   final String id;
@@ -287,7 +288,7 @@ class Category {
     final transactionsSnapshot = await transactionsRef
         .where('category_id', isEqualTo: id)
         .where('deleted_at', isNull: true)
-        .get();
+        .getSavy();
 
     return transactionsSnapshot.docs.isNotEmpty;
   }
@@ -303,7 +304,7 @@ class Category {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    final transactionsSnapshot = await transactionsRef.get();
+    final transactionsSnapshot = await transactionsRef.getSavy();
 
     print('initiate updateCategoryNameForAllTransactions');
 
@@ -316,7 +317,7 @@ class Category {
           .doc(data['cycle_id'])
           .collection('categories')
           .doc(data['category_id'])
-          .get();
+          .getSavy();
 
       final categoryName = categoryDoc['name'] as String;
 
@@ -339,8 +340,8 @@ class Category {
     final cyclesRef = userRef.collection('cycles').doc(cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 
-    final cycleDoc = await cyclesRef.get();
-    final categoriesSnapshot = await categoriesRef.get();
+    final cycleDoc = await cyclesRef.getSavy();
+    final categoriesSnapshot = await categoriesRef.getSavy();
 
     //* Get current timestamp
     final now = DateTime.now();
@@ -357,7 +358,7 @@ class Category {
           .where('cycle_id', isEqualTo: cycleId)
           .where('category_id', isEqualTo: doc.id)
           .where('deleted_at', isNull: true)
-          .get();
+          .getSavy();
 
       double totalAmount = 0;
 
@@ -420,7 +421,7 @@ class Category {
       query = query.where('type', isEqualTo: type);
     }
 
-    final categoriesSnapshot = await query.get();
+    final categoriesSnapshot = await query.getSavy();
 
     List<Category> fetchedCategories = categoriesSnapshot.docs
         .map((doc) => Category(

@@ -328,7 +328,7 @@ class CycleAddPageState extends State<CycleAddPage> {
         .collection('cycles')
         .doc(newCycleId);
 
-    final categoriesSnapshot = await categoriesRef.get();
+    final categoriesSnapshot = await categoriesRef.getSavy();
 
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();

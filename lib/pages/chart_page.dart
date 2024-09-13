@@ -8,6 +8,7 @@ import '../size_config.dart';
 import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../extensions/firestore_extensions.dart';
 
 class ChartPage extends StatefulWidget {
   final Cycle cycle;
@@ -57,7 +58,7 @@ class _ChartPageState extends State<ChartPage> {
         .where('date_time', isLessThanOrEqualTo: widget.cycle.endDate)
         .orderBy('date_time',
             descending: true) //* Sort by dateTime in descending order
-        .get();
+        .getSavy();
 
     double spentTotal = double.parse(widget.cycle.amountSpent);
     double needs = 0;

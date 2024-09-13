@@ -9,6 +9,7 @@ import '../models/category.dart';
 import '../models/cycle.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../extensions/firestore_extensions.dart';
 
 enum BudgetFilter { all, ongoing, exceeded, completed }
 
@@ -262,7 +263,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
         .where('deleted_at', isNull: true)
         .where('type', isEqualTo: 'spent')
         .where('budget', isNotEqualTo: '0.00')
-        .get();
+        .getSavy();
     final categories = categoryQuery.docs.map((doc) async {
       final data = doc.data();
 

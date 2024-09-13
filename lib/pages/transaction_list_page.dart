@@ -9,6 +9,7 @@ import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/string_extension.dart';
+import '../extensions/firestore_extensions.dart';
 
 class TransactionListPage extends StatefulWidget {
   final Cycle cycle;
@@ -327,7 +328,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
       }
     }
 
-    final querySnapshot = await query.get();
+    final querySnapshot = await query.getSavy();
 
     List<t.Transaction> transactions = [];
 
@@ -341,7 +342,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
           .doc(data['cycle_id'])
           .collection('categories')
           .doc(data['category_id'])
-          .get();
+          .getSavy();
 
       final categoryName = categoryDoc['name'] as String;
 

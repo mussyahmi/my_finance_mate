@@ -14,6 +14,7 @@ import '../size_config.dart';
 import 'cycle.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../extensions/firestore_extensions.dart';
 
 class Transaction {
   final String id;
@@ -262,7 +263,7 @@ class Transaction {
                     userRef.collection('transactions').doc(transactionId);
 
                 //* Fetch the transaction document
-                final transactionDoc = await transactionRef.get();
+                final transactionDoc = await transactionRef.getSavy();
 
                 final data = transactionDoc.data();
                 final files =
@@ -283,7 +284,7 @@ class Transaction {
                 final cyclesRef = userRef.collection('cycles').doc(cycleId);
 
                 //* Fetch the current cycle document
-                final cycleDoc = await cyclesRef.get();
+                final cycleDoc = await cyclesRef.getSavy();
 
                 if (cycleDoc.exists) {
                   final cycleData = cycleDoc.data() as Map<String, dynamic>;
@@ -315,7 +316,7 @@ class Transaction {
                     cyclesRef.collection('categories').doc(categoryId);
 
                 //* Fetch the category document
-                final categoryDoc = await categoryRef.get();
+                final categoryDoc = await categoryRef.getSavy();
 
                 if (categoryDoc.exists) {
                   final categoryData =
@@ -373,7 +374,7 @@ class Transaction {
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final cycleRef = userRef.collection('cycles').doc(cycleId);
 
-    final cycleDoc = await cycleRef.get();
+    final cycleDoc = await cycleRef.getSavy();
 
     if (cycleDoc.exists) {
       final Map<String, dynamic> data = cycleDoc.data()!;

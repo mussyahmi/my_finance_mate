@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
+import '../extensions/firestore_extensions.dart';
 
 class CategoryDialog extends StatefulWidget {
   final String cycleId;
@@ -257,7 +258,7 @@ class CategoryDialogState extends State<CategoryDialog> {
           final querySnapshot = await transactionsRef
               .where('category_id', isEqualTo: docId)
               .where('deleted_at', isNull: true)
-              .get();
+              .getSavy();
 
           for (var doc in querySnapshot.docs) {
             await transactionsRef
