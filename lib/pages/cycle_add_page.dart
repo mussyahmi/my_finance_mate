@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
+import '../extensions/firestore_extensions.dart';
 
 class CycleAddPage extends StatefulWidget {
   final bool isFirstCycle;
