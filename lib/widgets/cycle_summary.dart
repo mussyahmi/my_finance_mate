@@ -25,7 +25,7 @@ class _CycleSummaryState extends State<CycleSummary> {
       children: [
         Card(
           elevation: 3,
-          margin: const EdgeInsets.all(16),
+          margin: const EdgeInsets.fromLTRB(8, 16, 8, 16),
           child: Stack(
             alignment: AlignmentDirectional.center,
             children: [
@@ -102,7 +102,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                     : null,
                 child: Card(
                   elevation: 3,
-                  margin: const EdgeInsets.fromLTRB(16, 0, 8, 16),
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -148,7 +148,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                     : null,
                 child: Card(
                   elevation: 3,
-                  margin: const EdgeInsets.fromLTRB(8, 0, 16, 16),
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(

@@ -64,6 +64,11 @@ class _SummaryPageState extends State<SummaryPage> {
           },
         );
       }
+
+      categories.insert(
+        categories.length,
+        const SizedBox(height: 20),
+      );
     });
   }
 
@@ -114,7 +119,9 @@ class _SummaryPageState extends State<SummaryPage> {
             shrinkWrap: true,
             itemCount: categories.length,
             itemBuilder: (context, index) {
-              if (categories[index] is BannerAd) {
+              if (categories[index] is SizedBox) {
+                return categories[index] as SizedBox;
+              } else if (categories[index] is BannerAd) {
                 return Container(
                   margin: const EdgeInsets.symmetric(vertical: 5.0),
                   height: 50.0,

@@ -9,21 +9,21 @@ import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
 
-class AddCyclePage extends StatefulWidget {
+class CycleAddPage extends StatefulWidget {
   final bool isFirstCycle;
   final Cycle? lastCycle;
 
-  const AddCyclePage({
+  const CycleAddPage({
     super.key,
     required this.isFirstCycle,
     this.lastCycle,
   });
 
   @override
-  AddCyclePageState createState() => AddCyclePageState();
+  CycleAddPageState createState() => CycleAddPageState();
 }
 
-class AddCyclePageState extends State<AddCyclePage> {
+class CycleAddPageState extends State<CycleAddPage> {
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
   DateTimeRange? selectedDateRange;
@@ -74,7 +74,7 @@ class AddCyclePageState extends State<AddCyclePage> {
         setState(() {
           _bannerAd = BannerAd(
             size: AdSize.fullBanner,
-            adUnitId: _adMobService.bannerDasboardAdUnitId!,
+            adUnitId: _adMobService.bannerCycleAddAdUnitId!,
             listener: _adMobService.bannerAdListener,
             request: const AdRequest(),
           )..load();

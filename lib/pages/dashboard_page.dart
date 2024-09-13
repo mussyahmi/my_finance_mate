@@ -13,13 +13,14 @@ import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
-import 'add_cycle_page.dart';
+import 'cycle_add_page.dart';
 import 'category_list_page.dart';
 import 'transaction_form_page.dart';
 import 'explore_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
 import 'wishlist_page.dart';
+import 'cycle_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -124,25 +125,13 @@ class _DashboardPageState extends State<DashboardPage>
               actions: [
                 IconButton(
                     onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text(
-                              'Coming Soon!',
-                              textAlign: TextAlign.center,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context)
-                                      .pop(false); //* Close the dialog
-                                },
-                                child: const Text('Close'),
-                              ),
-                            ],
-                          );
-                        },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CyclePage(
+                            cycle: cycle,
+                          ),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.edit_calendar))
@@ -156,7 +145,10 @@ class _DashboardPageState extends State<DashboardPage>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
-                  CycleSummary(cycle: cycle),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: CycleSummary(cycle: cycle),
+                  ),
                   if (_bannerAd != null)
                     Column(
                       children: [
@@ -513,7 +505,7 @@ class _DashboardPageState extends State<DashboardPage>
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  AddCyclePage(isFirstCycle: false, lastCycle: lastCycle)),
+                  CycleAddPage(isFirstCycle: false, lastCycle: lastCycle)),
         );
       }
 
@@ -523,7 +515,7 @@ class _DashboardPageState extends State<DashboardPage>
       await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => const AddCyclePage(isFirstCycle: true)),
+            builder: (context) => const CycleAddPage(isFirstCycle: true)),
       );
     }
   }

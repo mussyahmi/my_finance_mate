@@ -197,8 +197,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             itemBuilder: (context, index) {
                               final transaction = transactions[index];
                               return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding: EdgeInsets.fromLTRB(8, 0, 8,
+                                    index + 1 == transactions.length ? 20 : 0),
                                 child: Card(
                                   child: ListTile(
                                     title: Text(
