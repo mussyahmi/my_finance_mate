@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +39,7 @@ class Cycle {
 
     final cycleQuery = cyclesRef.orderBy('cycle_no', descending: true).limit(1);
     final cycleSnapshot = await cycleQuery.getSavy();
+    print('fetchCycle: ${cycleSnapshot.docs.length}');
 
     if (cycleSnapshot.docs.isNotEmpty) {
       final cycleDoc = cycleSnapshot.docs.first;
@@ -92,6 +93,7 @@ class Cycle {
     }
 
     final cyclesSnapshot = await cyclesQuery.getSavy();
+    print('fetchCycles: ${cyclesSnapshot.docs.length}');
 
     final cycles = cyclesSnapshot.docs.map((doc) async {
       final data = doc.data();

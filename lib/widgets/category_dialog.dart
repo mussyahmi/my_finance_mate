@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
@@ -257,6 +259,8 @@ class CategoryDialogState extends State<CategoryDialog> {
               .where('category_id', isEqualTo: docId)
               .where('deleted_at', isNull: true)
               .getSavy();
+          print(
+              'updateCategoryToFirebase: ${transactionsSnapshot.docs.length}');
 
           for (var doc in transactionsSnapshot.docs) {
             await transactionsRef
@@ -270,7 +274,6 @@ class CategoryDialogState extends State<CategoryDialog> {
       widget.onCategoryChanged();
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
-      // ignore: avoid_print
       print('Error adding transaction: $e');
     }
   }

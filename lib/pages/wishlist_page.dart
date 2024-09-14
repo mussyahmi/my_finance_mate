@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -48,6 +48,7 @@ class _WishlistPageState extends State<WishlistPage> {
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy();
+    print('_fetchWishlist: ${wishlistSnapshot.docs.length}');
 
     final fetchedWishlist = wishlistSnapshot.docs
         .map((doc) => {

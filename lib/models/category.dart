@@ -57,6 +57,7 @@ class Category {
         .where('type', isEqualTo: 'spent')
         .where('budget', isNotEqualTo: '0.00')
         .getSavy();
+    print('fetchBudgets: ${categorySnapshot.docs.length}');
 
     final categories = categorySnapshot.docs.map((doc) async {
       final data = doc.data();
@@ -360,6 +361,7 @@ class Category {
         .where('deleted_at', isNull: true)
         .limit(1)
         .getSavy();
+    print('hasTransactions: ${transactionsSnapshot.docs.length}');
 
     return transactionsSnapshot.docs.isNotEmpty;
   }
@@ -370,6 +372,8 @@ class Category {
     final transactionsRef = userRef.collection('transactions');
 
     final transactionsSnapshot = await transactionsRef.getSavy();
+    print(
+        'updateCategoryNameForAllTransactions: ${transactionsSnapshot.docs.length}');
 
     print('initiate updateCategoryNameForAllTransactions');
 
@@ -383,6 +387,7 @@ class Category {
           .collection('categories')
           .doc(data['category_id'])
           .getSavy();
+      print('updateCategoryNameForAllTransactions - categoryDoc: 1');
 
       final categoryName = categoryDoc['name'] as String;
 
@@ -402,7 +407,10 @@ class Category {
     final categoriesRef = cyclesRef.collection('categories');
 
     final cycleSnapshot = await cyclesRef.getSavy();
+    print('recalculateCategoryAndCycleTotalAmount - cycleSnapshot: 1');
     final categoriesSnapshot = await categoriesRef.getSavy();
+    print(
+        'recalculateCategoryAndCycleTotalAmount - categoriesSnapshot: ${categoriesSnapshot.docs.length}');
 
     //* Get current timestamp
     final now = DateTime.now();
@@ -420,6 +428,8 @@ class Category {
           .where('category_id', isEqualTo: doc.id)
           .where('deleted_at', isNull: true)
           .getSavy();
+      print(
+          'recalculateCategoryAndCycleTotalAmount - transactionsSnapshot: ${transactionsSnapshot.docs.length}');
 
       double totalAmount = 0;
 
@@ -477,6 +487,7 @@ class Category {
     }
 
     final categoriesSnapshot = await categoriesQuery.getSavy();
+    print('fetchCategories: ${categoriesSnapshot.docs.length}');
 
     List<Category> fetchedCategories = categoriesSnapshot.docs
         .map((doc) => Category(

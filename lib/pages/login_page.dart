@@ -241,6 +241,7 @@ class _LoginPageState extends State<LoginPage> {
 
       final userRef = FirebaseFirestore.instance.collection('users');
       final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+      print('_signInWithEmailAndPassword - userDoc: 1');
 
       if (userDoc.exists) {
         if (_isRememberMeChecked) {
@@ -303,6 +304,7 @@ class _LoginPageState extends State<LoginPage> {
         //* Check if the user already exists in the Firestore collection
         final userRef = FirebaseFirestore.instance.collection('users');
         var userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        print('_signInWithGoogle - userDoc: 1');
 
         //* Get current timestamp
         final now = DateTime.now();
@@ -335,6 +337,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        print('_signInWithGoogle - userDoc: 1');
 
         Person person = Person(
           uid: userDoc.id,

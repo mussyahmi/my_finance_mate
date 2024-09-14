@@ -523,6 +523,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
         //* Update transactions made
         final userDoc = await userRef.getSavy();
+        print('_updateTransactionToFirebase - userDoc: 1');
 
         if (_adMobService.status) {
           await userRef
@@ -636,6 +637,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       DateTime now) async {
     //* Fetch the current cycle document
     final cycleDoc = await cyclesRef.getSavy();
+    print('_updateCycleToFirebase - userDoc: 1');
 
     if (cycleDoc.exists) {
       final cycleData = cycleDoc.data() as Map<String, dynamic>;
@@ -684,6 +686,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       //* Fetch the category document
       final prevCategoryDoc = await prevCategoryRef.getSavy();
+      print('_updateCategoryToFirebase - prevCategoryDoc: 1');
 
       if (prevCategoryDoc.exists) {
         final prevCategoryData = prevCategoryDoc.data() as Map<String, dynamic>;
@@ -703,6 +706,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     //* Fetch the category document
     final newCategoryDoc = await newCategoryRef.getSavy();
+    print('_updateCategoryToFirebase - newCategoryDoc: 1');
 
     if (newCategoryDoc.exists) {
       final newCategoryData = newCategoryDoc.data() as Map<String, dynamic>;

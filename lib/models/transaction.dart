@@ -60,6 +60,7 @@ class Transaction {
     }
 
     final transactionSnapshot = await transactionQuery.getSavy();
+    print('fetchTransactions: ${transactionSnapshot.docs.length}');
 
     final transactions = transactionSnapshot.docs.map((doc) async {
       final data = doc.data();
@@ -72,6 +73,7 @@ class Transaction {
           .collection('categories')
           .doc(data['category_id'])
           .getSavy();
+      print('fetchTransactions - categoryDoc: 1');
 
       final categoryName = categoryDoc['name'] as String;
 
@@ -136,6 +138,7 @@ class Transaction {
     }
 
     final transactionSnapshot = await transactionQuery.getSavy();
+    print('fetchFilteredTransactions: ${transactionSnapshot.docs.length}');
 
     List<Transaction> transactions = [];
 
@@ -149,6 +152,7 @@ class Transaction {
           .collection('categories')
           .doc(data['category_id'])
           .getSavy();
+      print('fetchFilteredTransactions - categoryDoc: 1');
 
       final categoryName = categoryDoc['name'] as String;
 
@@ -419,6 +423,7 @@ class Transaction {
 
                 //* Fetch the transaction document
                 final transactionDoc = await transactionRef.getSavy();
+                print('deleteTransaction - transactionDoc: 1');
 
                 final data = transactionDoc.data();
                 final files =
@@ -440,6 +445,7 @@ class Transaction {
 
                 //* Fetch the current cycle document
                 final cycleDoc = await cyclesRef.getSavy();
+                print('deleteTransaction - cycleDoc: 1');
 
                 if (cycleDoc.exists) {
                   final cycleData = cycleDoc.data() as Map<String, dynamic>;
@@ -472,6 +478,7 @@ class Transaction {
 
                 //* Fetch the category document
                 final categoryDoc = await categoryRef.getSavy();
+                print('deleteTransaction - categoryDoc: 1');
 
                 if (categoryDoc.exists) {
                   final categoryData =
@@ -524,6 +531,7 @@ class Transaction {
     final cycleRef = userRef.collection('cycles').doc(cycleId);
 
     final cycleDoc = await cycleRef.getSavy();
+    print('deleteFile - cycleDoc: 1');
 
     if (cycleDoc.exists) {
       final Map<String, dynamic> data = cycleDoc.data()!;

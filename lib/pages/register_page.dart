@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -216,6 +218,7 @@ class RegisterPageState extends State<RegisterPage> {
         });
 
         final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        print('register - userDoc: 1');
 
         Person person = Person(
           uid: userDoc.id,
@@ -231,14 +234,12 @@ class RegisterPageState extends State<RegisterPage> {
         // ignore: use_build_context_synchronously
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-              builder: (context) => DashboardPage(user: person)),
+          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );
       }
     } on FirebaseAuthException catch (e) {
-      // ignore: avoid_print
       print('Email/Password Sign-In Error: $e');
     }
   }

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
@@ -323,6 +325,7 @@ class CycleAddPageState extends State<CycleAddPage> {
         .doc(newCycleId);
 
     final categoriesSnapshot = await categoriesRef.getSavy();
+    print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
 
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -47,13 +49,14 @@ class _ChartPageState extends State<ChartPage> {
         FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
     final transactionsRef = userRef.collection('transactions');
 
-    final transactionQuery = await transactionsRef
+    final transactionSnapshot = await transactionsRef
         .where('deleted_at', isNull: true)
         .where('date_time', isGreaterThanOrEqualTo: widget.cycle.startDate)
         .where('date_time', isLessThanOrEqualTo: widget.cycle.endDate)
         .orderBy('date_time',
             descending: true) //* Sort by dateTime in descending order
         .getSavy();
+    print('_fetchTransactions: ${transactionSnapshot.docs.length}');
 
     double spentTotal = double.parse(widget.cycle.amountSpent);
     double needs = 0;
@@ -61,7 +64,7 @@ class _ChartPageState extends State<ChartPage> {
     double savings = 0;
     double others = 0;
 
-    for (var doc in transactionQuery.docs) {
+    for (var doc in transactionSnapshot.docs) {
       final data = doc.data();
       final amount = double.parse(data['amount']);
 
@@ -79,7 +82,7 @@ class _ChartPageState extends State<ChartPage> {
     }
 
     setState(() {
-      totalTransaction = transactionQuery.docs.length;
+      totalTransaction = transactionSnapshot.docs.length;
       needsPercentage = needs / spentTotal * 100;
       wantsPercentage = wants / spentTotal * 100;
       savingsPercentage = savings / spentTotal * 100;
