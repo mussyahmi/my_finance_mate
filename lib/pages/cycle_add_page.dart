@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
+import '../models/person.dart';
 
 class CycleAddPage extends StatefulWidget {
+  final Person user;
   final bool isFirstCycle;
   final Cycle? lastCycle;
 
   const CycleAddPage({
     super.key,
+    required this.user,
     required this.isFirstCycle,
     this.lastCycle,
   });
@@ -50,8 +52,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                   .difference(widget.lastCycle!.startDate)
                   .inDays -
               1));
-      endDate =
-          DateTime(endDate.year, endDate.month, endDate.day, 0, 0);
+      endDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0);
 
       setState(() {
         lastCycleNo = widget.lastCycle!.cycleNo;
@@ -163,7 +164,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                             });
 
                             try {
-                              await _updateTransactionToFirebase();
+                              await _updateTransactionToFirebase(widget.user);
                             } finally {
                               setState(() {
                                 _isLoading = false;
@@ -205,7 +206,7 @@ class CycleAddPageState extends State<CycleAddPage> {
     );
   }
 
-  Future<void> _updateTransactionToFirebase() async {
+  Future<void> _updateTransactionToFirebase(Person user) async {
     //* Validate the form data
     final message = _validate(selectedDateRange, cycleNameController.text,
         openingBalanceController.text);
@@ -229,14 +230,6 @@ class CycleAddPageState extends State<CycleAddPage> {
     final adjustedEndDate = selectedDateRange!.end
         .add(const Duration(days: 1))
         .subtract(const Duration(minutes: 1));
-
-    //* Get the current user
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
 
     //* Get current timestamp
     final now = DateTime.now();
@@ -270,7 +263,7 @@ class CycleAddPageState extends State<CycleAddPage> {
     // ignore: use_build_context_synchronously
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const DashboardPage()),
+      MaterialPageRoute(builder: (context) => DashboardPage(user: widget.user)),
       (route) => false, //* This line removes all previous routes from the stack
     );
   }
@@ -315,7 +308,7 @@ class CycleAddPageState extends State<CycleAddPage> {
   }
 
   Future<void> copyCategoriesFromLastCycle(
-      User user, String lastCycleId, String newCycleId) async {
+      Person user, String lastCycleId, String newCycleId) async {
     final categoriesRef = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)

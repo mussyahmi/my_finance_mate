@@ -1,28 +1,27 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../extensions/string_extension.dart';
+import '../models/person.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
-import '../extensions/firestore_extensions.dart';
-
-enum BudgetFilter { all, ongoing, exceeded, completed }
 
 class ForecastBudget extends StatefulWidget {
   final bool isLoading;
+  final Person user;
   final Cycle? cycle;
   final Function onCategoryChanged;
 
-  const ForecastBudget(
-      {super.key,
-      required this.isLoading,
-      this.cycle,
-      required this.onCategoryChanged});
+  const ForecastBudget({
+    super.key,
+    required this.isLoading,
+    required this.user,
+    this.cycle,
+    required this.onCategoryChanged,
+  });
 
   @override
   State<ForecastBudget> createState() => _ForecastBudgetState();
@@ -105,7 +104,8 @@ class _ForecastBudgetState extends State<ForecastBudget> {
           ),
         ),
         FutureBuilder<List<Category>>(
-          future: _fetchBudgets(),
+          future:
+              Category.fetchBudgets(widget.user, widget.cycle, currentFilter),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
                 widget.isLoading) {
@@ -224,6 +224,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                               onTap: () {
                                 budget.showCategoryDetails(
                                     context,
+                                    widget.user,
                                     widget.cycle!,
                                     budget.type,
                                     widget.onCategoryChanged);
@@ -241,75 +242,6 @@ class _ForecastBudgetState extends State<ForecastBudget> {
         ),
       ],
     );
-  }
-
-  Future<List<Category>> _fetchBudgets() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return [];
-    }
-
-    if (widget.cycle == null) {
-      return [];
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(widget.cycle!.id);
-    final categoriesRef = cyclesRef.collection('categories');
-
-    final categoryQuery = await categoriesRef
-        .where('deleted_at', isNull: true)
-        .where('type', isEqualTo: 'spent')
-        .where('budget', isNotEqualTo: '0.00')
-        .getSavy();
-    final categories = categoryQuery.docs.map((doc) async {
-      final data = doc.data();
-
-      return Category(
-        id: doc.id,
-        name: data['name'],
-        type: data['type'],
-        note: data['note'],
-        budget: data['budget'],
-        totalAmount: data['total_amount'],
-        cycleId: widget.cycle!.id,
-        createdAt: (data['created_at'] as Timestamp).toDate(),
-        updatedAt: (data['updated_at'] as Timestamp).toDate(),
-      );
-    }).toList();
-
-    var result = await Future.wait(categories);
-
-    //* Sort the list by 'updated_at' in descending order (most recent first)
-    result.sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
-
-    //* Filter categories based on the selected filter
-    List<Category> filteredBudgets;
-    switch (currentFilter) {
-      case BudgetFilter.ongoing:
-        filteredBudgets = result
-            .where((budget) => double.parse(budget.amountBalance()) > 0)
-            .toList();
-        break;
-      case BudgetFilter.exceeded:
-        filteredBudgets = result
-            .where((budget) => double.parse(budget.amountBalance()) < 0)
-            .toList();
-        break;
-      case BudgetFilter.completed:
-        filteredBudgets = result
-            .where((budget) => double.parse(budget.amountBalance()) <= 0)
-            .toList();
-        break;
-      case BudgetFilter.all:
-      default:
-        filteredBudgets = result;
-        break;
-    }
-
-    return filteredBudgets;
   }
 
   void _applyFilter(BudgetFilter filter) async {

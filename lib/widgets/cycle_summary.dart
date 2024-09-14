@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../pages/transaction_list_page.dart';
 
 class CycleSummary extends StatefulWidget {
+  final Person user;
   final Cycle? cycle;
 
   const CycleSummary({
     super.key,
+    required this.user,
     required this.cycle,
   });
 
@@ -93,6 +96,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionListPage(
+                              user: widget.user,
                               cycle: widget.cycle!,
                               type: 'received',
                             ),
@@ -139,6 +143,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionListPage(
+                              user: widget.user,
                               cycle: widget.cycle!,
                               type: 'spent',
                             ),

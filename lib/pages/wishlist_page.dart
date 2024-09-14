@@ -1,13 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/wishlist_dialog.dart';
@@ -15,7 +15,12 @@ import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../extensions/firestore_extensions.dart';
 
 class WishlistPage extends StatefulWidget {
-  const WishlistPage({super.key});
+  final Person user;
+
+  const WishlistPage({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<WishlistPage> createState() => _WishlistPageState();
@@ -35,18 +40,14 @@ class _WishlistPageState extends State<WishlistPage> {
       wishlist = [];
     });
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
     final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
+        FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
     final wishlistRef = userRef.collection('wishlist');
 
-    final wishlistSnapshot =
-        await wishlistRef.where('deleted_at', isNull: true).getSavy();
+    final wishlistSnapshot = await wishlistRef
+        .where('deleted_at', isNull: true)
+        .orderBy('name')
+        .getSavy();
 
     final fetchedWishlist = wishlistSnapshot.docs
         .map((doc) => {
@@ -56,10 +57,6 @@ class _WishlistPageState extends State<WishlistPage> {
               'created_at': (doc['created_at'] as Timestamp).toDate()
             })
         .toList();
-
-    //* Sort the list by alphabetical in ascending order (most recent first)
-    fetchedWishlist
-        .sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
 
     setState(() {
       wishlist = List.from(fetchedWishlist);
@@ -140,6 +137,7 @@ class _WishlistPageState extends State<WishlistPage> {
       context: context,
       builder: (context) {
         return WishlistDialog(
+          user: widget.user,
           action: action,
           wish: wish ?? {},
           onWishlistChanged: _fetchWishlist,
@@ -168,7 +166,8 @@ class _WishlistPageState extends State<WishlistPage> {
                 children: [
                   IconButton(
                     onPressed: () async {
-                      final result = await _deleteHandler(wish['id']);
+                      final result =
+                          await _deleteHandler(widget.user, wish['id']);
 
                       if (result) {
                         Navigator.of(context).pop();
@@ -242,7 +241,7 @@ class _WishlistPageState extends State<WishlistPage> {
     );
   }
 
-  Future<bool> _deleteHandler(String id) async {
+  Future<bool> _deleteHandler(Person user, String id) async {
     //* Handle delete option
     return await showDialog(
       context: context,
@@ -261,13 +260,6 @@ class _WishlistPageState extends State<WishlistPage> {
               onPressed: () {
                 //* Delete the item from Firestore here
                 final wishId = id;
-
-                //* Reference to the Firestore document to delete
-                final user = FirebaseAuth.instance.currentUser;
-                if (user == null) {
-                  //todo: Handle the case where the user is not authenticated
-                  return;
-                }
 
                 final userRef = FirebaseFirestore.instance
                     .collection('users')

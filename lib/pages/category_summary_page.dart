@@ -4,19 +4,22 @@ import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import 'transaction_list_page.dart';
 
-class SummaryPage extends StatefulWidget {
+class CategorySummaryPage extends StatefulWidget {
+  final Person user;
   final Cycle cycle;
 
-  const SummaryPage({super.key, required this.cycle});
+  const CategorySummaryPage(
+      {super.key, required this.user, required this.cycle});
 
   @override
-  State<SummaryPage> createState() => _SummaryPageState();
+  State<CategorySummaryPage> createState() => _CategorySummaryPageState();
 }
 
-class _SummaryPageState extends State<SummaryPage> {
+class _CategorySummaryPageState extends State<CategorySummaryPage> {
   List<Object> categories = [];
   bool _isLoading = false;
 
@@ -32,7 +35,7 @@ class _SummaryPageState extends State<SummaryPage> {
 
   Future<void> _fetchCategories() async {
     final List<Category> fetchCategories =
-        await Category.fetchCategories(widget.cycle.id, null);
+        await Category.fetchCategories(widget.user, widget.cycle.id);
 
     setState(() {
       categories = List.from(fetchCategories
@@ -105,7 +108,7 @@ class _SummaryPageState extends State<SummaryPage> {
                     if (_adMobService.status) _showInterstitialAd();
 
                     await Category.recalculateCategoryAndCycleTotalAmount(
-                        widget.cycle.id);
+                        widget.user, widget.cycle.id);
 
                     setState(() {
                       _isLoading = false;
@@ -152,6 +155,7 @@ class _SummaryPageState extends State<SummaryPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionListPage(
+                                user: widget.user,
                                 cycle: widget.cycle,
                                 type: category.type,
                                 categoryName: category.name),

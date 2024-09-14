@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../models/person.dart';
+
 class WishlistDialog extends StatefulWidget {
+  final Person user;
   final String action;
   final Map wish;
   final Function onWishlistChanged;
 
   const WishlistDialog(
       {Key? key,
+      required this.user,
       required this.action,
       required this.wish,
       required this.onWishlistChanged})
@@ -92,7 +95,7 @@ class WishlistDialogState extends State<WishlistDialog> {
               }
 
               //* Call the function to update to Firebase
-              updateWishlistToFirebase(wishlistName, wishlistNote);
+              updateWishlistToFirebase(widget.user, wishlistName, wishlistNote);
 
               //* Close the dialog
               Navigator.of(context).pop(true);
@@ -114,18 +117,10 @@ class WishlistDialogState extends State<WishlistDialog> {
 
   //* Function to update wishlist to Firebase Firestore
   Future<void> updateWishlistToFirebase(
-      String wishlistName, String wishlistNote) async {
+      Person user, String wishlistName, String wishlistNote) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
-
-      //* Get the current user
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        //todo: Handle the case where user is not authenticated
-        return;
-      }
 
       if (widget.action == 'Add') {
         //* Create the new wish document

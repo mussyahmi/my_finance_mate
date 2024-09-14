@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
 import '../extensions/firestore_extensions.dart';
+import '../models/person.dart';
 
 class CategoryDialog extends StatefulWidget {
+  final Person user;
   final String cycleId;
   final String type;
   final String action;
@@ -13,6 +14,7 @@ class CategoryDialog extends StatefulWidget {
 
   const CategoryDialog(
       {Key? key,
+      required this.user,
       required this.cycleId,
       required this.type,
       required this.action,
@@ -147,7 +149,7 @@ class CategoryDialogState extends State<CategoryDialog> {
 
               //* Call the function to update to Firebase
               updateCategoryToFirebase(
-                  categoryName, categoryBudget, categoryNote);
+                  widget.user, categoryName, categoryBudget, categoryNote);
 
               //* Close the dialog
               Navigator.of(context).pop(true);
@@ -197,18 +199,14 @@ class CategoryDialogState extends State<CategoryDialog> {
 
   //* Function to update category to Firebase Firestore
   Future<void> updateCategoryToFirebase(
-      String categoryName, String categoryBudget, String categoryNote) async {
+    Person user,
+    String categoryName,
+    String categoryBudget,
+    String categoryNote,
+  ) async {
     try {
       //* Get current timestamp
       final now = DateTime.now();
-
-      //* Get the current user
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        //todo: Handle the case where user is not authenticated
-        return;
-      }
 
       if (widget.action == 'Add') {
         //* Create the new category document
@@ -255,12 +253,12 @@ class CategoryDialogState extends State<CategoryDialog> {
               .doc(user.uid)
               .collection('transactions');
 
-          final querySnapshot = await transactionsRef
+          final transactionsSnapshot = await transactionsRef
               .where('category_id', isEqualTo: docId)
               .where('deleted_at', isNull: true)
               .getSavy();
 
-          for (var doc in querySnapshot.docs) {
+          for (var doc in transactionsSnapshot.docs) {
             await transactionsRef
                 .doc(doc.id)
                 .update({'category_name': categoryName});

@@ -1,17 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../widgets/cycle_summary.dart';
 import 'cycle_list_page.dart';
-import '../extensions/firestore_extensions.dart';
 
 class CyclePage extends StatefulWidget {
+  final Person user;
   final Cycle? cycle;
 
-  const CyclePage({super.key, required this.cycle});
+  const CyclePage({
+    super.key,
+    required this.user,
+    required this.cycle,
+  });
 
   @override
   State<CyclePage> createState() => _CyclePageState();
@@ -38,7 +41,7 @@ class _CyclePageState extends State<CyclePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
-                CycleSummary(cycle: widget.cycle),
+                CycleSummary(user: widget.user, cycle: widget.cycle),
                 const SizedBox(height: 20),
                 _card('Cycle Name', widget.cycle?.cycleName),
                 _card(
@@ -70,6 +73,7 @@ class _CyclePageState extends State<CyclePage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CycleListPage(
+                                  user: widget.user,
                                   cycle: widget.cycle,
                                 ),
                               ),
@@ -80,7 +84,7 @@ class _CyclePageState extends State<CyclePage> {
                   ),
                 ),
                 FutureBuilder(
-                  future: _fetchCycles(),
+                  future: Cycle.fetchCycles(widget.user, 5),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Padding(
@@ -135,13 +139,17 @@ class _CyclePageState extends State<CyclePage> {
                                   ),
                                 ],
                               ),
-                              trailing: IconButton.filledTonal(
-                                onPressed: () async {},
-                                icon: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
+                              trailing: widget.cycle!.cycleNo != cycle.cycleNo
+                                  ? IconButton.filledTonal(
+                                      onPressed: () async {},
+                                      icon: Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           );
                         }).toList(),
@@ -179,44 +187,5 @@ class _CyclePageState extends State<CyclePage> {
         ),
       ),
     );
-  }
-
-  Future<List<Cycle>> _fetchCycles() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return [];
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final cyclesQuery = await cyclesRef
-        .where('deleted_at', isNull: true)
-        .orderBy('cycle_no', descending: true)
-        .limit(5) //* Limit to 5 items
-        .getSavy();
-
-    final cycles = cyclesQuery.docs.map((doc) async {
-      final data = doc.data();
-
-      //* Create a Transaction object with the category name
-      return Cycle(
-        id: doc.id,
-        cycleNo: data['cycle_no'],
-        cycleName: data['cycle_name'],
-        openingBalance: data['opening_balance'],
-        amountBalance: data['amount_balance'],
-        amountReceived: data['amount_received'],
-        amountSpent: data['amount_spent'],
-        startDate: (data['start_date'] as Timestamp).toDate(),
-        endDate: (data['end_date'] as Timestamp).toDate(),
-      );
-    }).toList();
-
-    var result = await Future.wait(cycles);
-
-    return result;
   }
 }

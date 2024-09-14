@@ -1,23 +1,23 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/string_extension.dart';
-import '../extensions/firestore_extensions.dart';
 
 class TransactionListPage extends StatefulWidget {
+  final Person user;
   final Cycle cycle;
   final String? type;
   final String? subType;
   final String? categoryName;
   const TransactionListPage({
     super.key,
+    required this.user,
     required this.cycle,
     this.type,
     this.subType,
@@ -146,7 +146,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
             //* Transaction List
             Expanded(
               child: FutureBuilder<List<t.Transaction>>(
-                future: fetchFilteredTransactions(),
+                future: t.Transaction.fetchFilteredTransactions(
+                    widget.user,
+                    selectedDateRange,
+                    selectedType,
+                    widget.subType,
+                    selectedCategoryName),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
@@ -239,7 +244,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                     onTap: () {
                                       //* Show the transaction summary dialog when tapped
                                       transaction.showTransactionDetails(
-                                          context, () => setState(() {}));
+                                        context,
+                                        widget.user,
+                                        () => setState(() {}),
+                                      );
                                     },
                                   ),
                                 ),
@@ -284,114 +292,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final fetchedCategories =
-        await Category.fetchCategories(widget.cycle.id, selectedType, true);
+    final fetchedCategories = await Category.fetchCategories(
+        widget.user, widget.cycle.id, selectedType, true);
 
     setState(() {
       categories = fetchedCategories;
     });
-  }
-
-  Future<List<t.Transaction>> fetchFilteredTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return [];
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    Query<Map<String, dynamic>> query =
-        transactionsRef.where('deleted_at', isNull: true);
-
-    if (selectedDateRange != null) {
-      query = query
-          .where('date_time', isGreaterThanOrEqualTo: selectedDateRange!.start)
-          .where('date_time', isLessThanOrEqualTo: selectedDateRange!.end);
-    }
-
-    if (widget.subType != null) {
-      query = query.where('type', isEqualTo: 'spent');
-
-      if (widget.subType != 'others') {
-        query = query.where('subType', isEqualTo: widget.subType);
-      }
-    } else {
-      if (selectedType != null) {
-        query = query.where('type', isEqualTo: selectedType);
-      }
-
-      if (selectedCategoryName != null) {
-        query = query.where('category_name', isEqualTo: selectedCategoryName);
-      }
-    }
-
-    final querySnapshot = await query.getSavy();
-
-    List<t.Transaction> transactions = [];
-
-    for (var doc in querySnapshot.docs) {
-      final data = doc.data();
-
-      //* Fetch the category name based on the categoryId
-      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      categoryDoc = await userRef
-          .collection('cycles')
-          .doc(data['cycle_id'])
-          .collection('categories')
-          .doc(data['category_id'])
-          .getSavy();
-
-      final categoryName = categoryDoc['name'] as String;
-
-      //* Map data to your Transaction class
-      if (widget.subType == 'others') {
-        if (!data.containsKey('subType') || data['subType'] == null) {
-          transactions = [
-            ...transactions,
-            t.Transaction(
-              id: doc.id,
-              cycleId: data['cycle_id'],
-              dateTime: (data['date_time'] as Timestamp).toDate(),
-              type: data['type'] as String,
-              subType: data['subType'],
-              categoryId: data['category_id'],
-              categoryName: categoryName,
-              amount: data['amount'] as String,
-              note: data['note'] as String,
-              files: data['files'] != null ? data['files'] as List : [],
-              //* Add other transaction properties as needed
-            )
-          ];
-        }
-      } else {
-        transactions = [
-          ...transactions,
-          t.Transaction(
-            id: doc.id,
-            cycleId: data['cycle_id'],
-            dateTime: (data['date_time'] as Timestamp).toDate(),
-            type: data['type'] as String,
-            subType: data['subType'],
-            categoryId: data['category_id'],
-            categoryName: categoryName,
-            amount: data['amount'] as String,
-            note: data['note'] as String,
-            files: data['files'] != null ? data['files'] as List : [],
-            //* Add other transaction properties as needed
-          )
-        ];
-      }
-    }
-    // }).toList();
-
-    var result = transactions;
-
-    //* Sort the list as needed
-    result.sort((a, b) => b.dateTime.compareTo(a.dateTime));
-
-    return result;
   }
 }

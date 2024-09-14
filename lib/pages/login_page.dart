@@ -10,6 +10,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/person.dart';
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
@@ -260,13 +261,23 @@ class _LoginPageState extends State<LoginPage> {
           'device_info_json': deviceInfoJson,
         });
 
+        Person person = Person(
+          uid: userDoc.id,
+          fullName: userDoc['full_name'] ?? '',
+          nickname: userDoc['nickname'] ?? '',
+          email: userDoc['email'],
+          photoUrl: userDoc['photo_url'] ?? '',
+          lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
+          dailyTransactionsMade: userDoc['daily_transactions_made'],
+        );
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
         //* Navigate to the DashboardPage after sign-in
         // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
         );
       }
     } catch (error) {
@@ -291,7 +302,7 @@ class _LoginPageState extends State<LoginPage> {
 
         //* Check if the user already exists in the Firestore collection
         final userRef = FirebaseFirestore.instance.collection('users');
-        final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        var userDoc = await userRef.doc(authResult.user!.uid).getSavy();
 
         //* Get current timestamp
         final now = DateTime.now();
@@ -323,6 +334,18 @@ class _LoginPageState extends State<LoginPage> {
           });
         }
 
+        userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+
+        Person person = Person(
+          uid: userDoc.id,
+          fullName: userDoc['full_name'] ?? '',
+          nickname: userDoc['nickname'] ?? '',
+          email: userDoc['email'],
+          photoUrl: userDoc['photo_url'] ?? '',
+          lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
+          dailyTransactionsMade: userDoc['daily_transactions_made'],
+        );
+
         print('Google Sign-In Successful');
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -331,7 +354,7 @@ class _LoginPageState extends State<LoginPage> {
         //* Navigate to the DashboardPage after sign-in
         // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
         );
       } else {
         print('Google Sign-In Cancelled');

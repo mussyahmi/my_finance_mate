@@ -9,15 +9,18 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
-import 'summary_page.dart';
+import 'category_summary_page.dart';
 
 class ExplorePage extends StatefulWidget {
+  final Person user;
   final Cycle? cycle;
 
-  const ExplorePage({Key? key, required this.cycle}) : super(key: key);
+  const ExplorePage({Key? key, required this.user, required this.cycle})
+      : super(key: key);
 
   @override
   ExplorePageState createState() => ExplorePageState();
@@ -95,8 +98,8 @@ class ExplorePageState extends State<ExplorePage> {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChartPage(cycle: widget.cycle!)),
+                                  builder: (context) => ChartPage(
+                                      user: widget.user, cycle: widget.cycle!)),
                             );
                           }
                         : null,
@@ -111,8 +114,8 @@ class ExplorePageState extends State<ExplorePage> {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      SummaryPage(cycle: widget.cycle!)),
+                                  builder: (context) => CategorySummaryPage(
+                                      user: widget.user, cycle: widget.cycle!)),
                             );
                           }
                         : null,

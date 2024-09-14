@@ -6,7 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
+import '../models/person.dart';
 import 'dashboard_page.dart';
+import '../extensions/firestore_extensions.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -210,14 +212,27 @@ class RegisterPageState extends State<RegisterPage> {
           'photo_url': authResult.user!.photoURL,
           'device_info_json': deviceInfoJson,
           'password': password,
-          'transactions_made': 0,
+          'daily_transactions_made': 0,
         });
+
+        final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+
+        Person person = Person(
+          uid: userDoc.id,
+          fullName: userDoc['full_name'] ?? '',
+          nickname: userDoc['nickname'] ?? '',
+          email: userDoc['email'],
+          photoUrl: userDoc['photo_url'] ?? '',
+          lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
+          dailyTransactionsMade: userDoc['daily_transactions_made'],
+        );
 
         //* Navigate to the dashboard or home page upon successful register
         // ignore: use_build_context_synchronously
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(
+              builder: (context) => DashboardPage(user: person)),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );

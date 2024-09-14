@@ -7,8 +7,7 @@ class Person {
   String email;
   String photoUrl;
   DateTime lastLogin;
-  int transactionLimit;
-  int transactionsMade;
+  int dailyTransactionsMade;
 
   Person({
     required this.uid,
@@ -17,11 +16,22 @@ class Person {
     required this.email,
     required this.photoUrl,
     required this.lastLogin,
-    required this.transactionLimit,
-    required this.transactionsMade,
+    required this.dailyTransactionsMade,
   });
 
-  static Future<void> resetTransactionLimit(String userUid) async {
+  Future<void> checkTransactionMade(
+      DateTime lastTansactionDate, String userUid) async {
+    DateTime today = DateTime.now();
+
+    if (!(lastTansactionDate.year == today.year &&
+            lastTansactionDate.month == today.month &&
+            lastTansactionDate.day == today.day) &&
+        dailyTransactionsMade > 0) {
+      await resetTransactionMade(uid);
+    }
+  }
+
+  static Future<void> resetTransactionMade(String userUid) async {
     final userRef = FirebaseFirestore.instance.collection('users').doc(userUid);
 
     //* Update transactions made

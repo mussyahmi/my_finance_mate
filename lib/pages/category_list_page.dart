@@ -5,16 +5,23 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import '../models/category.dart';
 
 class CategoryListPage extends StatefulWidget {
+  final Person user;
   final Cycle cycle;
   final String? type;
   final bool? isFromTransactionForm;
 
-  const CategoryListPage(
-      {super.key, required this.cycle, this.type, this.isFromTransactionForm});
+  const CategoryListPage({
+    super.key,
+    required this.user,
+    required this.cycle,
+    this.type,
+    this.isFromTransactionForm,
+  });
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -31,8 +38,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isFromTransactionForm != null) {
-        Category.showCategoryFormDialog(
-            context, widget.cycle.id, selectedType, 'Add', _fetchCategories);
+        Category.showCategoryFormDialog(context, widget.user, widget.cycle.id,
+            selectedType, 'Add', _fetchCategories);
       }
     });
   }
@@ -49,10 +56,16 @@ class _CategoryListPageState extends State<CategoryListPage> {
       receivedCategories = [];
     });
 
-    final fetchedSpentCategories =
-        await Category.fetchCategories(widget.cycle.id, 'spent');
-    final fetchedReceivedCategories =
-        await Category.fetchCategories(widget.cycle.id, 'received');
+    final fetchedSpentCategories = await Category.fetchCategories(
+      widget.user,
+      widget.cycle.id,
+      'spent',
+    );
+    final fetchedReceivedCategories = await Category.fetchCategories(
+      widget.user,
+      widget.cycle.id,
+      'received',
+    );
 
     setState(() {
       spentCategories = List.from(fetchedSpentCategories);
@@ -146,8 +159,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () {
-                  Category.showCategoryFormDialog(context, widget.cycle.id,
-                      selectedType, 'Add', _fetchCategories);
+                  Category.showCategoryFormDialog(context, widget.user,
+                      widget.cycle.id, selectedType, 'Add', _fetchCategories);
                 },
                 child: const Icon(Icons.add),
               ),
@@ -178,8 +191,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
               child: ListTile(
                 title: Text(category.name),
                 onTap: () {
-                  category.showCategoryDetails(
-                      context, widget.cycle, selectedType, _fetchCategories);
+                  category.showCategoryDetails(context, widget.user,
+                      widget.cycle, selectedType, _fetchCategories);
                 },
               ),
             ),

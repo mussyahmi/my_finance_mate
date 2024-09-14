@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -15,6 +14,7 @@ import 'cycle.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../extensions/firestore_extensions.dart';
+import 'person.dart';
 
 class Transaction {
   final String id;
@@ -27,6 +27,7 @@ class Transaction {
   final String amount;
   final String note;
   final List files;
+  final Person person;
 
   Transaction({
     required this.id,
@@ -39,10 +40,169 @@ class Transaction {
     required this.amount,
     required this.note,
     required this.files,
+    required this.person,
   });
 
+  static Future<List<Transaction>> fetchTransactions(
+    Person user,
+    int? limit,
+  ) async {
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    var transactionQuery = transactionsRef
+        .where('deleted_at', isNull: true)
+        .orderBy('date_time', descending: true);
+
+    if (limit != null) {
+      transactionQuery = transactionQuery.limit(limit);
+    }
+
+    final transactionSnapshot = await transactionQuery.getSavy();
+
+    final transactions = transactionSnapshot.docs.map((doc) async {
+      final data = doc.data();
+
+      //* Fetch the category name based on the categoryId
+      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
+      categoryDoc = await userRef
+          .collection('cycles')
+          .doc(data['cycle_id'])
+          .collection('categories')
+          .doc(data['category_id'])
+          .getSavy();
+
+      final categoryName = categoryDoc['name'] as String;
+
+      //* Create a Transaction object with the category name
+      return Transaction(
+        id: doc.id,
+        cycleId: data['cycle_id'],
+        dateTime: (data['date_time'] as Timestamp).toDate(),
+        type: data['type'] as String,
+        subType: data['subType'],
+        categoryId: data['category_id'],
+        categoryName: categoryName,
+        amount: data['amount'] as String,
+        note: data['note'] as String,
+        files: data['files'] != null ? data['files'] as List : [],
+        person: user,
+      );
+    }).toList();
+
+    var result = await Future.wait(transactions);
+
+    return result;
+  }
+
+  static Future<List<Transaction>> fetchFilteredTransactions(
+    Person user,
+    DateTimeRange? selectedDateRange,
+    String? selectedType,
+    String? subType,
+    String? selectedCategoryName,
+  ) async {
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final transactionsRef = userRef.collection('transactions');
+
+    Query<Map<String, dynamic>> transactionQuery =
+        transactionsRef.where('deleted_at', isNull: true);
+
+    if (selectedDateRange != null) {
+      transactionQuery = transactionQuery
+          .where('date_time', isGreaterThanOrEqualTo: selectedDateRange.start)
+          .where('date_time', isLessThanOrEqualTo: selectedDateRange.end);
+    }
+
+    if (subType != null) {
+      transactionQuery = transactionQuery.where('type', isEqualTo: 'spent');
+
+      if (subType != 'others') {
+        transactionQuery =
+            transactionQuery.where('subType', isEqualTo: subType);
+      }
+    } else {
+      if (selectedType != null) {
+        transactionQuery =
+            transactionQuery.where('type', isEqualTo: selectedType);
+      }
+
+      if (selectedCategoryName != null) {
+        transactionQuery = transactionQuery.where('category_name',
+            isEqualTo: selectedCategoryName);
+      }
+    }
+
+    final transactionSnapshot = await transactionQuery.getSavy();
+
+    List<Transaction> transactions = [];
+
+    for (var doc in transactionSnapshot.docs) {
+      final data = doc.data();
+
+      //* Fetch the category name based on the categoryId
+      DocumentSnapshot<Map<String, dynamic>> categoryDoc = await userRef
+          .collection('cycles')
+          .doc(data['cycle_id'])
+          .collection('categories')
+          .doc(data['category_id'])
+          .getSavy();
+
+      final categoryName = categoryDoc['name'] as String;
+
+      //* Map data to your Transaction class
+      if (subType == 'others') {
+        if (!data.containsKey('subType') || data['subType'] == null) {
+          transactions = [
+            ...transactions,
+            Transaction(
+              id: doc.id,
+              cycleId: data['cycle_id'],
+              dateTime: (data['date_time'] as Timestamp).toDate(),
+              type: data['type'] as String,
+              subType: data['subType'],
+              categoryId: data['category_id'],
+              categoryName: categoryName,
+              amount: data['amount'] as String,
+              note: data['note'] as String,
+              files: data['files'] != null ? data['files'] as List : [],
+              person: user,
+            )
+          ];
+        }
+      } else {
+        transactions = [
+          ...transactions,
+          Transaction(
+            id: doc.id,
+            cycleId: data['cycle_id'],
+            dateTime: (data['date_time'] as Timestamp).toDate(),
+            type: data['type'] as String,
+            subType: data['subType'],
+            categoryId: data['category_id'],
+            categoryName: categoryName,
+            amount: data['amount'] as String,
+            note: data['note'] as String,
+            files: data['files'] != null ? data['files'] as List : [],
+            person: user,
+          )
+        ];
+      }
+    }
+    // }).toList();
+
+    var result = transactions;
+
+    //* Sort the list as needed
+    result.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+    return result;
+  }
+
   void showTransactionDetails(
-      BuildContext context, Function onTransactionChanged) {
+      BuildContext context, Person user, Function onTransactionChanged) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -59,7 +219,7 @@ class Transaction {
                 children: [
                   IconButton.filledTonal(
                     onPressed: () async {
-                      final result = await deleteTransaction(context);
+                      final result = await deleteTransaction(context, user);
 
                       if (result) {
                         Navigator.of(context).pop();
@@ -73,13 +233,14 @@ class Transaction {
                   ),
                   IconButton.filledTonal(
                     onPressed: () async {
-                      final transactionCycle = await cycle();
+                      final transactionCycle = await cycle(user);
 
                       //* Edit action
                       final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => TransactionFormPage(
+                            user: person,
                             cycle: transactionCycle!,
                             action: 'Edit',
                             transaction: this,
@@ -146,7 +307,8 @@ class Transaction {
                     'Type:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(type.capitalize()),
+                  Text(
+                      '${type.capitalize()}${subType != null ? ' (${subType!.capitalize()})' : ''}'),
                 ],
               ),
               if (note.isNotEmpty)
@@ -229,7 +391,7 @@ class Transaction {
     );
   }
 
-  Future<bool> deleteTransaction(BuildContext context) async {
+  Future<bool> deleteTransaction(BuildContext context, Person user) async {
     return await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -248,13 +410,6 @@ class Transaction {
               onPressed: () async {
                 //* Delete the item from Firestore here
                 final transactionId = id;
-
-                //* Reference to the Firestore document to delete
-                final user = FirebaseAuth.instance.currentUser;
-                if (user == null) {
-                  //todo: Handle the case where the user is not authenticated
-                  return;
-                }
 
                 final userRef = FirebaseFirestore.instance
                     .collection('users')
@@ -363,13 +518,7 @@ class Transaction {
     }
   }
 
-  Future<Cycle?> cycle() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return null;
-    }
-
+  Future<Cycle?> cycle(Person user) async {
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final cycleRef = userRef.collection('cycles').doc(cycleId);

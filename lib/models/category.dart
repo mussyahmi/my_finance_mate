@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,6 +11,9 @@ import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import 'cycle.dart';
 import '../extensions/firestore_extensions.dart';
+import 'person.dart';
+
+enum BudgetFilter { all, ongoing, exceeded, completed }
 
 class Category {
   final String id;
@@ -36,6 +38,74 @@ class Category {
     required this.updatedAt,
   });
 
+  static Future<List<Category>> fetchBudgets(
+    Person user,
+    Cycle? cycle,
+    BudgetFilter currentFilter,
+  ) async {
+    if (cycle == null) {
+      return [];
+    }
+
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final cyclesRef = userRef.collection('cycles').doc(cycle.id);
+    final categoriesRef = cyclesRef.collection('categories');
+
+    final categorySnapshot = await categoriesRef
+        .where('deleted_at', isNull: true)
+        .where('type', isEqualTo: 'spent')
+        .where('budget', isNotEqualTo: '0.00')
+        .getSavy();
+
+    final categories = categorySnapshot.docs.map((doc) async {
+      final data = doc.data();
+
+      return Category(
+        id: doc.id,
+        name: data['name'],
+        type: data['type'],
+        note: data['note'],
+        budget: data['budget'],
+        totalAmount: data['total_amount'],
+        cycleId: cycle.id,
+        createdAt: (data['created_at'] as Timestamp).toDate(),
+        updatedAt: (data['updated_at'] as Timestamp).toDate(),
+      );
+    }).toList();
+
+    var result = await Future.wait(categories);
+
+    //* Sort the list by 'updated_at' in descending order (most recent first)
+    result.sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
+
+    //* Filter categories based on the selected filter
+    List<Category> filteredBudgets;
+    switch (currentFilter) {
+      case BudgetFilter.ongoing:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) > 0)
+            .toList();
+        break;
+      case BudgetFilter.exceeded:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) < 0)
+            .toList();
+        break;
+      case BudgetFilter.completed:
+        filteredBudgets = result
+            .where((budget) => double.parse(budget.amountBalance()) <= 0)
+            .toList();
+        break;
+      case BudgetFilter.all:
+      default:
+        filteredBudgets = result;
+        break;
+    }
+
+    return filteredBudgets;
+  }
+
   String amountBalance() {
     return (double.parse(budget) - double.parse(totalAmount))
         .toStringAsFixed(2);
@@ -45,7 +115,7 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategoryDetails(BuildContext context, Cycle cycle,
+  void showCategoryDetails(BuildContext context, Person user, Cycle cycle,
       String selectedType, Function onCategoryChanged) {
     showModalBottomSheet(
       context: context,
@@ -63,8 +133,8 @@ class Category {
                 children: [
                   IconButton.filledTonal(
                     onPressed: () async {
-                      final result =
-                          await _deleteHandler(context, onCategoryChanged);
+                      final result = await _deleteHandler(
+                          context, user, onCategoryChanged);
 
                       if (result) {
                         Navigator.of(context).pop();
@@ -77,9 +147,15 @@ class Category {
                   ),
                   IconButton.filledTonal(
                     onPressed: () async {
-                      final result = await showCategoryFormDialog(context,
-                          cycleId, selectedType, 'Edit', onCategoryChanged,
-                          category: this);
+                      final result = await showCategoryFormDialog(
+                        context,
+                        user,
+                        cycleId,
+                        selectedType,
+                        'Edit',
+                        onCategoryChanged,
+                        category: this,
+                      );
 
                       if (result) {
                         Navigator.of(context).pop();
@@ -96,7 +172,10 @@ class Category {
                         context,
                         MaterialPageRoute(
                           builder: (context) => TransactionListPage(
-                              cycle: cycle, type: 'spent', categoryName: name),
+                              user: user,
+                              cycle: cycle,
+                              type: 'spent',
+                              categoryName: name),
                         ),
                       );
                     },
@@ -195,9 +274,13 @@ class Category {
     );
   }
 
-  Future<bool> _deleteHandler(context, Function onCategoryChanged) async {
+  Future<bool> _deleteHandler(
+    context,
+    Person user,
+    Function onCategoryChanged,
+  ) async {
     //* Check if there are transactions associated with this category
-    final hasTransactions = await this.hasTransactions();
+    final hasTransactions = await this.hasTransactions(user);
 
     if (hasTransactions) {
       //* If there are transactions, show an error message or handle it accordingly.
@@ -240,13 +323,6 @@ class Category {
                   //* Delete the item from Firestore here
                   final categoryId = id;
 
-                  //* Reference to the Firestore document to delete
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user == null) {
-                    //todo: Handle the case where the user is not authenticated
-                    return;
-                  }
-
                   final userRef = FirebaseFirestore.instance
                       .collection('users')
                       .doc(user.uid);
@@ -274,13 +350,7 @@ class Category {
     }
   }
 
-  Future<bool> hasTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return false;
-    }
-
+  Future<bool> hasTransactions(Person user) async {
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
@@ -288,18 +358,13 @@ class Category {
     final transactionsSnapshot = await transactionsRef
         .where('category_id', isEqualTo: id)
         .where('deleted_at', isNull: true)
+        .limit(1)
         .getSavy();
 
     return transactionsSnapshot.docs.isNotEmpty;
   }
 
-  static Future<void> updateCategoryNameForAllTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //* Handle the case where the user is not authenticated.
-      return;
-    }
-
+  static Future<void> updateCategoryNameForAllTransactions(Person user) async {
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final transactionsRef = userRef.collection('transactions');
@@ -328,19 +393,15 @@ class Category {
   }
 
   static Future<void> recalculateCategoryAndCycleTotalAmount(
-      String cycleId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //* Handle the case where the user is not authenticated.
-      return;
-    }
-
+    Person user,
+    String cycleId,
+  ) async {
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final cyclesRef = userRef.collection('cycles').doc(cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 
-    final cycleDoc = await cyclesRef.getSavy();
+    final cycleSnapshot = await cyclesRef.getSavy();
     final categoriesSnapshot = await categoriesRef.getSavy();
 
     //* Get current timestamp
@@ -381,8 +442,8 @@ class Category {
       });
     }
 
-    if (cycleDoc.exists) {
-      final cycleData = cycleDoc.data() as Map<String, dynamic>;
+    if (cycleSnapshot.exists) {
+      final cycleData = cycleSnapshot.data() as Map<String, dynamic>;
 
       final double cycleOpeningBalance =
           double.parse(cycleData['opening_balance']);
@@ -401,27 +462,21 @@ class Category {
     print('done recalculateCategoryTotalAmount');
   }
 
-  static Future<List<Category>> fetchCategories(String cycleId, String? type,
-      [bool isUniqueCategoryNames = false]) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return [];
-    }
-
+  static Future<List<Category>> fetchCategories(Person user, String cycleId,
+      [String? type, bool isUniqueCategoryNames = false]) async {
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
     final cyclesRef = userRef.collection('cycles').doc(cycleId);
     final categoriesRef = cyclesRef.collection('categories');
 
-    Query<Map<String, dynamic>> query =
+    Query<Map<String, dynamic>> categoriesQuery =
         categoriesRef.where('deleted_at', isNull: true);
 
     if (type != null) {
-      query = query.where('type', isEqualTo: type);
+      categoriesQuery = categoriesQuery.where('type', isEqualTo: type);
     }
 
-    final categoriesSnapshot = await query.getSavy();
+    final categoriesSnapshot = await categoriesQuery.getSavy();
 
     List<Category> fetchedCategories = categoriesSnapshot.docs
         .map((doc) => Category(
@@ -474,6 +529,7 @@ class Category {
   //* Function to show the add/edit category dialog
   static Future<bool> showCategoryFormDialog(
       BuildContext context,
+      Person user,
       String cycleId,
       String selectedType,
       String action,
@@ -483,6 +539,7 @@ class Category {
       context: context,
       builder: (context) {
         return CategoryDialog(
+          user: user,
           cycleId: cycleId,
           type: selectedType,
           action: action,

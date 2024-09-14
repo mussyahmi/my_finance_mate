@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
@@ -15,20 +14,22 @@ import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/firestore_extensions.dart';
 
-
 class TransactionFormPage extends StatefulWidget {
+  final Person user;
   final Cycle cycle;
   final String action;
   final t.Transaction? transaction;
 
   const TransactionFormPage({
     super.key,
+    required this.user,
     required this.cycle,
     required this.action,
     this.transaction,
@@ -211,6 +212,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return CategoryListPage(
+                                user: widget.user,
                                 cycle: widget.cycle,
                                 type: selectedType,
                                 isFromTransactionForm: true,
@@ -418,7 +420,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         if (_adMobService.status) _showInterstitialAd();
 
                         try {
-                          await _updateTransactionToFirebase();
+                          await _updateTransactionToFirebase(widget.user);
                         } finally {
                           setState(() {
                             _isLoading = false;
@@ -452,15 +454,15 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   }
 
   Future<void> _fetchCategories() async {
-    final fetchedCategories =
-        await Category.fetchCategories(widget.cycle.id, selectedType);
+    final fetchedCategories = await Category.fetchCategories(
+        widget.user, widget.cycle.id, selectedType);
 
     setState(() {
       categories = fetchedCategories;
     });
   }
 
-  Future<void> _updateTransactionToFirebase() async {
+  Future<void> _updateTransactionToFirebase(Person user) async {
     //* Get the values from the form
     String type = selectedType;
     String? subType = selectedSubType;
@@ -490,13 +492,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     //* Get current timestamp
     final now = DateTime.now();
-
-    //* Get the current user
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated
-      return;
-    }
 
     try {
       //* Reference to the Firestore document to add the transaction
@@ -597,7 +592,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     return '';
   }
 
-  Future<List> _uploadAndDeleteFilesToFirebase(User user) async {
+  Future<List> _uploadAndDeleteFilesToFirebase(Person user) async {
     List downloadURLs = [];
 
     for (var file in files) {
@@ -634,8 +629,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     return downloadURLs;
   }
 
-  Future<void> _updateCycleToFirebase(DocumentReference<Map<String, dynamic>> cyclesRef, String type,
-      String amount, DateTime now) async {
+  Future<void> _updateCycleToFirebase(
+      DocumentReference<Map<String, dynamic>> cyclesRef,
+      String type,
+      String amount,
+      DateTime now) async {
     //* Fetch the current cycle document
     final cycleDoc = await cyclesRef.getSavy();
 

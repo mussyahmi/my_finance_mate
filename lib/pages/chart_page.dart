@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../size_config.dart';
 import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';
@@ -11,9 +11,10 @@ import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../extensions/firestore_extensions.dart';
 
 class ChartPage extends StatefulWidget {
+  final Person user;
   final Cycle cycle;
 
-  const ChartPage({super.key, required this.cycle});
+  const ChartPage({super.key, required this.user, required this.cycle});
 
   @override
   State<ChartPage> createState() => _ChartPageState();
@@ -38,18 +39,12 @@ class _ChartPageState extends State<ChartPage> {
   }
 
   Future<void> _fetchTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return;
-    }
-
     setState(() {
       _isLoading = true;
     });
 
     final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
+        FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
     final transactionsRef = userRef.collection('transactions');
 
     final transactionQuery = await transactionsRef
@@ -180,6 +175,7 @@ class _ChartPageState extends State<ChartPage> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               TransactionListPage(
+                                            user: widget.user,
                                             cycle: widget.cycle,
                                             subType: 'needs',
                                           ),
@@ -191,6 +187,7 @@ class _ChartPageState extends State<ChartPage> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               TransactionListPage(
+                                            user: widget.user,
                                             cycle: widget.cycle,
                                             subType: 'wants',
                                           ),
@@ -202,6 +199,7 @@ class _ChartPageState extends State<ChartPage> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               TransactionListPage(
+                                            user: widget.user,
                                             cycle: widget.cycle,
                                             subType: 'savings',
                                           ),
@@ -213,6 +211,7 @@ class _ChartPageState extends State<ChartPage> {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               TransactionListPage(
+                                            user: widget.user,
                                             cycle: widget.cycle,
                                             subType: 'others',
                                           ),
@@ -252,7 +251,8 @@ class _ChartPageState extends State<ChartPage> {
                 _card('needs', needsPercentage, needsTotal),
                 _card('wants', wantsPercentage, wantsTotal),
                 _card('savings', savingsPercentage, savingsTotal),
-                _card('others', othersPercentage, othersTotal),
+                if (othersTotal > 0)
+                  _card('others', othersPercentage, othersTotal),
               ],
             ),
           ),
@@ -297,6 +297,7 @@ class _ChartPageState extends State<ChartPage> {
               context,
               MaterialPageRoute(
                 builder: (context) => TransactionListPage(
+                  user: widget.user,
                   cycle: widget.cycle,
                   subType: subtype,
                 ),

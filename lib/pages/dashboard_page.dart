@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +11,6 @@ import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
-import 'cycle_add_page.dart';
 import 'category_list_page.dart';
 import 'transaction_form_page.dart';
 import 'explore_page.dart';
@@ -21,10 +18,11 @@ import '../models/transaction.dart' as t;
 import 'transaction_list_page.dart';
 import 'wishlist_page.dart';
 import 'cycle_page.dart';
-import '../extensions/firestore_extensions.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final Person user;
+
+  const DashboardPage({super.key, required this.user});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -101,8 +99,7 @@ class _DashboardPageState extends State<DashboardPage>
     setState(() {
       _isLoading = true;
     });
-    await _fetchCycle();
-    await _fetchUser();
+    cycle = await Cycle.fetchCycle(context, widget.user);
     setState(() {
       _isLoading = false;
     });
@@ -130,6 +127,7 @@ class _DashboardPageState extends State<DashboardPage>
                         context,
                         MaterialPageRoute(
                           builder: (context) => CyclePage(
+                            user: widget.user,
                             cycle: cycle,
                           ),
                         ),
@@ -148,7 +146,7 @@ class _DashboardPageState extends State<DashboardPage>
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: CycleSummary(cycle: cycle),
+                    child: CycleSummary(user: widget.user, cycle: cycle),
                   ),
                   if (_bannerAd != null)
                     Column(
@@ -163,6 +161,7 @@ class _DashboardPageState extends State<DashboardPage>
                   const SizedBox(height: 30),
                   ForecastBudget(
                     isLoading: _isLoading,
+                    user: widget.user,
                     cycle: cycle,
                     onCategoryChanged: _refreshPage,
                   ),
@@ -182,8 +181,8 @@ class _DashboardPageState extends State<DashboardPage>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      TransactionListPage(cycle: cycle!),
+                                  builder: (context) => TransactionListPage(
+                                      user: widget.user, cycle: cycle!),
                                 ),
                               );
                             },
@@ -192,7 +191,7 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                   ),
                   FutureBuilder<List<t.Transaction>>(
-                    future: _fetchTransactions(),
+                    future: t.Transaction.fetchTransactions(widget.user, 10),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting ||
                           _isLoading) {
@@ -267,7 +266,7 @@ class _DashboardPageState extends State<DashboardPage>
                                   onTap: () {
                                     //* Show the transaction summary dialog when tapped
                                     transaction.showTransactionDetails(
-                                        context, _refreshPage);
+                                        context, widget.user, _refreshPage);
                                   },
                                 ),
                               ),
@@ -286,14 +285,16 @@ class _DashboardPageState extends State<DashboardPage>
         const Center(
           child: Text('Coming Soon!'),
         ),
-        cycle != null ? CategoryListPage(cycle: cycle!) : Container(),
-        const WishlistPage(),
-        ExplorePage(cycle: cycle),
+        cycle != null
+            ? CategoryListPage(user: widget.user, cycle: cycle!)
+            : Container(),
+        WishlistPage(user: widget.user),
+        ExplorePage(user: widget.user, cycle: cycle),
       ][selectedIndex],
       floatingActionButton: selectedIndex == 0
           ? FloatingActionButton(
               onPressed: () async {
-                if (person!.transactionsMade >= person!.transactionLimit) {
+                if (person!.dailyTransactionsMade >= 5) {
                   await showDialog(
                     context: context,
                     builder: (context) {
@@ -326,8 +327,8 @@ class _DashboardPageState extends State<DashboardPage>
                   result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          TransactionFormPage(cycle: cycle!, action: 'Add'),
+                      builder: (context) => TransactionFormPage(
+                          user: widget.user, cycle: cycle!, action: 'Add'),
                     ),
                   );
 
@@ -360,165 +361,6 @@ class _DashboardPageState extends State<DashboardPage>
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
       ),
     );
-  }
-
-  Future<List<t.Transaction>> _fetchTransactions() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where the user is not authenticated.
-      return [];
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    final transactionQuery = await transactionsRef
-        .where('deleted_at', isNull: true)
-        .orderBy('date_time',
-            descending: true) //* Sort by dateTime in descending order
-        .limit(10) //* Limit to 10 items
-        .getSavy();
-
-    final transactions = transactionQuery.docs.map((doc) async {
-      final data = doc.data();
-
-      //* Fetch the category name based on the categoryId
-      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      categoryDoc = await userRef
-          .collection('cycles')
-          .doc(data['cycle_id'])
-          .collection('categories')
-          .doc(data['category_id'])
-          .getSavy();
-
-      final categoryName = categoryDoc['name'] as String;
-
-      //* Create a Transaction object with the category name
-      return t.Transaction(
-        id: doc.id,
-        cycleId: data['cycle_id'],
-        dateTime: (data['date_time'] as Timestamp).toDate(),
-        type: data['type'] as String,
-        subType: data['subType'],
-        categoryId: data['category_id'],
-        categoryName: categoryName,
-        amount: data['amount'] as String,
-        note: data['note'] as String,
-        files: data['files'] != null ? data['files'] as List : [],
-        //* Add other transaction properties as needed
-      );
-    }).toList();
-
-    var result = await Future.wait(transactions);
-
-    //* Sort the list by 'created_at' in ascending order (most recent first)
-    result.sort((a, b) => (b.dateTime).compareTo(a.dateTime));
-
-    return result;
-  }
-
-  Future<void> _fetchUser() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final userDoc = await userRef.getSavy();
-
-    if (userDoc.exists) {
-      final transactionsRef = userRef.collection('transactions');
-      final transactionQuery = await transactionsRef
-          .where('deleted_at', isNull: true)
-          .orderBy('date_time',
-              descending: true) //* Sort by dateTime in descending order
-          .limit(1)
-          .getSavy();
-
-      final lastTransaction = transactionQuery.docs.first;
-
-      DateTime today = DateTime.now();
-      DateTime lastTansactionDate =
-          (lastTransaction['date_time'] as Timestamp).toDate();
-
-      int transactionMade = userDoc['transactions_made'];
-
-      if (!(lastTansactionDate.year == today.year &&
-              lastTansactionDate.month == today.month &&
-              lastTansactionDate.day == today.day) &&
-          transactionMade > 0) {
-        await Person.resetTransactionLimit(user.uid);
-
-        transactionMade = 0;
-      }
-
-      person = Person(
-        uid: userDoc.id,
-        fullName: userDoc['full_name'] ?? '',
-        nickname: userDoc['nickname'] ?? '',
-        email: userDoc['email'],
-        photoUrl: userDoc['photo_url'] ?? '',
-        lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
-        transactionLimit: 5,
-        transactionsMade: transactionMade,
-      );
-    }
-  }
-
-  Future<void> _fetchCycle() async {
-    final DateTime currentDate = DateTime.now();
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      //todo: Handle the case where user is not authenticated
-      return;
-    }
-
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final lastCycleQuery =
-        cyclesRef.orderBy('cycle_no', descending: true).limit(1);
-    final lastCycleSnapshot = await lastCycleQuery.getSavy();
-
-    if (lastCycleSnapshot.docs.isNotEmpty) {
-      final lastCycleDoc = lastCycleSnapshot.docs.first;
-
-      Cycle lastCycle = Cycle(
-        id: lastCycleDoc.id,
-        cycleNo: lastCycleDoc['cycle_no'],
-        cycleName: lastCycleDoc['cycle_name'],
-        openingBalance: lastCycleDoc['opening_balance'],
-        amountBalance: lastCycleDoc['amount_balance'],
-        amountReceived: lastCycleDoc['amount_received'],
-        amountSpent: lastCycleDoc['amount_spent'],
-        startDate: (lastCycleDoc['start_date'] as Timestamp).toDate(),
-        endDate: (lastCycleDoc['end_date'] as Timestamp).toDate(),
-      );
-
-      if (lastCycle.endDate.isBefore(currentDate)) {
-        //* Last cycle has ended, redirect to add cycle page
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  CycleAddPage(isFirstCycle: false, lastCycle: lastCycle)),
-        );
-      }
-
-      cycle = lastCycle;
-    } else {
-      //* No cycles found, redirect to add cycle page
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => const CycleAddPage(isFirstCycle: true)),
-      );
-    }
   }
 
   void _createAppOpenAd() {
@@ -588,7 +430,7 @@ class _DashboardPageState extends State<DashboardPage>
 
       _rewardedAd!.show(
         onUserEarnedReward: (ad, reward) async {
-          await Person.resetTransactionLimit(person!.uid);
+          await Person.resetTransactionMade(person!.uid);
 
           await _refreshPage();
         },
