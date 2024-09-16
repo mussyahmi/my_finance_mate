@@ -121,19 +121,20 @@ class _DashboardPageState extends State<DashboardPage>
               floating: true,
               snap: true,
               actions: [
-                IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CyclePage(
-                            user: widget.user,
-                            cycle: cycle,
+                if (cycle != null)
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CyclePage(
+                              user: widget.user,
+                              cycle: cycle!,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.edit_calendar))
+                        );
+                      },
+                      icon: const Icon(Icons.edit_calendar))
               ],
             ),
           ],

@@ -68,7 +68,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter category\' name.';
+                      return 'Please enter category\'s name.';
                     }
                     return null;
                   },

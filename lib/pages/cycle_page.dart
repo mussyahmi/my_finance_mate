@@ -8,7 +8,7 @@ import 'cycle_list_page.dart';
 
 class CyclePage extends StatefulWidget {
   final Person user;
-  final Cycle? cycle;
+  final Cycle cycle;
 
   const CyclePage({
     super.key,
@@ -43,19 +43,9 @@ class _CyclePageState extends State<CyclePage> {
                 const SizedBox(height: 20),
                 CycleSummary(user: widget.user, cycle: widget.cycle),
                 const SizedBox(height: 20),
-                _card('Cycle Name', widget.cycle?.cycleName),
-                _card(
-                    'Start Date',
-                    widget.cycle != null
-                        ? DateFormat('EE, d MMM yyyy h:mm aa')
-                            .format(widget.cycle!.startDate)
-                        : ''),
-                _card(
-                    'End Date',
-                    widget.cycle != null
-                        ? DateFormat('EE, d MMM yyyy h:mm aa')
-                            .format(widget.cycle!.endDate)
-                        : ''),
+                _card('Cycle Name'),
+                _card('Start Date'),
+                _card('End Date'),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -139,7 +129,7 @@ class _CyclePageState extends State<CyclePage> {
                                   ),
                                 ],
                               ),
-                              trailing: widget.cycle!.cycleNo != cycle.cycleNo
+                              trailing: widget.cycle.cycleNo != cycle.cycleNo
                                   ? IconButton.filledTonal(
                                       onPressed: () async {},
                                       icon: Icon(
@@ -166,7 +156,19 @@ class _CyclePageState extends State<CyclePage> {
     );
   }
 
-  Card _card(String title, String? data) {
+  Card _card(String title) {
+    var data = '';
+
+    if (title == 'Cycle Name') {
+      data = widget.cycle.cycleName;
+    } else if (title == 'Start Date') {
+      data =
+          DateFormat('EE, d MMM yyyy h:mm aa').format(widget.cycle.startDate);
+    } else if (title == 'End Date') {
+      data =
+          DateFormat('EE, d MMM yyyy h:mm aa').format(widget.cycle.startDate);
+    }
+
     return Card(
       child: ListTile(
         dense: true,
@@ -175,11 +177,19 @@ class _CyclePageState extends State<CyclePage> {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Text(
-          data ?? '',
+          data,
           style: const TextStyle(fontSize: 14),
         ),
         trailing: IconButton.filledTonal(
-          onPressed: () async {},
+          onPressed: () async {
+            widget.cycle.showCycleFormDialog(
+              context,
+              widget.user,
+              widget.cycle,
+              title,
+              () => setState(() {}),
+            );
+          },
           icon: Icon(
             Icons.edit,
             color: Theme.of(context).colorScheme.primary,

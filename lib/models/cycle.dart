@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:my_finance_mate/widgets/cycle_dialog.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../pages/cycle_add_page.dart';
@@ -29,6 +30,27 @@ class Cycle {
     required this.startDate,
     required this.endDate,
   });
+
+  //* Function to show the add/edit cycle dialog
+  Future<bool> showCycleFormDialog(
+    BuildContext context,
+    Person user,
+    Cycle cycle,
+    String title,
+    Function onCycleChanged,
+  ) async {
+    return await showDialog(
+      context: context,
+      builder: (context) {
+        return CycleDialog(
+          user: user,
+          cycle: cycle,
+          title: title,
+          onCycleChanged: onCycleChanged,
+        );
+      },
+    );
+  }
 
   static Future<Cycle?> fetchCycle(BuildContext context, Person user) async {
     final DateTime currentDate = DateTime.now();
@@ -115,5 +137,19 @@ class Cycle {
     var result = await Future.wait(cycles);
 
     return result;
+  }
+
+  static Future<void> updateCycle(
+    Person user,
+    String cycleId,
+    String attribute,
+    dynamic value,
+  ) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycleId)
+        .update({attribute: value});
   }
 }
