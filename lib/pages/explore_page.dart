@@ -8,19 +8,13 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/cycle.dart';
-import '../models/person.dart';
 import '../services/ad_mob_service.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
 
 class ExplorePage extends StatefulWidget {
-  final Person user;
-  final Cycle? cycle;
-
-  const ExplorePage({Key? key, required this.user, required this.cycle})
-      : super(key: key);
+  const ExplorePage({Key? key}) : super(key: key);
 
   @override
   ExplorePageState createState() => ExplorePageState();
@@ -93,32 +87,28 @@ class ExplorePageState extends State<ExplorePage> {
                   child: ListTile(
                     title: const Text('Chart'),
                     trailing: const Icon(Icons.pie_chart),
-                    onTap: widget.cycle != null
-                        ? () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ChartPage(
-                                      user: widget.user, cycle: widget.cycle!)),
-                            );
-                          }
-                        : null,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChartPage(),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Card(
                   child: ListTile(
                     title: const Text('Category Summary'),
                     trailing: const Icon(Icons.analytics),
-                    onTap: widget.cycle != null
-                        ? () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => CategorySummaryPage(
-                                      user: widget.user, cycle: widget.cycle!)),
-                            );
-                          }
-                        : null,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CategorySummaryPage(),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Card(

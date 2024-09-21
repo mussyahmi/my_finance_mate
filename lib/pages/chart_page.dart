@@ -1,22 +1,20 @@
 // ignore_for_file: avoid_print
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
-import '../models/person.dart';
+import '../models/transaction.dart' as t;
+import '../providers/cycle_provider.dart';
+import '../providers/transactions_provider.dart';
 import '../size_config.dart';
 import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
-import '../extensions/firestore_extensions.dart';
 
 class ChartPage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
-
-  const ChartPage({super.key, required this.user, required this.cycle});
+  const ChartPage({super.key});
 
   @override
   State<ChartPage> createState() => _ChartPageState();
@@ -37,43 +35,33 @@ class _ChartPageState extends State<ChartPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchTransactions();
+    _calculateTransactions(context);
   }
 
-  Future<void> _fetchTransactions() async {
+  Future<void> _calculateTransactions(BuildContext context) async {
+    Cycle cycle = context.read<CycleProvider>().cycle!;
+    List<t.Transaction> transactions =
+        context.read<TransactionsProvider>().transactions!;
+
     setState(() {
       _isLoading = true;
     });
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(widget.user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    final transactionSnapshot = await transactionsRef
-        .where('deleted_at', isNull: true)
-        .where('date_time', isGreaterThanOrEqualTo: widget.cycle.startDate)
-        .where('date_time', isLessThanOrEqualTo: widget.cycle.endDate)
-        .orderBy('date_time',
-            descending: true) //* Sort by dateTime in descending order
-        .getSavy();
-    print('_fetchTransactions: ${transactionSnapshot.docs.length}');
-
-    double spentTotal = double.parse(widget.cycle.amountSpent);
+    double spentTotal = double.parse(cycle.amountSpent);
     double needs = 0;
     double wants = 0;
     double savings = 0;
     double others = 0;
 
-    for (var doc in transactionSnapshot.docs) {
-      final data = doc.data();
-      final amount = double.parse(data['amount']);
+    for (var transaction in transactions) {
+      final amount = double.parse(transaction.amount);
 
-      if (data['type'] == 'spent') {
-        if (data['subType'] == 'needs') {
+      if (transaction.type == 'spent') {
+        if (transaction.subType == 'needs') {
           needs += amount;
-        } else if (data['subType'] == 'wants') {
+        } else if (transaction.subType == 'wants') {
           wants += amount;
-        } else if (data['subType'] == 'savings') {
+        } else if (transaction.subType == 'savings') {
           savings += amount;
         } else {
           others += amount;
@@ -82,7 +70,7 @@ class _ChartPageState extends State<ChartPage> {
     }
 
     setState(() {
-      totalTransaction = transactionSnapshot.docs.length;
+      totalTransaction = transactions.length;
       needsPercentage = needs / spentTotal * 100;
       wantsPercentage = wants / spentTotal * 100;
       savingsPercentage = savings / spentTotal * 100;
@@ -177,9 +165,7 @@ class _ChartPageState extends State<ChartPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              TransactionListPage(
-                                            user: widget.user,
-                                            cycle: widget.cycle,
+                                              const TransactionListPage(
                                             subType: 'needs',
                                           ),
                                         ),
@@ -189,9 +175,7 @@ class _ChartPageState extends State<ChartPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              TransactionListPage(
-                                            user: widget.user,
-                                            cycle: widget.cycle,
+                                              const TransactionListPage(
                                             subType: 'wants',
                                           ),
                                         ),
@@ -201,9 +185,7 @@ class _ChartPageState extends State<ChartPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              TransactionListPage(
-                                            user: widget.user,
-                                            cycle: widget.cycle,
+                                              const TransactionListPage(
                                             subType: 'savings',
                                           ),
                                         ),
@@ -213,9 +195,7 @@ class _ChartPageState extends State<ChartPage> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              TransactionListPage(
-                                            user: widget.user,
-                                            cycle: widget.cycle,
+                                              const TransactionListPage(
                                             subType: 'others',
                                           ),
                                         ),
@@ -300,8 +280,6 @@ class _ChartPageState extends State<ChartPage> {
               context,
               MaterialPageRoute(
                 builder: (context) => TransactionListPage(
-                  user: widget.user,
-                  cycle: widget.cycle,
                   subType: subtype,
                 ),
               ),

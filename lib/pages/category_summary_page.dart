@@ -3,24 +3,18 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/category.dart';
-import '../models/cycle.dart';
-import '../models/person.dart';
+import '../providers/categories_provider.dart';
 import '../services/ad_mob_service.dart';
 import 'transaction_list_page.dart';
 
 class CategorySummaryPage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
-
-  const CategorySummaryPage(
-      {super.key, required this.user, required this.cycle});
+  const CategorySummaryPage({super.key});
 
   @override
   State<CategorySummaryPage> createState() => _CategorySummaryPageState();
 }
 
 class _CategorySummaryPageState extends State<CategorySummaryPage> {
-  List<Object> categories = [];
   bool _isLoading = false;
 
   //* Ad related
@@ -30,49 +24,8 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _fetchCategories();
-  }
-
-  Future<void> _fetchCategories() async {
-    final List<Category> fetchCategories =
-        await Category.fetchCategories(widget.user, widget.cycle.id);
-
-    setState(() {
-      categories = List.from(fetchCategories
-          .where((element) => double.parse(element.totalAmount) > 0)
-          .toList());
-
-      _adMobService = context.read<AdMobService>();
-
-      if (_adMobService.status) {
-        _adMobService.initialization.then(
-          (value) {
-            _createInterstitialAd();
-
-            for (var i = 2; i < categories.length; i += 7) {
-              categories.insert(
-                  i,
-                  BannerAd(
-                    size: AdSize.banner,
-                    adUnitId: _adMobService.bannerCategorySummaryAdUnitId!,
-                    listener: _adMobService.bannerAdListener,
-                    request: const AdRequest(),
-                  )..load());
-
-              if (i >= 16) {
-                //* max 3 ads
-                break;
-              }
-            }
-          },
-        );
-      }
-
-      categories.insert(
-        categories.length,
-        const SizedBox(height: 20),
-      );
-    });
+    _adMobService = context.read<AdMobService>();
+    _createInterstitialAd();
   }
 
   @override
@@ -89,81 +42,118 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
               floating: true,
               snap: true,
               actions: [
-                IconButton(
-                  icon: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                          ))
-                      : const Icon(Icons.refresh),
-                  onPressed: () async {
-                    if (_isLoading) return;
+                if (false)
+                  // ignore: dead_code
+                  IconButton(
+                    icon: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                            ))
+                        : const Icon(Icons.refresh),
+                    onPressed: () async {
+                      if (_isLoading) return;
 
-                    setState(() {
-                      _isLoading = true;
-                    });
+                      setState(() {
+                        _isLoading = true;
+                      });
 
-                    if (_adMobService.status) _showInterstitialAd();
+                      if (_adMobService.status) _showInterstitialAd();
 
-                    await Category.recalculateCategoryAndCycleTotalAmount(
-                        widget.user, widget.cycle.id);
+                      await context
+                          .read<CategoriesProvider>()
+                          .recalculateCategoryAndCycleTotalAmount(context);
 
-                    setState(() {
-                      _isLoading = false;
-                    });
-                  },
-                ),
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    },
+                  ),
               ],
             ),
           ],
-          body: ListView.builder(
-            shrinkWrap: true,
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              if (categories[index] is SizedBox) {
-                return categories[index] as SizedBox;
-              } else if (categories[index] is BannerAd) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 5.0),
-                  height: 50.0,
-                  child: AdWidget(ad: categories[index] as BannerAd),
-                );
-              } else {
-                Category category = categories[index] as Category;
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Card(
-                    child: ListTile(
-                      title: Text(
-                        category.name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      trailing: Text(
-                        '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: category.type == 'spent'
-                                ? Colors.red
-                                : Colors.green),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                                user: widget.user,
-                                cycle: widget.cycle,
-                                type: category.type,
-                                categoryName: category.name),
-                          ),
-                        );
-                      },
-                    ),
+          body: FutureBuilder(
+            future: context
+                .watch<CategoriesProvider>()
+                .getCategories(context, null, 'category_summary'),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                    ],
                   ),
+                ); //* Display a loading indicator
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: SelectableText(
+                    'Error: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    'No categories found.',
+                    textAlign: TextAlign.center,
+                  ),
+                ); //* Display a message for no categories
+              } else {
+                //* Display the list of categories
+                final categories = snapshot.data!;
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    if (categories[index] is SizedBox) {
+                      return categories[index] as SizedBox;
+                    } else if (categories[index] is BannerAd) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5.0),
+                        height: 50.0,
+                        child: AdWidget(ad: categories[index] as BannerAd),
+                      );
+                    } else {
+                      Category category = categories[index] as Category;
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Card(
+                          child: ListTile(
+                            title: Text(
+                              category.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            trailing: Text(
+                              '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: category.type == 'spent'
+                                      ? Colors.red
+                                      : Colors.green),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TransactionListPage(
+                                      type: category.type,
+                                      categoryName: category.name),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                  },
                 );
               }
             },

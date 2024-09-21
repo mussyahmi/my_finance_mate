@@ -1,0 +1,163 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../providers/wishlist_provider.dart';
+import '../size_config.dart';
+import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../widgets/wishlist_dialog.dart';
+
+class Wishlist {
+  String id;
+  String name;
+  String note;
+  DateTime createdAt;
+
+  Wishlist({
+    required this.id,
+    required this.name,
+    required this.note,
+    required this.createdAt,
+  });
+
+  void showWishlistDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return CustomDraggableScrollableSheet(
+          initialSize: 0.45,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Category Details',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Row(
+                children: [
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final result = await _deleteHandler(context, id);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final result = await showWishlistFormDialog(
+                          context, 'Edit',
+                          wish: this);
+
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          contents: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Name:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(name),
+                ],
+              ),
+              if (note.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: SizeConfig.screenHeight! * 0.32,
+                      ),
+                      child: SingleChildScrollView(
+                        child: MarkdownBody(
+                          selectable: true,
+                          data: note.replaceAll('\n', '  \n'),
+                          onTapLink: (text, url, title) {
+                            launchUrl(Uri.parse(url!));
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _deleteHandler(BuildContext context, String id) async {
+    //* Handle delete option
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const Text('Are you sure you want to delete this wish?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); //* Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                //* Delete the item from Firestore here
+                final wishId = id;
+
+                context.read<WishlistProvider>().deleteWish(context, wishId);
+
+                Navigator.of(context).pop(true); //* Close the dialog
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //* Function to show the add category dialog
+  static Future<bool> showWishlistFormDialog(
+      BuildContext context, String action,
+      {Wishlist? wish}) async {
+    return await showDialog(
+      context: context,
+      builder: (context) {
+        return WishlistDialog(
+          action: action,
+          wish: wish,
+        );
+      },
+    );
+  }
+}

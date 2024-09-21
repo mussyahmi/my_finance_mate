@@ -1,22 +1,23 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/person.dart';
+import '../providers/cycle_provider.dart';
 
 class CycleDialog extends StatefulWidget {
   final Person user;
   final Cycle cycle;
   final String title;
-  final Function onCycleChanged;
 
   const CycleDialog({
     super.key,
     required this.user,
     required this.cycle,
     required this.title,
-    required this.onCycleChanged,
   });
 
   @override
@@ -26,11 +27,13 @@ class CycleDialog extends StatefulWidget {
 class _CycleDialogState extends State<CycleDialog> {
   final TextEditingController _cycleNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  late DateTime _cycleEndDate;
 
   @override
   void initState() {
     super.initState();
     _cycleNameController.text = widget.cycle.cycleName;
+    _cycleEndDate = widget.cycle.endDate;
   }
 
   @override
@@ -63,6 +66,30 @@ class _CycleDialogState extends State<CycleDialog> {
                         }
                         return null;
                       },
+                    ),
+                  if (widget.title == 'End Date')
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: _cycleEndDate,
+                          firstDate: DateTime.now(),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
+                        );
+
+                        if (selectedDate != null) {
+                          setState(() {
+                            _cycleEndDate = selectedDate
+                                .add(const Duration(days: 1))
+                                .subtract(const Duration(minutes: 1));
+                          });
+                        }
+                      },
+                      child: Text(
+                        DateFormat('EE, d MMM yyyy h:mm aa')
+                            .format(_cycleEndDate),
+                      ),
                     ),
                 ],
               )),
@@ -98,16 +125,14 @@ class _CycleDialogState extends State<CycleDialog> {
                   return;
                 }
 
-                await Cycle.updateCycle(
-                  widget.user,
-                  widget.cycle.id,
-                  'cycle_name',
-                  cycleName,
-                );
+                await context
+                    .read<CycleProvider>()
+                    .updateCycleByAttribute(context, 'cycle_name', cycleName);
+              } else if (widget.title == 'End Date') {
+                await context
+                    .read<CycleProvider>()
+                    .updateCycleByAttribute(context, 'end_date', _cycleEndDate);
               }
-
-              //* Notify the parent widget about the cycle changes
-              widget.onCycleChanged();
 
               //* Close the dialog
               Navigator.of(context).pop(true);

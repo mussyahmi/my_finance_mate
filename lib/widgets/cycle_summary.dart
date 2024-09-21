@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
-import '../models/person.dart';
 import '../pages/transaction_list_page.dart';
+import '../providers/cycle_provider.dart';
 
 class CycleSummary extends StatefulWidget {
-  final Person user;
-  final Cycle? cycle;
-
-  const CycleSummary({
-    super.key,
-    required this.user,
-    required this.cycle,
-  });
+  const CycleSummary({super.key});
 
   @override
   State<CycleSummary> createState() => _CycleSummaryState();
@@ -23,6 +17,8 @@ class _CycleSummaryState extends State<CycleSummary> {
 
   @override
   Widget build(BuildContext context) {
+    Cycle? cycle = context.watch<CycleProvider>().cycle;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -48,7 +44,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                     Text(
                       !_isAmountVisible
                           ? 'RM ****'
-                          : 'RM ${widget.cycle?.amountBalance ?? '0.00'}',
+                          : 'RM ${cycle != null ? cycle.amountBalance : '0.00'}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -57,7 +53,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                       ),
                     ),
                     Text(
-                      'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${widget.cycle?.openingBalance ?? '0.00'}'}',
+                      'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${cycle != null ? cycle.openingBalance : '0.00'}'}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12,
@@ -90,14 +86,12 @@ class _CycleSummaryState extends State<CycleSummary> {
           children: [
             Expanded(
               child: GestureDetector(
-                onTap: widget.cycle != null
+                onTap: cycle != null
                     ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                              user: widget.user,
-                              cycle: widget.cycle!,
+                            builder: (context) => const TransactionListPage(
                               type: 'received',
                             ),
                           ),
@@ -122,7 +116,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                         Text(
                           !_isAmountVisible
                               ? 'RM ****'
-                              : 'RM ${widget.cycle?.amountReceived ?? '0.00'}',
+                              : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.green,
@@ -137,14 +131,12 @@ class _CycleSummaryState extends State<CycleSummary> {
             ),
             Expanded(
               child: GestureDetector(
-                onTap: widget.cycle != null
+                onTap: cycle != null
                     ? () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TransactionListPage(
-                              user: widget.user,
-                              cycle: widget.cycle!,
+                            builder: (context) => const TransactionListPage(
                               type: 'spent',
                             ),
                           ),
@@ -169,7 +161,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                         Text(
                           !_isAmountVisible
                               ? 'RM ****'
-                              : 'RM ${widget.cycle?.amountSpent ?? '0.00'}',
+                              : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.red,

@@ -2,27 +2,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
+import '../models/wishlist.dart';
+import '../providers/categories_provider.dart';
+import '../providers/cycle_provider.dart';
+import '../providers/transactions_provider.dart';
+import '../providers/user_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'category_list_page.dart';
-import 'transaction_form_page.dart';
 import 'explore_page.dart';
 import '../models/transaction.dart' as t;
+import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
 import 'wishlist_page.dart';
 import 'cycle_page.dart';
 
 class DashboardPage extends StatefulWidget {
-  final Person user;
-
-  const DashboardPage({super.key, required this.user});
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -30,10 +33,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
-  int selectedIndex = 0;
-  Person? person;
-  Cycle? cycle;
-  bool _isLoading = false;
+  int _selectedIndex = 0;
   bool _isPaused = false;
 
   //* Ad related
@@ -45,16 +45,28 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void initState() {
     super.initState();
-
-    //* Call the function when the DashboardPage is loaded
-    _refreshPage();
-
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    if (context.read<CycleProvider>().cycle == null) {
+      context.read<CycleProvider>().fetchCycle(context);
+    }
+
+    if (context.watch<CycleProvider>().cycle != null &&
+        context.read<CategoriesProvider>().categories == null) {
+      context.read<CategoriesProvider>().fetchCategories(context);
+    }
+
+    if (context.watch<CycleProvider>().cycle != null &&
+        context.read<TransactionsProvider>().transactions == null) {
+      context.read<TransactionsProvider>().fetchTransactions(context);
+    }
+
+    //* Ads related
     _adMobService = context.read<AdMobService>();
 
     if (_adMobService.status) {
@@ -95,18 +107,11 @@ class _DashboardPageState extends State<DashboardPage>
     WidgetsBinding.instance.removeObserver(this);
   }
 
-  Future<void> _refreshPage() async {
-    setState(() {
-      _isLoading = true;
-    });
-    cycle = await Cycle.fetchCycle(context, widget.user);
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    Person user = context.watch<UserProvider>().user!;
+    Cycle? cycle = context.watch<CycleProvider>().cycle;
+
     //* Initialize SizeConfig
     SizeConfig().init(context);
 
@@ -115,7 +120,7 @@ class _DashboardPageState extends State<DashboardPage>
         NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             SliverAppBar(
-              title: Text(cycle?.cycleName ?? 'Dashboard'),
+              title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
               centerTitle: true,
               scrolledUnderElevation: 9999,
               floating: true,
@@ -127,10 +132,7 @@ class _DashboardPageState extends State<DashboardPage>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CyclePage(
-                              user: widget.user,
-                              cycle: cycle!,
-                            ),
+                            builder: (context) => const CyclePage(),
                           ),
                         );
                       },
@@ -139,15 +141,23 @@ class _DashboardPageState extends State<DashboardPage>
             ),
           ],
           body: RefreshIndicator(
-            onRefresh: _refreshPage,
+            onRefresh: () async {
+              context.read<CycleProvider>().fetchCycle(context, refresh: true);
+              context
+                  .read<CategoriesProvider>()
+                  .fetchCategories(context, refresh: true);
+              context
+                  .read<TransactionsProvider>()
+                  .fetchTransactions(context, refresh: true);
+            },
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: CycleSummary(user: widget.user, cycle: cycle),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: CycleSummary(),
                   ),
                   if (_bannerAd != null)
                     Column(
@@ -160,12 +170,7 @@ class _DashboardPageState extends State<DashboardPage>
                       ],
                     ),
                   const SizedBox(height: 30),
-                  ForecastBudget(
-                    isLoading: _isLoading,
-                    user: widget.user,
-                    cycle: cycle,
-                    onCategoryChanged: _refreshPage,
-                  ),
+                  const ForecastBudget(),
                   const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -182,8 +187,8 @@ class _DashboardPageState extends State<DashboardPage>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => TransactionListPage(
-                                      user: widget.user, cycle: cycle!),
+                                  builder: (context) =>
+                                      const TransactionListPage(),
                                 ),
                               );
                             },
@@ -192,10 +197,12 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                   ),
                   FutureBuilder<List<t.Transaction>>(
-                    future: t.Transaction.fetchTransactions(widget.user, 10),
+                    future: context
+                        .watch<TransactionsProvider>()
+                        .getLatestTransactions(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting ||
-                          _isLoading) {
+                          cycle == null) {
                         return const Padding(
                           padding: EdgeInsets.only(bottom: 16.0),
                           child: Column(
@@ -224,52 +231,82 @@ class _DashboardPageState extends State<DashboardPage>
                         //* Display the list of transactions
                         final transactions = snapshot.data!;
                         return Column(
-                          children: transactions.map<Widget>((transaction) {
+                          children:
+                              transactions.asMap().entries.map<Widget>((entry) {
+                            int index = entry.key;
+                            t.Transaction transaction = entry.value;
+
                             return Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Card(
-                                child: ListTile(
-                                  title: Text(
-                                    transaction.categoryName,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        DateFormat('EE, d MMM yyyy h:mm aa')
-                                            .format(transaction.dateTime),
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                      Text(
-                                        transaction.note.split('\\n')[0],
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                              child: Column(
+                                children: [
+                                  if (index == 0 ||
+                                      DateTime(
+                                              transaction.dateTime.year,
+                                              transaction.dateTime.month,
+                                              transaction.dateTime.day,
+                                              0,
+                                              0) !=
+                                          DateTime(
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .year,
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .month,
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .day,
+                                              0,
+                                              0))
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        transaction.getDateText(),
                                         style: const TextStyle(
-                                            fontSize: 12,
-                                            fontStyle: FontStyle.italic,
-                                            color: Colors.grey),
+                                            fontSize: 14, color: Colors.grey),
                                       ),
-                                    ],
+                                    ),
+                                  Card(
+                                    child: ListTile(
+                                      title: Text(
+                                        transaction.categoryName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            transaction.note.split('\\n')[0],
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontStyle: FontStyle.italic,
+                                                color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Text(
+                                        '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: transaction.type == 'spent'
+                                                ? Colors.red
+                                                : Colors.green),
+                                      ),
+                                      onTap: () {
+                                        //* Show the transaction summary dialog when tapped
+                                        transaction
+                                            .showTransactionDetails(context);
+                                      },
+                                    ),
                                   ),
-                                  trailing: Text(
-                                    '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: transaction.type == 'spent'
-                                            ? Colors.red
-                                            : Colors.green),
-                                  ),
-                                  onTap: () {
-                                    //* Show the transaction summary dialog when tapped
-                                    transaction.showTransactionDetails(
-                                        context, widget.user, _refreshPage);
-                                  },
-                                ),
+                                ],
                               ),
                             );
                           }).toList(),
@@ -286,63 +323,63 @@ class _DashboardPageState extends State<DashboardPage>
         const Center(
           child: Text('Coming Soon!'),
         ),
-        cycle != null
-            ? CategoryListPage(user: widget.user, cycle: cycle!)
-            : Container(),
-        WishlistPage(user: widget.user),
-        ExplorePage(user: widget.user, cycle: cycle),
-      ][selectedIndex],
-      floatingActionButton: selectedIndex == 0
+        cycle != null ? const CategoryListPage() : Container(),
+        const WishlistPage(),
+        cycle != null ? const ExplorePage() : Container(),
+      ][_selectedIndex],
+      floatingActionButton: _selectedIndex != 1 && _selectedIndex != 4
           ? FloatingActionButton(
               onPressed: () async {
-                if (person!.dailyTransactionsMade >= 5) {
-                  await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Whoops!'),
-                        content: const Text(
-                            'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); //* Close the dialog
-                            },
-                            child: const Text('Close'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_adMobService.status) _showRewardedAd();
+                if (_selectedIndex == 0) {
+                  if (user.dailyTransactionsMade >= 5) {
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Whoops!'),
+                          content: const Text(
+                              'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pop(); //* Close the dialog
+                              },
+                              child: const Text('Close'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (_adMobService.status) _showRewardedAd();
 
-                              Navigator.of(context).pop(); //* Close the dialog
-                            },
-                            child: const Text('Watch Ads'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  bool result = false;
-
-                  result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TransactionFormPage(
-                          user: widget.user, cycle: cycle!, action: 'Add'),
-                    ),
-                  );
-
-                  if (result) {
-                    await _refreshPage();
+                                Navigator.of(context)
+                                    .pop(); //* Close the dialog
+                              },
+                              child: const Text('Watch Ads'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const TransactionFormPage(action: 'Add'),
+                      ),
+                    );
                   }
+                } else if (_selectedIndex == 2) {
+                  Category.showCategoryFormDialog(context, 'received', 'Add');
+                } else if (_selectedIndex == 3) {
+                  Wishlist.showWishlistFormDialog(context, 'Add');
                 }
               },
               child: const Icon(Icons.add),
             )
           : null,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
+        selectedIndex: _selectedIndex,
         destinations: const [
           NavigationDestination(
               icon: Icon(Icons.dashboard), label: 'Dashboard'),
@@ -355,7 +392,7 @@ class _DashboardPageState extends State<DashboardPage>
         ],
         onDestinationSelected: (value) {
           setState(() {
-            selectedIndex = value;
+            _selectedIndex = value;
           });
         },
         elevation: 9999,
@@ -431,9 +468,7 @@ class _DashboardPageState extends State<DashboardPage>
 
       _rewardedAd!.show(
         onUserEarnedReward: (ad, reward) async {
-          await Person.resetTransactionMade(person!.uid);
-
-          await _refreshPage();
+          await context.read<UserProvider>().resetTransactionMade();
         },
       );
     }

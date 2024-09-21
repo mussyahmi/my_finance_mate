@@ -1,21 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore_for_file: use_build_context_synchronously
 
-import '../models/person.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/wishlist.dart';
+import '../providers/wishlist_provider.dart';
 
 class WishlistDialog extends StatefulWidget {
-  final Person user;
   final String action;
-  final Map wish;
-  final Function onWishlistChanged;
+  final Wishlist? wish;
 
-  const WishlistDialog(
-      {Key? key,
-      required this.user,
-      required this.action,
-      required this.wish,
-      required this.onWishlistChanged})
-      : super(key: key);
+  const WishlistDialog({
+    Key? key,
+    required this.action,
+    required this.wish,
+  }) : super(key: key);
 
   @override
   WishlistDialogState createState() => WishlistDialogState();
@@ -29,10 +28,16 @@ class WishlistDialogState extends State<WishlistDialog> {
   void initState() {
     super.initState();
 
-    if (widget.wish.isNotEmpty) {
-      _wishlistNameController.text = widget.wish['name'] ?? '';
-      _wishlistNoteController.text = widget.wish['note'] ?? '';
+    if (widget.wish != null) {
+      _wishlistNameController.text = widget.wish!.name;
+      _wishlistNoteController.text = widget.wish!.note;
     }
+  }
+
+  @override
+  void dispose() {
+    _wishlistNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -69,7 +74,7 @@ class WishlistDialogState extends State<WishlistDialog> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
               final wishlistName = _wishlistNameController.text;
@@ -94,8 +99,13 @@ class WishlistDialogState extends State<WishlistDialog> {
                 return;
               }
 
-              //* Call the function to update to Firebase
-              updateWishlistToFirebase(widget.user, wishlistName, wishlistNote);
+              await context.read<WishlistProvider>().updateWishlist(
+                    context,
+                    widget.action,
+                    wishlistName,
+                    wishlistNote,
+                    wish: widget.wish,
+                  );
 
               //* Close the dialog
               Navigator.of(context).pop(true);
@@ -113,56 +123,5 @@ class WishlistDialogState extends State<WishlistDialog> {
     }
 
     return '';
-  }
-
-  //* Function to update wishlist to Firebase Firestore
-  Future<void> updateWishlistToFirebase(
-      Person user, String wishlistName, String wishlistNote) async {
-    try {
-      //* Get current timestamp
-      final now = DateTime.now();
-
-      if (widget.action == 'Add') {
-        //* Create the new wish document
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('wishlist')
-            .add({
-          'name': wishlistName,
-          'note': wishlistNote,
-          'created_at': now,
-          'updated_at': now,
-          'deleted_at': null,
-          'version_json': null,
-        });
-      } else if (widget.action == 'Edit') {
-        final docId =
-            widget.wish['id']; //* Get the ID of the wishlist item to edit
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('wishlist')
-            .doc(docId)
-            .update({
-          'name': wishlistName,
-          'note': wishlistNote,
-          'updated_at': now,
-        });
-      }
-
-      //* Notify the parent widget about the wishlist addition
-      widget.onWishlistChanged();
-    } catch (e) {
-      //* Handle any errors that occur during the Firebase operation
-      // ignore: avoid_print
-      print('Error updating wishlist: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _wishlistNameController.dispose();
-    super.dispose();
   }
 }

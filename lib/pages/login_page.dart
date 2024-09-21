@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:convert';
 import 'dart:io';
@@ -8,9 +8,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
+import '../providers/user_provider.dart';
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
@@ -272,13 +274,14 @@ class _LoginPageState extends State<LoginPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
+        context.read<UserProvider>().setUser(newUser: person);
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
         //* Navigate to the DashboardPage after sign-in
-        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
       }
     } catch (error) {
@@ -349,15 +352,16 @@ class _LoginPageState extends State<LoginPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
+        context.read<UserProvider>().setUser(newUser: person);
+
         print('Google Sign-In Successful');
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
 
         //* Navigate to the DashboardPage after sign-in
-        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
       } else {
         print('Google Sign-In Cancelled');
@@ -494,7 +498,6 @@ class _LoginPageState extends State<LoginPage> {
 
       try {
         //* Use the context from the Builder widget
-        // ignore: use_build_context_synchronously
         await _signInWithGoogle(context);
       } finally {
         setState(() {

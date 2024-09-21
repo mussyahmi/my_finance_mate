@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:convert';
 import 'dart:io';
@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:provider/provider.dart';
 
 import '../models/person.dart';
+import '../providers/user_provider.dart';
 import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
 
@@ -230,11 +232,12 @@ class RegisterPageState extends State<RegisterPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
+        context.read<UserProvider>().setUser(newUser: person);
+
         //* Navigate to the dashboard or home page upon successful register
-        // ignore: use_build_context_synchronously
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => DashboardPage(user: person)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );

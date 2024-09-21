@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/person.dart';
+import '../providers/cycle_provider.dart';
+import '../providers/cycles_provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/cycle_summary.dart';
 import 'cycle_list_page.dart';
 
 class CyclePage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
-
-  const CyclePage({
-    super.key,
-    required this.user,
-    required this.cycle,
-  });
+  const CyclePage({super.key});
 
   @override
   State<CyclePage> createState() => _CyclePageState();
@@ -22,7 +19,60 @@ class CyclePage extends StatefulWidget {
 
 class _CyclePageState extends State<CyclePage> {
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (context.read<CyclesProvider>().cycles == null) {
+      context.read<CyclesProvider>().fetchCycles(context);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    Person user = context.watch<UserProvider>().user!;
+    Cycle cycle = context.watch<CycleProvider>().cycle!;
+
+    Card card(String title) {
+      var data = '';
+
+      if (title == 'Cycle Name') {
+        data = cycle.cycleName;
+      } else if (title == 'Start Date') {
+        data = DateFormat('EE, d MMM yyyy h:mm aa').format(cycle.startDate);
+      } else if (title == 'End Date') {
+        data = DateFormat('EE, d MMM yyyy h:mm aa').format(cycle.endDate);
+      }
+
+      return Card(
+        child: ListTile(
+          dense: true,
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          subtitle: Text(
+            data,
+            style: const TextStyle(fontSize: 14),
+          ),
+          trailing: title != 'Start Date'
+              ? IconButton.filledTonal(
+                  onPressed: () async {
+                    cycle.showCycleFormDialog(
+                      context,
+                      user,
+                      cycle,
+                      title,
+                    );
+                  },
+                  icon: Icon(
+                    Icons.edit,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -34,165 +84,131 @@ class _CyclePageState extends State<CyclePage> {
             snap: true,
           ),
         ],
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                CycleSummary(user: widget.user, cycle: widget.cycle),
-                const SizedBox(height: 20),
-                _card('Cycle Name'),
-                _card('Start Date'),
-                _card('End Date'),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Past Cycle List',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CycleListPage(
-                                  user: widget.user,
-                                  cycle: widget.cycle,
+        body: RefreshIndicator(
+          onRefresh: () async {
+            context.read<CycleProvider>().fetchCycle(context, refresh: true);
+            context.read<CyclesProvider>().fetchCycles(context, refresh: true);
+          },
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 20),
+                  const CycleSummary(),
+                  const SizedBox(height: 20),
+                  card('Cycle Name'),
+                  card('Start Date'),
+                  card('End Date'),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Past Cycle List',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        if (context.watch<CyclesProvider>().cycles != null)
+                          TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CycleListPage(
+                                      user: user,
+                                      cycle: cycle,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text('View All'))
+                      ],
+                    ),
+                  ),
+                  FutureBuilder(
+                    future: context.watch<CyclesProvider>().getLatestCycles(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        ); //* Display a loading indicator
+                      } else if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: SelectableText(
+                            'Error: ${snapshot.error}',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            'No cycles found.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ); //* Display a message for no cycles
+                      } else {
+                        //* Display the list of cycles
+                        final cycles = snapshot.data!;
+                        return Column(
+                          children: cycles.map<Widget>((c) {
+                            return Card(
+                              child: ListTile(
+                                title: Text(
+                                  c.cycleName,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Received RM${c.amountReceived}',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.greenAccent),
+                                    ),
+                                    Text(
+                                      'Spent RM${c.amountSpent}',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.redAccent),
+                                    ),
+                                  ],
+                                ),
+                                trailing: cycle.cycleNo != c.cycleNo
+                                    ? IconButton.filledTonal(
+                                        onPressed: () async {},
+                                        icon: Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                      )
+                                    : null,
                               ),
                             );
-                          },
-                          child: const Text('View All'))
-                    ],
+                          }).toList(),
+                        );
+                      }
+                    },
                   ),
-                ),
-                FutureBuilder(
-                  future: Cycle.fetchCycles(widget.user, 5),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 16.0),
-                        child: Column(
-                          children: [
-                            CircularProgressIndicator(),
-                          ],
-                        ),
-                      ); //* Display a loading indicator
-                    } else if (snapshot.hasError) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: SelectableText(
-                          'Error: ${snapshot.error}',
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 16.0),
-                        child: Text(
-                          'No cycles found.',
-                          textAlign: TextAlign.center,
-                        ),
-                      ); //* Display a message for no cycles
-                    } else {
-                      //* Display the list of cycles
-                      final cycles = snapshot.data!;
-                      return Column(
-                        children: cycles.map<Widget>((cycle) {
-                          return Card(
-                            child: ListTile(
-                              title: Text(
-                                cycle.cycleName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Received RM${cycle.amountReceived}',
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.greenAccent),
-                                  ),
-                                  Text(
-                                    'Spent RM${cycle.amountSpent}',
-                                    style: const TextStyle(
-                                        fontSize: 14, color: Colors.redAccent),
-                                  ),
-                                ],
-                              ),
-                              trailing: widget.cycle.cycleNo != cycle.cycleNo
-                                  ? IconButton.filledTonal(
-                                      onPressed: () async {},
-                                      icon: Icon(
-                                        Icons.arrow_forward_ios,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Card _card(String title) {
-    var data = '';
-
-    if (title == 'Cycle Name') {
-      data = widget.cycle.cycleName;
-    } else if (title == 'Start Date') {
-      data =
-          DateFormat('EE, d MMM yyyy h:mm aa').format(widget.cycle.startDate);
-    } else if (title == 'End Date') {
-      data =
-          DateFormat('EE, d MMM yyyy h:mm aa').format(widget.cycle.startDate);
-    }
-
-    return Card(
-      child: ListTile(
-        dense: true,
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Text(
-          data,
-          style: const TextStyle(fontSize: 14),
-        ),
-        trailing: IconButton.filledTonal(
-          onPressed: () async {
-            widget.cycle.showCycleFormDialog(
-              context,
-              widget.user,
-              widget.cycle,
-              title,
-              () => setState(() {}),
-            );
-          },
-          icon: Icon(
-            Icons.edit,
-            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ),

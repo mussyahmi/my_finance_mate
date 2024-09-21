@@ -3,36 +3,24 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
+import '../providers/cycle_provider.dart';
 import '../services/ad_mob_service.dart';
-import 'dashboard_page.dart';
-import '../extensions/firestore_extensions.dart';
-import '../models/person.dart';
 
 class CycleAddPage extends StatefulWidget {
-  final Person user;
-  final bool isFirstCycle;
-  final Cycle? lastCycle;
-
-  const CycleAddPage({
-    super.key,
-    required this.user,
-    required this.isFirstCycle,
-    this.lastCycle,
-  });
+  const CycleAddPage({super.key});
 
   @override
   CycleAddPageState createState() => CycleAddPageState();
 }
 
 class CycleAddPageState extends State<CycleAddPage> {
+  late Cycle? _cycle;
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
   DateTimeRange? selectedDateRange;
-  int lastCycleNo = 0;
   bool _isLoading = false;
 
   //* Ad related
@@ -40,37 +28,32 @@ class CycleAddPageState extends State<CycleAddPage> {
   BannerAd? _bannerAd;
 
   @override
-  void initState() {
-    super.initState();
-    if (!widget.isFirstCycle) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _cycle = context.read<CycleProvider>().cycle;
+
+    if (_cycle != null) {
       //* Set the start date to be 1 day after the end date at 12 AM
-      DateTime startDate =
-          widget.lastCycle!.endDate.add(const Duration(days: 1));
+      DateTime startDate = _cycle!.endDate.add(const Duration(days: 1));
       startDate =
           DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
 
-      DateTime endDate = widget.lastCycle!.endDate.add(Duration(
-          days: widget.lastCycle!.endDate
-                  .difference(widget.lastCycle!.startDate)
-                  .inDays -
-              1));
+      DateTime endDate = _cycle!.endDate.add(Duration(
+          days: _cycle!.endDate.difference(_cycle!.startDate).inDays - 1));
       endDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0);
 
       setState(() {
-        lastCycleNo = widget.lastCycle!.cycleNo;
-        cycleNameController.text = widget.lastCycle!.cycleName;
-        openingBalanceController.text = widget.lastCycle!.amountBalance;
+        cycleNameController.text = _cycle!.cycleName;
+        openingBalanceController.text = _cycle!.amountBalance;
         selectedDateRange = DateTimeRange(
           start: startDate,
           end: endDate,
         );
       });
     }
-  }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+    //* Ads realted
     _adMobService = context.read<AdMobService>();
 
     if (_adMobService.status) {
@@ -112,10 +95,10 @@ class CycleAddPageState extends State<CycleAddPage> {
                           onPressed: () async {
                             final pickedDateRange = await showDateRangePicker(
                               context: context,
-                              firstDate: widget.isFirstCycle
+                              firstDate: _cycle == null
                                   ? DateTime.now()
                                       .subtract(const Duration(days: 365))
-                                  : widget.lastCycle!.endDate
+                                  : _cycle!.endDate
                                       .add(const Duration(days: 1)),
                               lastDate:
                                   DateTime.now().add(const Duration(days: 365)),
@@ -149,10 +132,10 @@ class CycleAddPageState extends State<CycleAddPage> {
                               TextInputType.number, //* Allow only numeric input
                           decoration: InputDecoration(
                             labelText:
-                                '${widget.isFirstCycle ? 'Opening' : 'Previous'} Balance',
+                                '${_cycle == null ? 'Opening' : 'Previous'} Balance',
                             prefixText: 'RM ',
                           ),
-                          enabled: widget.isFirstCycle,
+                          enabled: _cycle == null,
                         ),
                         const SizedBox(height: 30),
                         ElevatedButton(
@@ -166,7 +149,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                             });
 
                             try {
-                              await _updateTransactionToFirebase(widget.user);
+                              await _addCycle();
                             } finally {
                               setState(() {
                                 _isLoading = false;
@@ -208,7 +191,7 @@ class CycleAddPageState extends State<CycleAddPage> {
     );
   }
 
-  Future<void> _updateTransactionToFirebase(Person user) async {
+  Future<void> _addCycle() async {
     //* Validate the form data
     final message = _validate(selectedDateRange, cycleNameController.text,
         openingBalanceController.text);
@@ -233,47 +216,24 @@ class CycleAddPageState extends State<CycleAddPage> {
         .add(const Duration(days: 1))
         .subtract(const Duration(minutes: 1));
 
-    //* Get current timestamp
-    final now = DateTime.now();
-
     //* Create the new cycle document
-    final newCycleDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('cycles')
-        .add({
-      'cycle_no': lastCycleNo + 1,
-      'cycle_name': cycleNameController.text,
-      'start_date': selectedDateRange!.start,
-      'end_date': adjustedEndDate,
-      'created_at': now,
-      'updated_at': now,
-      'deleted_at': null,
-      'opening_balance':
+    await context.read<CycleProvider>().addCycle(
+          context,
+          cycleNameController.text,
+          selectedDateRange!.start,
+          adjustedEndDate,
           double.parse(openingBalanceController.text).toStringAsFixed(2),
-      'amount_balance':
-          double.parse(openingBalanceController.text).toStringAsFixed(2),
-      'amount_received': '0.00',
-      'amount_spent': '0.00',
-    });
-
-    if (!widget.isFirstCycle) {
-      await copyCategoriesFromLastCycle(
-          user, widget.lastCycle!.id, newCycleDoc.id);
-    }
-
-    // ignore: use_build_context_synchronously
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => DashboardPage(user: widget.user)),
-      (route) => false, //* This line removes all previous routes from the stack
-    );
+        );
   }
 
   String _validate(
       DateTimeRange? selectedDateRange, String cycleName, String amount) {
     if (selectedDateRange == null) {
       return 'Please select date range.';
+    }
+
+    if (selectedDateRange.end.isBefore(DateTime.now())) {
+      return 'End date cannot be in the past.';
     }
 
     if (cycleName.isEmpty) {
@@ -307,30 +267,5 @@ class CycleAddPageState extends State<CycleAddPage> {
     openingBalanceController.text = cleanedValue;
 
     return '';
-  }
-
-  Future<void> copyCategoriesFromLastCycle(
-      Person user, String lastCycleId, String newCycleId) async {
-    final categoriesRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('cycles')
-        .doc(lastCycleId)
-        .collection('categories');
-
-    final newCycleRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('cycles')
-        .doc(newCycleId);
-
-    final categoriesSnapshot = await categoriesRef.getSavy();
-    print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
-
-    for (var doc in categoriesSnapshot.docs) {
-      final categoryData = doc.data();
-      categoryData['total_amount'] = '0.00'; //* Set total_amount to '0.00'
-      await newCycleRef.collection('categories').add(categoryData);
-    }
   }
 }

@@ -1,36 +1,30 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
-import '../models/person.dart';
+import '../providers/categories_provider.dart';
+import '../providers/cycle_provider.dart';
+import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
-import '../extensions/firestore_extensions.dart';
 
 class TransactionFormPage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
   final String action;
   final t.Transaction? transaction;
 
   const TransactionFormPage({
     super.key,
-    required this.user,
-    required this.cycle,
     required this.action,
     this.transaction,
   });
@@ -93,8 +87,20 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     }
   }
 
+  Future<void> _fetchCategories() async {
+    List<Category> fetchedCategories = List<Category>.from(await context
+        .read<CategoriesProvider>()
+        .getCategories(context, selectedType, 'transaction_form'));
+
+    setState(() {
+      categories = fetchedCategories;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    Cycle cycle = context.watch<CycleProvider>().cycle!;
+
     return PopScope(
       canPop: !_isLoading,
       child: GestureDetector(
@@ -173,8 +179,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         final selectedDate = await showDatePicker(
                           context: context,
                           initialDate: selectedDateTime,
-                          firstDate: widget.cycle.startDate,
-                          lastDate: widget.cycle.endDate,
+                          firstDate: cycle.startDate,
+                          lastDate: cycle.endDate,
                         );
                         if (selectedDate != null) {
                           final selectedTime = await showTimePicker(
@@ -212,8 +218,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return CategoryListPage(
-                                user: widget.user,
-                                cycle: widget.cycle,
                                 type: selectedType,
                                 isFromTransactionForm: true,
                               );
@@ -420,7 +424,56 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         if (_adMobService.status) _showInterstitialAd();
 
                         try {
-                          await _updateTransactionToFirebase(widget.user);
+                          //* Get the values from the form
+                          String type = selectedType;
+                          String? subType = selectedSubType;
+                          String? categoryId = selectedCategoryId;
+                          String amount = transactionAmountController.text;
+                          String note = transactionNoteController.text
+                              .replaceAll('\n', '\\n');
+                          DateTime dateTime = selectedDateTime;
+
+                          //* Validate the form data
+                          final message = _validate(categoryId, amount);
+
+                          if (message.isNotEmpty) {
+                            final snackBar = SnackBar(
+                              content: Text(
+                                message,
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onError),
+                              ),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.error,
+                              showCloseIcon: true,
+                              closeIconColor:
+                                  Theme.of(context).colorScheme.onError,
+                            );
+
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+
+                            return;
+                          }
+
+                          await context
+                              .read<TransactionsProvider>()
+                              .updateTransaction(
+                                context,
+                                widget.action,
+                                dateTime,
+                                type,
+                                subType,
+                                categoryId!,
+                                amount,
+                                note,
+                                files,
+                                filesToDelete,
+                                widget.transaction,
+                              );
+
+                          Navigator.of(context).pop(true);
                         } finally {
                           setState(() {
                             _isLoading = false;
@@ -451,112 +504,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _fetchCategories() async {
-    final fetchedCategories = await Category.fetchCategories(
-        widget.user, widget.cycle.id, selectedType);
-
-    setState(() {
-      categories = fetchedCategories;
-    });
-  }
-
-  Future<void> _updateTransactionToFirebase(Person user) async {
-    //* Get the values from the form
-    String type = selectedType;
-    String? subType = selectedSubType;
-    String? categoryId = selectedCategoryId;
-    String amount = transactionAmountController.text;
-    String note = transactionNoteController.text.replaceAll('\n', '\\n');
-    DateTime dateTime = selectedDateTime;
-
-    //* Validate the form data
-    final message = _validate(categoryId, amount);
-
-    if (message.isNotEmpty) {
-      final snackBar = SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: Theme.of(context).colorScheme.onError),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        showCloseIcon: true,
-        closeIconColor: Theme.of(context).colorScheme.onError,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-      return;
-    }
-
-    //* Get current timestamp
-    final now = DateTime.now();
-
-    try {
-      //* Reference to the Firestore document to add the transaction
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final transactionsRef = userRef.collection('transactions');
-
-      List downloadURLs = await _uploadAndDeleteFilesToFirebase(user);
-
-      if (widget.action == 'Add') {
-        //* Create a new transaction document
-        await transactionsRef.add({
-          'cycle_id': widget.cycle.id,
-          'date_time': dateTime,
-          'type': type,
-          'subType': selectedType == 'spent' ? subType : null,
-          'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
-          'amount': double.parse(amount).toStringAsFixed(2),
-          'note': note,
-          'created_at': now,
-          'updated_at': now,
-          'deleted_at': null,
-          'version_json': null,
-          'files': downloadURLs,
-        });
-
-        //* Update transactions made
-        final userDoc = await userRef.getSavy();
-        print('_updateTransactionToFirebase - userDoc: 1');
-
-        if (_adMobService.status) {
-          await userRef
-              .update({'transactions_made': userDoc['transactions_made'] + 1});
-        }
-      } else if (widget.action == 'Edit') {
-        await transactionsRef.doc(widget.transaction!.id).update({
-          'date_time': dateTime,
-          'type': type,
-          'subType': selectedType == 'spent' ? subType : null,
-          'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
-          'amount': double.parse(amount).toStringAsFixed(2),
-          'note': note,
-          'updated_at': now,
-          'files': downloadURLs,
-        });
-      }
-
-      final cyclesRef = userRef.collection('cycles').doc(widget.cycle.id);
-
-      await _updateCycleToFirebase(cyclesRef, type, amount, now);
-
-      await _updateCategoryToFirebase(cyclesRef, categoryId!, amount, now);
-
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      //* Handle any errors that occur during the Firestore operation
-      print('Error saving transaction: $e');
-      //* You can show an error message to the user if needed
-    }
   }
 
   String _validate(String? categoryId, String amount) {
@@ -591,135 +538,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     transactionAmountController.text = cleanedValue;
 
     return '';
-  }
-
-  Future<List> _uploadAndDeleteFilesToFirebase(Person user) async {
-    List downloadURLs = [];
-
-    for (var file in files) {
-      if (file is! String) {
-        //* Generate a unique file name
-        String fileName =
-            '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(10000)}';
-
-        Reference storageReference = FirebaseStorage.instance
-            .ref()
-            .child('${user.uid}/transactions/$fileName');
-
-        UploadTask uploadTask = storageReference.putFile(File(file.path!));
-
-        await uploadTask.whenComplete(() async {
-          print('File Uploaded');
-          String downloadURL = await storageReference.getDownloadURL();
-          print('Download URL: $downloadURL');
-          downloadURLs = [...downloadURLs, downloadURL];
-        });
-      } else {
-        //* for existing file
-        downloadURLs = [...downloadURLs, file];
-      }
-    }
-
-    if (widget.action == 'Edit') {
-      for (var fileToDelete in filesToDelete) {
-        t.Transaction.deleteFile(Uri.decodeComponent(
-            t.Transaction.extractPathFromUrl(fileToDelete)));
-      }
-    }
-
-    return downloadURLs;
-  }
-
-  Future<void> _updateCycleToFirebase(
-      DocumentReference<Map<String, dynamic>> cyclesRef,
-      String type,
-      String amount,
-      DateTime now) async {
-    //* Fetch the current cycle document
-    final cycleDoc = await cyclesRef.getSavy();
-    print('_updateCycleToFirebase - userDoc: 1');
-
-    if (cycleDoc.exists) {
-      final cycleData = cycleDoc.data() as Map<String, dynamic>;
-
-      final double cycleOpeningBalance =
-          double.parse(cycleData['opening_balance']);
-      double cycleAmountReceived = double.parse(cycleData['amount_received']);
-      double cycleAmountSpent = double.parse(cycleData['amount_spent']);
-
-      //* Calculate the cycle's amounts before including this transaction
-      if (widget.action == 'Edit') {
-        if (type == 'spent') {
-          cycleAmountSpent -= double.parse(widget.transaction!.amount);
-        } else {
-          cycleAmountReceived -= double.parse(widget.transaction!.amount);
-        }
-      }
-
-      final newAmount = double.parse(amount);
-
-      final double updatedAmountBalance = cycleOpeningBalance +
-          cycleAmountReceived -
-          cycleAmountSpent +
-          (type == 'spent' ? -newAmount : newAmount);
-
-      //* Update the cycle document
-      await cyclesRef.update({
-        'amount_spent': (cycleAmountSpent + (type == 'spent' ? newAmount : 0))
-            .toStringAsFixed(2),
-        'amount_received':
-            (cycleAmountReceived + (type == 'received' ? newAmount : 0))
-                .toStringAsFixed(2),
-        'amount_balance': updatedAmountBalance.toStringAsFixed(2),
-        'updated_at': now,
-      });
-    }
-  }
-
-  Future<void> _updateCategoryToFirebase(DocumentReference cyclesRef,
-      String categoryId, String amount, DateTime now) async {
-    //* Update previous category's data
-    if (widget.action == 'Edit') {
-      final prevCategoryRef = cyclesRef
-          .collection('categories')
-          .doc(widget.transaction!.categoryId);
-
-      //* Fetch the category document
-      final prevCategoryDoc = await prevCategoryRef.getSavy();
-      print('_updateCategoryToFirebase - prevCategoryDoc: 1');
-
-      if (prevCategoryDoc.exists) {
-        final prevCategoryData = prevCategoryDoc.data() as Map<String, dynamic>;
-
-        double totalAmount = double.parse(prevCategoryData['total_amount']) -
-            double.parse(widget.transaction!.amount);
-
-        //* Update the category document
-        await prevCategoryRef.update({
-          'total_amount': totalAmount.toStringAsFixed(2),
-          'updated_at': now,
-        });
-      }
-    }
-
-    final newCategoryRef = cyclesRef.collection('categories').doc(categoryId);
-
-    //* Fetch the category document
-    final newCategoryDoc = await newCategoryRef.getSavy();
-    print('_updateCategoryToFirebase - newCategoryDoc: 1');
-
-    if (newCategoryDoc.exists) {
-      final newCategoryData = newCategoryDoc.data() as Map<String, dynamic>;
-
-      double totalAmount =
-          double.parse(newCategoryData['total_amount']) + double.parse(amount);
-
-      //* Update the category document
-      await newCategoryRef.update({
-        'total_amount': totalAmount.toStringAsFixed(2),
-        'updated_at': now,
-      });
-    }
   }
 
   Future<void> _checkFileSize(dynamic file, int fileSize) async {

@@ -1,27 +1,18 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
-import '../models/cycle.dart';
 import '../extensions/string_extension.dart';
-import '../models/person.dart';
+import '../models/cycle.dart';
+import '../providers/categories_provider.dart';
+import '../providers/cycle_provider.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class ForecastBudget extends StatefulWidget {
-  final bool isLoading;
-  final Person user;
-  final Cycle? cycle;
-  final Function onCategoryChanged;
-
-  const ForecastBudget({
-    super.key,
-    required this.isLoading,
-    required this.user,
-    this.cycle,
-    required this.onCategoryChanged,
-  });
+  const ForecastBudget({super.key});
 
   @override
   State<ForecastBudget> createState() => _ForecastBudgetState();
@@ -57,6 +48,8 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
   @override
   Widget build(BuildContext context) {
+    Cycle? cycle = context.watch<CycleProvider>().cycle;
+
     return Column(
       children: [
         Padding(
@@ -104,11 +97,10 @@ class _ForecastBudgetState extends State<ForecastBudget> {
           ),
         ),
         FutureBuilder<List<Category>>(
-          future:
-              Category.fetchBudgets(widget.user, widget.cycle, currentFilter),
+          future: context.watch<CategoriesProvider>().getBudgets(currentFilter),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
-                widget.isLoading) {
+                cycle == null) {
               return const Padding(
                 padding: EdgeInsets.only(bottom: 16.0),
                 child: Column(
@@ -137,7 +129,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
               //* Display the list of budgets
               final budgets = snapshot.data!;
               final amountBalanceAfterBudget =
-                  _getAmountBalanceAfterBudget(budgets);
+                  _getAmountBalanceAfterBudget(cycle, budgets);
 
               return Column(
                 children: [
@@ -223,11 +215,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                               ),
                               onTap: () {
                                 budget.showCategoryDetails(
-                                    context,
-                                    widget.user,
-                                    widget.cycle!,
-                                    budget.type,
-                                    widget.onCategoryChanged);
+                                    context, budget.type);
                               },
                             ),
                           ),
@@ -255,8 +243,8 @@ class _ForecastBudgetState extends State<ForecastBudget> {
     });
   }
 
-  String _getAmountBalanceAfterBudget(List<Category> budgets) {
-    double budgetBalance = double.parse(widget.cycle!.amountBalance);
+  String _getAmountBalanceAfterBudget(Cycle cycle, List<Category> budgets) {
+    double budgetBalance = double.parse(cycle.amountBalance);
 
     for (var budget in budgets) {
       if (budget.budget != '0.00') {

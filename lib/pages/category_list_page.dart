@@ -4,21 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
-import '../models/cycle.dart';
-import '../models/person.dart';
-import '../services/ad_mob_service.dart';
+import '../providers/categories_provider.dart';
 import '../models/category.dart';
 
 class CategoryListPage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
   final String? type;
   final bool? isFromTransactionForm;
 
   const CategoryListPage({
     super.key,
-    required this.user,
-    required this.cycle,
     this.type,
     this.isFromTransactionForm,
   });
@@ -29,8 +23,6 @@ class CategoryListPage extends StatefulWidget {
 
 class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
-  List<Object> spentCategories = [];
-  List<Object> receivedCategories = [];
 
   @override
   void initState() {
@@ -38,75 +30,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isFromTransactionForm != null) {
-        Category.showCategoryFormDialog(context, widget.user, widget.cycle.id,
-            selectedType, 'Add', _fetchCategories);
-      }
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _fetchCategories();
-  }
-
-  Future<void> _fetchCategories() async {
-    setState(() {
-      spentCategories = [];
-      receivedCategories = [];
-    });
-
-    final fetchedSpentCategories = await Category.fetchCategories(
-      widget.user,
-      widget.cycle.id,
-      'spent',
-    );
-    final fetchedReceivedCategories = await Category.fetchCategories(
-      widget.user,
-      widget.cycle.id,
-      'received',
-    );
-
-    setState(() {
-      spentCategories = List.from(fetchedSpentCategories);
-      receivedCategories = List.from(fetchedReceivedCategories);
-
-      final adMobService = context.read<AdMobService>();
-
-      if (adMobService.status) {
-        adMobService.initialization.then((value) {
-          for (var i = 2; i < spentCategories.length; i += 7) {
-            spentCategories.insert(
-                i,
-                BannerAd(
-                  size: AdSize.banner,
-                  adUnitId: adMobService.bannerCategoryListAdUnitId!,
-                  listener: adMobService.bannerAdListener,
-                  request: const AdRequest(),
-                )..load());
-
-            if (i >= 16) {
-              //* max 3 ads
-              break;
-            }
-          }
-
-          for (var i = 2; i < receivedCategories.length; i += 7) {
-            receivedCategories.insert(
-                i,
-                BannerAd(
-                  size: AdSize.banner,
-                  adUnitId: adMobService.bannerCategoryListAdUnitId!,
-                  listener: adMobService.bannerAdListener,
-                  request: const AdRequest(),
-                )..load());
-
-            if (i >= 16) {
-              //* max 3 ads
-              break;
-            }
-          }
-        });
+        Category.showCategoryFormDialog(context, selectedType, 'Add');
       }
     });
   }
@@ -152,50 +76,79 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 ],
                 body: TabBarView(
                   children: [
-                    _buildCategoryList(context, spentCategories),
-                    _buildCategoryList(context, receivedCategories),
+                    _buildCategoryList(context, 'spent'),
+                    _buildCategoryList(context, 'received'),
                   ],
                 ),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  Category.showCategoryFormDialog(context, widget.user,
-                      widget.cycle.id, selectedType, 'Add', _fetchCategories);
-                },
-                child: const Icon(Icons.add),
               ),
             );
           },
         ));
   }
 
-  ListView _buildCategoryList(BuildContext context, List<Object> categories) {
-    return ListView.builder(
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        if (categories[index] is BannerAd) {
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 5.0),
-            height: 50.0,
-            child: AdWidget(ad: categories[index] as BannerAd),
-          );
-        } else {
-          Category category = categories[index] as Category;
-
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            margin: index == categories.length - 1
-                ? const EdgeInsets.only(bottom: 80)
-                : null,
-            child: Card(
-              child: ListTile(
-                title: Text(category.name),
-                onTap: () {
-                  category.showCategoryDetails(context, widget.user,
-                      widget.cycle, selectedType, _fetchCategories);
-                },
-              ),
+  Widget _buildCategoryList(BuildContext context, String type) {
+    return FutureBuilder(
+      future: context
+          .watch<CategoriesProvider>()
+          .getCategories(context, type, 'category_list'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 16.0),
+            child: Column(
+              children: [
+                CircularProgressIndicator(),
+              ],
             ),
+          ); //* Display a loading indicator
+        } else if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: SelectableText(
+              'Error: ${snapshot.error}',
+              textAlign: TextAlign.center,
+            ),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              'No categories found.',
+              textAlign: TextAlign.center,
+            ),
+          ); //* Display a message for no categories
+        } else {
+          //* Display the list of categories
+          final categories = snapshot.data!;
+
+          return ListView.builder(
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              if (categories[index] is BannerAd) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 5.0),
+                  height: 50.0,
+                  child: AdWidget(ad: categories[index] as BannerAd),
+                );
+              } else {
+                Category category = categories[index] as Category;
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  margin: index == categories.length - 1
+                      ? const EdgeInsets.only(bottom: 80)
+                      : null,
+                  child: Card(
+                    child: ListTile(
+                      title: Text(category.name),
+                      onTap: () {
+                        category.showCategoryDetails(context, selectedType);
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
           );
         }
       },

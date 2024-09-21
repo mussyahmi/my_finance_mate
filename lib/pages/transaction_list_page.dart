@@ -2,23 +2,21 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../models/category.dart';
-import '../models/cycle.dart';
-import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/string_extension.dart';
+import '../providers/categories_provider.dart';
+import '../providers/transactions_provider.dart';
 
 class TransactionListPage extends StatefulWidget {
-  final Person user;
-  final Cycle cycle;
   final String? type;
   final String? subType;
   final String? categoryName;
+
   const TransactionListPage({
     super.key,
-    required this.user,
-    required this.cycle,
     this.type,
     this.subType,
     this.categoryName,
@@ -41,14 +39,20 @@ class _TransactionListPageState extends State<TransactionListPage> {
   }
 
   Future<void> initAsync() async {
-    selectedDateRange = DateTimeRange(
-      start: widget.cycle.startDate,
-      end: widget.cycle.endDate,
-    );
     selectedType = widget.type;
     selectedCategoryName = widget.categoryName;
 
     await _fetchCategories();
+  }
+
+  Future<void> _fetchCategories() async {
+    List<Category> fetchedCategories = List<Category>.from(await context
+        .read<CategoriesProvider>()
+        .getCategories(context, selectedType, 'transaction_list'));
+
+    setState(() {
+      categories = fetchedCategories;
+    });
   }
 
   @override
@@ -103,7 +107,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                 selectedType = newValue as String;
                                 selectedCategoryName = null;
                               });
-                              _fetchCategories();
+                              // _fetchCategories();
                             },
                             items: ['spent', 'received'].map((type) {
                               return DropdownMenuItem(
@@ -146,12 +150,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
             //* Transaction List
             Expanded(
               child: FutureBuilder<List<t.Transaction>>(
-                future: t.Transaction.fetchFilteredTransactions(
-                    widget.user,
-                    selectedDateRange,
-                    selectedType,
-                    widget.subType,
-                    selectedCategoryName),
+                future: context
+                    .watch<TransactionsProvider>()
+                    .fetchFilteredTransactions(
+                      context,
+                      selectedDateRange,
+                      selectedType,
+                      widget.subType,
+                      selectedCategoryName,
+                    ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Padding(
@@ -202,55 +209,83 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             itemCount: transactions!.length,
                             itemBuilder: (context, index) {
                               final transaction = transactions[index];
-                              return Padding(
-                                padding: EdgeInsets.fromLTRB(8, 0, 8,
-                                    index + 1 == transactions.length ? 20 : 0),
-                                child: Card(
-                                  child: ListTile(
-                                    title: Text(
-                                      transaction.categoryName,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
+                              return Column(
+                                children: [
+                                  if (index == 0 ||
+                                      DateTime(
+                                              transaction.dateTime.year,
+                                              transaction.dateTime.month,
+                                              transaction.dateTime.day,
+                                              0,
+                                              0) !=
+                                          DateTime(
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .year,
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .month,
+                                              transactions[index - 1]
+                                                  .dateTime
+                                                  .day,
+                                              0,
+                                              0))
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        transaction.getDateText(),
+                                        style: const TextStyle(
+                                            fontSize: 14, color: Colors.grey),
+                                      ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          DateFormat('EE, d MMM yyyy h:mm aa')
-                                              .format(transaction.dateTime),
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                        Text(
-                                          transaction.note.split('\\n')[0],
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(
+                                        8,
+                                        0,
+                                        8,
+                                        index + 1 == transactions.length
+                                            ? 20
+                                            : 0),
+                                    child: Card(
+                                      child: ListTile(
+                                        title: Text(
+                                          transaction.categoryName,
                                           style: const TextStyle(
-                                              fontSize: 12,
-                                              fontStyle: FontStyle.italic,
-                                              color: Colors.grey),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
                                         ),
-                                      ],
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              transaction.note.split('\\n')[0],
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontStyle: FontStyle.italic,
+                                                  color: Colors.grey),
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: Text(
+                                          '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              color: transaction.type == 'spent'
+                                                  ? Colors.red
+                                                  : Colors.green),
+                                        ),
+                                        onTap: () {
+                                          //* Show the transaction summary dialog when tapped
+                                          transaction
+                                              .showTransactionDetails(context);
+                                        },
+                                      ),
                                     ),
-                                    trailing: Text(
-                                      '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          color: transaction.type == 'spent'
-                                              ? Colors.red
-                                              : Colors.green),
-                                    ),
-                                    onTap: () {
-                                      //* Show the transaction summary dialog when tapped
-                                      transaction.showTransactionDetails(
-                                        context,
-                                        widget.user,
-                                        () => setState(() {}),
-                                      );
-                                    },
                                   ),
-                                ),
+                                ],
                               );
                             },
                           ),
@@ -289,14 +324,5 @@ class _TransactionListPageState extends State<TransactionListPage> {
         ),
       ),
     );
-  }
-
-  Future<void> _fetchCategories() async {
-    final fetchedCategories = await Category.fetchCategories(
-        widget.user, widget.cycle.id, selectedType, true);
-
-    setState(() {
-      categories = fetchedCategories;
-    });
   }
 }

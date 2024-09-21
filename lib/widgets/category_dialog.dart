@@ -1,28 +1,21 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import '../models/category.dart';
-import '../extensions/firestore_extensions.dart';
-import '../models/person.dart';
+import '../providers/categories_provider.dart';
 
 class CategoryDialog extends StatefulWidget {
-  final Person user;
-  final String cycleId;
   final String type;
   final String action;
   final Category? category;
-  final Function onCategoryChanged;
 
-  const CategoryDialog(
-      {Key? key,
-      required this.user,
-      required this.cycleId,
-      required this.type,
-      required this.action,
-      required this.category,
-      required this.onCategoryChanged})
-      : super(key: key);
+  const CategoryDialog({
+    Key? key,
+    required this.type,
+    required this.action,
+    required this.category,
+  }) : super(key: key);
 
   @override
   CategoryDialogState createState() => CategoryDialogState();
@@ -47,6 +40,12 @@ class CategoryDialogState extends State<CategoryDialog> {
       _isBudgetEnabled = _categoryBudgetController.text.isNotEmpty &&
           _categoryBudgetController.text != '0.00';
     }
+  }
+
+  @override
+  void dispose() {
+    _categoryNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -123,7 +122,7 @@ class CategoryDialogState extends State<CategoryDialog> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
               final categoryName = _categoryNameController.text;
@@ -149,9 +148,16 @@ class CategoryDialogState extends State<CategoryDialog> {
                 return;
               }
 
-              //* Call the function to update to Firebase
-              updateCategoryToFirebase(
-                  widget.user, categoryName, categoryBudget, categoryNote);
+              await context.read<CategoriesProvider>().updateCategory(
+                    context,
+                    widget.action,
+                    widget.type,
+                    categoryName,
+                    _isBudgetEnabled,
+                    categoryBudget,
+                    categoryNote,
+                    category: widget.category,
+                  );
 
               //* Close the dialog
               Navigator.of(context).pop(true);
@@ -197,90 +203,5 @@ class CategoryDialogState extends State<CategoryDialog> {
     }
 
     return '';
-  }
-
-  //* Function to update category to Firebase Firestore
-  Future<void> updateCategoryToFirebase(
-    Person user,
-    String categoryName,
-    String categoryBudget,
-    String categoryNote,
-  ) async {
-    try {
-      //* Get current timestamp
-      final now = DateTime.now();
-
-      if (widget.action == 'Add') {
-        //* Create the new category document
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('cycles')
-            .doc(widget.cycleId)
-            .collection('categories')
-            .add({
-          'name': categoryName,
-          'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
-              .toStringAsFixed(2),
-          'note': categoryNote,
-          'type': widget.type,
-          'total_amount': '0.00',
-          'created_at': now,
-          'updated_at': now,
-          'deleted_at': null,
-          'version_json': null,
-        });
-      } else if (widget.action == 'Edit') {
-        final docId =
-            widget.category!.id; //* Get the ID of the category item to edit
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .collection('cycles')
-            .doc(widget.cycleId)
-            .collection('categories')
-            .doc(docId)
-            .update({
-          'name': categoryName,
-          'budget': double.parse(_isBudgetEnabled ? categoryBudget : '0.00')
-              .toStringAsFixed(2),
-          'note': categoryNote,
-          'updated_at': now,
-        });
-
-        //* If the category name is modified, propagate the change to all associated transactions
-        if (widget.category!.name != categoryName) {
-          final transactionsRef = FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .collection('transactions');
-
-          final transactionsSnapshot = await transactionsRef
-              .where('category_id', isEqualTo: docId)
-              .where('deleted_at', isNull: true)
-              .getSavy();
-          print(
-              'updateCategoryToFirebase: ${transactionsSnapshot.docs.length}');
-
-          for (var doc in transactionsSnapshot.docs) {
-            await transactionsRef
-                .doc(doc.id)
-                .update({'category_name': categoryName});
-          }
-        }
-      }
-
-      //* Notify the parent widget about the category addition
-      widget.onCategoryChanged();
-    } catch (e) {
-      //* Handle any errors that occur during the Firebase operation
-      print('Error adding transaction: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _categoryNameController.dispose();
-    super.dispose();
   }
 }
