@@ -337,7 +337,8 @@ class _DashboardPageState extends State<DashboardPage>
       ][_selectedIndex],
       floatingActionButton: _selectedIndex != 1 &&
               _selectedIndex != 4 &&
-              cycle!.isLastCycle
+              cycle != null &&
+              cycle.isLastCycle
           ? FloatingActionButton(
               onPressed: () async {
                 if (_selectedIndex == 0) {
