@@ -112,7 +112,8 @@ class CycleProvider extends ChangeNotifier {
         .collection('cycles')
         .doc(newCycleId);
 
-    final categoriesSnapshot = await categoriesRef.getSavy();
+    final categoriesSnapshot =
+        await categoriesRef.where('deleted_at', isNull: true).getSavy();
     print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
 
     for (var doc in categoriesSnapshot.docs) {
