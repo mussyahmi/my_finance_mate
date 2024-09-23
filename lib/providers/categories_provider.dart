@@ -20,9 +20,9 @@ class CategoriesProvider extends ChangeNotifier {
 
   CategoriesProvider({this.categories});
 
-  Future<void> fetchCategories(BuildContext context, {bool? refresh}) async {
+  Future<void> fetchCategories(BuildContext context, Cycle cycle,
+      {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
-    final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -293,11 +293,13 @@ class CategoriesProvider extends ChangeNotifier {
                 .update({'category_name': categoryName});
           }
 
-          await context.read<TransactionsProvider>().fetchTransactions(context);
+          await context
+              .read<TransactionsProvider>()
+              .fetchTransactions(context, cycle);
         }
       }
 
-      await context.read<CategoriesProvider>().fetchCategories(context);
+      await context.read<CategoriesProvider>().fetchCategories(context, cycle);
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       print('Error $action category: $e');

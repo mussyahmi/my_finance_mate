@@ -10,6 +10,8 @@ import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../pages/cycle_add_page.dart';
 import '../pages/dashboard_page.dart';
+import 'categories_provider.dart';
+import 'transactions_provider.dart';
 import 'user_provider.dart';
 
 class CycleProvider extends ChangeNotifier {
@@ -42,6 +44,7 @@ class CycleProvider extends ChangeNotifier {
         amountSpent: cycleDoc['amount_spent'],
         startDate: (cycleDoc['start_date'] as Timestamp).toDate(),
         endDate: (cycleDoc['end_date'] as Timestamp).toDate(),
+        isLastCycle: true,
       );
 
       if (cycle!.endDate.isBefore(now)) {
@@ -60,6 +63,17 @@ class CycleProvider extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => const CycleAddPage()),
       );
     }
+  }
+
+  Future<void> switchCycle(BuildContext context, Cycle newCycle) async {
+    cycle = newCycle;
+
+    await context.read<CategoriesProvider>().fetchCategories(context, newCycle);
+    await context
+        .read<TransactionsProvider>()
+        .fetchTransactions(context, newCycle);
+
+    notifyListeners();
   }
 
   Future<void> addCycle(BuildContext context, String cycleName,

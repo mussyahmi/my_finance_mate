@@ -56,14 +56,18 @@ class _DashboardPageState extends State<DashboardPage>
       context.read<CycleProvider>().fetchCycle(context);
     }
 
-    if (context.watch<CycleProvider>().cycle != null &&
-        context.read<CategoriesProvider>().categories == null) {
-      context.read<CategoriesProvider>().fetchCategories(context);
-    }
+    if (context.watch<CycleProvider>().cycle != null) {
+      if (context.read<CategoriesProvider>().categories == null) {
+        context
+            .read<CategoriesProvider>()
+            .fetchCategories(context, context.read<CycleProvider>().cycle!);
+      }
 
-    if (context.watch<CycleProvider>().cycle != null &&
-        context.read<TransactionsProvider>().transactions == null) {
-      context.read<TransactionsProvider>().fetchTransactions(context);
+      if (context.read<TransactionsProvider>().transactions == null) {
+        context
+            .read<TransactionsProvider>()
+            .fetchTransactions(context, context.read<CycleProvider>().cycle!);
+      }
     }
 
     //* Ads related
@@ -142,13 +146,17 @@ class _DashboardPageState extends State<DashboardPage>
           ],
           body: RefreshIndicator(
             onRefresh: () async {
-              context.read<CycleProvider>().fetchCycle(context, refresh: true);
-              context
-                  .read<CategoriesProvider>()
-                  .fetchCategories(context, refresh: true);
-              context
-                  .read<TransactionsProvider>()
-                  .fetchTransactions(context, refresh: true);
+              if (cycle!.isLastCycle) {
+                context
+                    .read<CycleProvider>()
+                    .fetchCycle(context, refresh: true);
+                context
+                    .read<CategoriesProvider>()
+                    .fetchCategories(context, cycle, refresh: true);
+                context
+                    .read<TransactionsProvider>()
+                    .fetchTransactions(context, cycle, refresh: true);
+              }
             },
             child: SingleChildScrollView(
               child: Column(
@@ -301,8 +309,8 @@ class _DashboardPageState extends State<DashboardPage>
                                       ),
                                       onTap: () {
                                         //* Show the transaction summary dialog when tapped
-                                        transaction
-                                            .showTransactionDetails(context);
+                                        transaction.showTransactionDetails(
+                                            context, cycle);
                                       },
                                     ),
                                   ),
@@ -327,7 +335,9 @@ class _DashboardPageState extends State<DashboardPage>
         const WishlistPage(),
         cycle != null ? const ExplorePage() : Container(),
       ][_selectedIndex],
-      floatingActionButton: _selectedIndex != 1 && _selectedIndex != 4
+      floatingActionButton: _selectedIndex != 1 &&
+              _selectedIndex != 4 &&
+              cycle!.isLastCycle
           ? FloatingActionButton(
               onPressed: () async {
                 if (_selectedIndex == 0) {

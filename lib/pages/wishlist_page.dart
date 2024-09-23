@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cycle.dart';
 import '../models/wishlist.dart';
+import '../providers/cycle_provider.dart';
 import '../providers/wishlist_provider.dart';
 
 class WishlistPage extends StatefulWidget {
@@ -28,6 +30,8 @@ class _WishlistPageState extends State<WishlistPage> {
 
   @override
   Widget build(BuildContext context) {
+    Cycle cycle = context.watch<CycleProvider>().cycle!;
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -41,9 +45,11 @@ class _WishlistPageState extends State<WishlistPage> {
         ],
         body: RefreshIndicator(
           onRefresh: () async {
-            context
-                .read<WishlistProvider>()
-                .fetchWishlist(context, refresh: true);
+            if (cycle.isLastCycle) {
+              context
+                  .read<WishlistProvider>()
+                  .fetchWishlist(context, refresh: true);
+            }
           },
           child: FutureBuilder(
             future: context.watch<WishlistProvider>().getWishlist(context),
@@ -97,7 +103,8 @@ class _WishlistPageState extends State<WishlistPage> {
                         child: Card(
                           child: ListTile(
                             title: Text(wish.name),
-                            onTap: () => wish.showWishlistDetails(context),
+                            onTap: () =>
+                                wish.showWishlistDetails(context, cycle),
                           ),
                         ),
                       );

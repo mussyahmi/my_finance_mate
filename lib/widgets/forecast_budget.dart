@@ -215,7 +215,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                               ),
                               onTap: () {
                                 budget.showCategoryDetails(
-                                    context, budget.type);
+                                    context, cycle, budget.type);
                               },
                             ),
                           ),

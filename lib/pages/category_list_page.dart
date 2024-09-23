@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cycle.dart';
 import '../providers/categories_provider.dart';
 import '../models/category.dart';
+import '../providers/cycle_provider.dart';
 
 class CategoryListPage extends StatefulWidget {
   final String? type;
@@ -37,6 +39,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
   @override
   Widget build(BuildContext context) {
+    Cycle cycle = context.watch<CycleProvider>().cycle!;
+
     return DefaultTabController(
         initialIndex: selectedType == 'spent' ? 0 : 1,
         length: 2,
@@ -76,8 +80,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 ],
                 body: TabBarView(
                   children: [
-                    _buildCategoryList(context, 'spent'),
-                    _buildCategoryList(context, 'received'),
+                    _buildCategoryList(context, cycle, 'spent'),
+                    _buildCategoryList(context, cycle, 'received'),
                   ],
                 ),
               ),
@@ -86,7 +90,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
         ));
   }
 
-  Widget _buildCategoryList(BuildContext context, String type) {
+  Widget _buildCategoryList(BuildContext context, Cycle cycle, String type) {
     return FutureBuilder(
       future: context
           .watch<CategoriesProvider>()
@@ -142,7 +146,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     child: ListTile(
                       title: Text(category.name),
                       onTap: () {
-                        category.showCategoryDetails(context, selectedType);
+                        category.showCategoryDetails(
+                            context, cycle, selectedType);
                       },
                     ),
                   ),

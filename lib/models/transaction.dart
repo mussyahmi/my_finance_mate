@@ -13,6 +13,7 @@ import '../providers/transactions_provider.dart';
 import '../size_config.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import 'cycle.dart';
 import 'person.dart';
 
 class Transaction {
@@ -56,7 +57,7 @@ class Transaction {
     }
   }
 
-  void showTransactionDetails(BuildContext context) {
+  void showTransactionDetails(BuildContext context, Cycle cycle) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -71,41 +72,43 @@ class Transaction {
               ),
               Row(
                 children: [
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await _deleteHandler(context);
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await _deleteHandler(context);
 
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.red,
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      //* Edit action
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TransactionFormPage(
-                            action: 'Edit',
-                            transaction: this,
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        //* Edit action
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionFormPage(
+                              action: 'Edit',
+                              transaction: this,
+                            ),
                           ),
-                        ),
-                      );
+                        );
 
-                      if (result != null && result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.primary,
+                        if (result != null && result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
                 ],
               )
             ],

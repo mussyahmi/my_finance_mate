@@ -1,8 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/person.dart';
+import '../providers/cycle_provider.dart';
 import '../providers/cycles_provider.dart';
 
 class CycleListPage extends StatefulWidget {
@@ -68,7 +71,13 @@ class _CycleListPageState extends State<CycleListPage> {
                         ),
                         trailing: widget.cycle!.cycleNo != cycle.cycleNo
                             ? IconButton.filledTonal(
-                                onPressed: () async {},
+                                onPressed: () async {
+                                  await context
+                                      .read<CycleProvider>()
+                                      .switchCycle(context, cycle);
+
+                                  Navigator.of(context).pop();
+                                },
                                 icon: Icon(
                                   Icons.arrow_forward_ios,
                                   color: Theme.of(context).colorScheme.primary,

@@ -53,10 +53,10 @@ class _CyclePageState extends State<CyclePage> {
             data,
             style: const TextStyle(fontSize: 14),
           ),
-          trailing: title != 'Start Date'
+          trailing: title != 'Start Date' && cycle.isLastCycle
               ? IconButton.filledTonal(
                   onPressed: () async {
-                    cycle.showCycleFormDialog(
+                    await cycle.showCycleFormDialog(
                       context,
                       user,
                       cycle,
@@ -86,8 +86,12 @@ class _CyclePageState extends State<CyclePage> {
         ],
         body: RefreshIndicator(
           onRefresh: () async {
-            context.read<CycleProvider>().fetchCycle(context, refresh: true);
-            context.read<CyclesProvider>().fetchCycles(context, refresh: true);
+            if (cycle.isLastCycle) {
+              context.read<CycleProvider>().fetchCycle(context, refresh: true);
+              context
+                  .read<CyclesProvider>()
+                  .fetchCycles(context, refresh: true);
+            }
           },
           child: SingleChildScrollView(
             child: Padding(
@@ -189,7 +193,11 @@ class _CyclePageState extends State<CyclePage> {
                                 ),
                                 trailing: cycle.cycleNo != c.cycleNo
                                     ? IconButton.filledTonal(
-                                        onPressed: () async {},
+                                        onPressed: () async {
+                                          await context
+                                              .read<CycleProvider>()
+                                              .switchCycle(context, c);
+                                        },
                                         icon: Icon(
                                           Icons.arrow_forward_ios,
                                           color: Theme.of(context)

@@ -15,6 +15,7 @@ class Cycle {
   String amountSpent;
   DateTime startDate;
   DateTime endDate;
+  bool isLastCycle;
 
   Cycle({
     required this.id,
@@ -26,6 +27,7 @@ class Cycle {
     required this.amountSpent,
     required this.startDate,
     required this.endDate,
+    required this.isLastCycle,
   });
 
   //* Function to show the add/edit cycle dialog

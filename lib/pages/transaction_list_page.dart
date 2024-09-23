@@ -5,9 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/category.dart';
+import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/string_extension.dart';
 import '../providers/categories_provider.dart';
+import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 
 class TransactionListPage extends StatefulWidget {
@@ -57,6 +59,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
   @override
   Widget build(BuildContext context) {
+    Cycle cycle = context.watch<CycleProvider>().cycle!;
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -279,8 +283,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                         ),
                                         onTap: () {
                                           //* Show the transaction summary dialog when tapped
-                                          transaction
-                                              .showTransactionDetails(context);
+                                          transaction.showTransactionDetails(
+                                              context, cycle);
                                         },
                                       ),
                                     ),

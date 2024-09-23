@@ -13,6 +13,7 @@ import '../widgets/category_dialog.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../extensions/firestore_extensions.dart';
+import 'cycle.dart';
 import 'person.dart';
 
 enum BudgetFilter { all, ongoing, exceeded, completed }
@@ -49,7 +50,8 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategoryDetails(BuildContext context, String selectedType) {
+  void showCategoryDetails(
+      BuildContext context, Cycle cycle, String selectedType) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -64,37 +66,39 @@ class Category {
               ),
               Row(
                 children: [
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await _deleteHandler(context);
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await _deleteHandler(context);
 
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.red,
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await showCategoryFormDialog(
-                        context,
-                        selectedType,
-                        'Edit',
-                        category: this,
-                      );
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await showCategoryFormDialog(
+                          context,
+                          selectedType,
+                          'Edit',
+                          category: this,
+                        );
 
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.primary,
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
                   IconButton.filledTonal(
                     onPressed: () async {
                       Navigator.push(

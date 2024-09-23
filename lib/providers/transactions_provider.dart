@@ -23,9 +23,9 @@ class TransactionsProvider extends ChangeNotifier {
 
   TransactionsProvider({this.transactions});
 
-  Future<void> fetchTransactions(BuildContext context, {bool? refresh}) async {
+  Future<void> fetchTransactions(BuildContext context, Cycle cycle,
+      {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
-    final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -288,8 +288,10 @@ class TransactionsProvider extends ChangeNotifier {
           context, action, categoryId, amount, now, transaction);
 
       await context.read<CycleProvider>().fetchCycle(context);
-      await context.read<CategoriesProvider>().fetchCategories(context);
-      await context.read<TransactionsProvider>().fetchTransactions(context);
+      await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+      await context
+          .read<TransactionsProvider>()
+          .fetchTransactions(context, cycle);
 
       notifyListeners();
     } catch (e) {
@@ -346,6 +348,7 @@ class TransactionsProvider extends ChangeNotifier {
     String transactionId,
   ) async {
     final Person user = context.read<UserProvider>().user!;
+    final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -376,8 +379,10 @@ class TransactionsProvider extends ChangeNotifier {
         context, 'Delete', trans.categoryId, trans.amount, now, trans);
 
     await context.read<CycleProvider>().fetchCycle(context);
-    await context.read<CategoriesProvider>().fetchCategories(context);
-    await context.read<TransactionsProvider>().fetchTransactions(context);
+    await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+    await context
+        .read<TransactionsProvider>()
+        .fetchTransactions(context, cycle);
 
     notifyListeners();
   }

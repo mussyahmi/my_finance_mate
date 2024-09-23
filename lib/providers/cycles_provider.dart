@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../extensions/firestore_extensions.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
+import 'cycle_provider.dart';
 import 'user_provider.dart';
 
 class CyclesProvider extends ChangeNotifier {
@@ -16,6 +17,7 @@ class CyclesProvider extends ChangeNotifier {
 
   Future<void> fetchCycles(BuildContext context, {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
+    final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -39,6 +41,7 @@ class CyclesProvider extends ChangeNotifier {
         amountSpent: data['amount_spent'],
         startDate: (data['start_date'] as Timestamp).toDate(),
         endDate: (data['end_date'] as Timestamp).toDate(),
+        isLastCycle: cycle.id == doc.id,
       );
     }).toList();
 

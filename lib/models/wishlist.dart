@@ -9,6 +9,7 @@ import '../providers/wishlist_provider.dart';
 import '../size_config.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/wishlist_dialog.dart';
+import 'cycle.dart';
 
 class Wishlist {
   String id;
@@ -23,7 +24,7 @@ class Wishlist {
     required this.createdAt,
   });
 
-  void showWishlistDetails(BuildContext context) {
+  void showWishlistDetails(BuildContext context, Cycle cycle) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -38,34 +39,36 @@ class Wishlist {
               ),
               Row(
                 children: [
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await _deleteHandler(context, id);
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await _deleteHandler(context, id);
 
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.red,
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await showWishlistFormDialog(
-                          context, 'Edit',
-                          wish: this);
+                  if (cycle.isLastCycle)
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await showWishlistFormDialog(
+                            context, 'Edit',
+                            wish: this);
 
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Theme.of(context).colorScheme.primary,
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ],
