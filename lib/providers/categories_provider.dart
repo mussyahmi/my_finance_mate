@@ -346,20 +346,18 @@ class CategoriesProvider extends ChangeNotifier {
       }
     }
 
-    //* Update new category's data
-    final Category newCategory =
-        categories.firstWhere((category) => category.id == categoryId);
+    if (action != 'Delete') {
+      //* Update new category's data
+      final Category newCategory =
+          categories.firstWhere((category) => category.id == categoryId);
 
-    double newTotalAmount = prevTotalAmount + double.parse(amount);
+      double newTotalAmount = prevTotalAmount + double.parse(amount);
 
-    if (action != 'Add') {
-      if (prevCategory.id != newCategory.id) {
+      if (action == 'Add' || prevCategory.id != newCategory.id) {
         newTotalAmount =
             double.parse(newCategory.totalAmount) + double.parse(amount);
       }
-    }
 
-    if (action != 'Delete') {
       final newCategoryRef =
           cyclesRef.doc(cycle.id).collection('categories').doc(categoryId);
 
