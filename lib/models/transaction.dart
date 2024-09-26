@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../pages/image_view_page.dart';
 import '../pages/transaction_form_page.dart';
 import '../providers/transactions_provider.dart';
+import '../services/message_services.dart';
 import '../size_config.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
@@ -259,12 +261,20 @@ class Transaction {
             ),
             ElevatedButton(
               onPressed: () async {
+                final MessageService messageService = MessageService();
+
+                EasyLoading.show(
+                    status: messageService.getRandomDeleteMessage());
+
                 //* Delete the item from Firestore here
                 final transactionId = id;
 
                 await context
                     .read<TransactionsProvider>()
                     .deleteTransaction(context, transactionId);
+
+                EasyLoading.showSuccess(
+                    messageService.getRandomDoneDeleteMessage());
 
                 Navigator.of(context).pop(true); //* Close the dialog
               },

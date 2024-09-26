@@ -1,12 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../providers/cycle_provider.dart';
+import '../services/message_services.dart';
 
 class CycleDialog extends StatefulWidget {
   final Person user;
@@ -25,6 +27,7 @@ class CycleDialog extends StatefulWidget {
 }
 
 class _CycleDialogState extends State<CycleDialog> {
+  final MessageService messageService = MessageService();
   final TextEditingController _cycleNameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late DateTime _cycleEndDate;
@@ -105,23 +108,13 @@ class _CycleDialogState extends State<CycleDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
+              EasyLoading.show(status: messageService.getRandomUpdateMessage());
+
               if (widget.title == 'Cycle Name') {
                 final cycleName = _cycleNameController.text;
 
                 if (cycleName.isEmpty) {
-                  final snackBar = SnackBar(
-                    content: Text(
-                      'Please enter cycle\'s name.',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onError),
-                    ),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    showCloseIcon: true,
-                    closeIconColor: Theme.of(context).colorScheme.onError,
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+                  EasyLoading.showInfo('Please enter cycle\'s name.');
                   return;
                 }
 
@@ -133,6 +126,9 @@ class _CycleDialogState extends State<CycleDialog> {
                     .read<CycleProvider>()
                     .updateCycleByAttribute(context, 'end_date', _cycleEndDate);
               }
+
+              EasyLoading.showSuccess(
+                  messageService.getRandomDoneUpdateMessage());
 
               //* Close the dialog
               Navigator.of(context).pop(true);

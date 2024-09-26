@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../pages/transaction_list_page.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/message_services.dart';
 import '../widgets/category_dialog.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
@@ -249,12 +251,20 @@ class Category {
               ),
               ElevatedButton(
                 onPressed: () async {
+                  final MessageService messageService = MessageService();
+
+                  EasyLoading.show(
+                      status: messageService.getRandomDeleteMessage());
+
                   //* Delete the item from Firestore here
                   final categoryId = id;
 
                   await context
                       .read<CategoriesProvider>()
                       .deleteCategory(context, categoryId);
+
+                  EasyLoading.showSuccess(
+                      messageService.getRandomDoneDeleteMessage());
 
                   Navigator.of(context).pop(true); //* Close the dialog
                 },

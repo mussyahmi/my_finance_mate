@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
+import '../services/message_services.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
@@ -34,6 +36,7 @@ class TransactionFormPage extends StatefulWidget {
 }
 
 class TransactionFormPageState extends State<TransactionFormPage> {
+  final MessageService messageService = MessageService();
   String selectedType = 'spent';
   String? selectedSubType;
   String? selectedCategoryId;
@@ -424,6 +427,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         if (_adMobService.status) _showInterstitialAd();
 
                         try {
+                          EasyLoading.show(
+                              status: widget.action == 'Edit'
+                                  ? messageService.getRandomUpdateMessage()
+                                  : messageService.getRandomAddMessage());
+
                           //* Get the values from the form
                           String type = selectedType;
                           String? subType = selectedSubType;
@@ -437,23 +445,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           final message = _validate(categoryId, amount);
 
                           if (message.isNotEmpty) {
-                            final snackBar = SnackBar(
-                              content: Text(
-                                message,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onError),
-                              ),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.error,
-                              showCloseIcon: true,
-                              closeIconColor:
-                                  Theme.of(context).colorScheme.onError,
-                            );
-
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(snackBar);
-
+                            EasyLoading.showInfo(message);
                             return;
                           }
 
@@ -472,6 +464,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 filesToDelete,
                                 widget.transaction,
                               );
+
+                          EasyLoading.showSuccess(widget.action == 'Edit'
+                              ? messageService.getRandomDoneUpdateMessage()
+                              : messageService.getRandomDoneAddMessage());
 
                           Navigator.of(context).pop(true);
                         } finally {

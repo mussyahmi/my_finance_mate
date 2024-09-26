@@ -60,12 +60,18 @@ class _CycleListPageState extends State<CycleListPage> {
                             Text(
                               'Received RM${cycle.amountReceived}',
                               style: const TextStyle(
-                                  fontSize: 14, color: Colors.greenAccent),
+                                fontSize: 14,
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               'Spent RM${cycle.amountSpent}',
                               style: const TextStyle(
-                                  fontSize: 14, color: Colors.redAccent),
+                                fontSize: 14,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),

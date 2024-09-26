@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
@@ -113,6 +114,17 @@ class _DashboardPageState extends State<DashboardPage>
 
   @override
   Widget build(BuildContext context) {
+    EasyLoading.instance
+      ..loadingStyle = EasyLoadingStyle.custom
+      ..backgroundColor = Theme.of(context).colorScheme.secondary
+      ..indicatorType = EasyLoadingIndicatorType.ripple
+      ..indicatorColor = Theme.of(context).colorScheme.onSecondary
+      ..textColor = Theme.of(context).colorScheme.onSecondary
+      ..progressColor = Colors.blue
+      ..maskColor = Colors.green.withOpacity(0.5)
+      ..userInteractions = false
+      ..dismissOnTap = false;
+
     Person user = context.watch<UserProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 

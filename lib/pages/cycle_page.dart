@@ -180,14 +180,18 @@ class _CyclePageState extends State<CyclePage> {
                                     Text(
                                       'Received RM${c.amountReceived}',
                                       style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.greenAccent),
+                                        fontSize: 14,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     Text(
                                       'Spent RM${c.amountSpent}',
                                       style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.redAccent),
+                                        fontSize: 14,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),

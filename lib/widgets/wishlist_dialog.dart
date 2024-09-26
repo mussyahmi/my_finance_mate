@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/wishlist.dart';
 import '../providers/wishlist_provider.dart';
+import '../services/message_services.dart';
 
 class WishlistDialog extends StatefulWidget {
   final String action;
@@ -21,6 +23,7 @@ class WishlistDialog extends StatefulWidget {
 }
 
 class WishlistDialogState extends State<WishlistDialog> {
+  final MessageService messageService = MessageService();
   final TextEditingController _wishlistNameController = TextEditingController();
   final TextEditingController _wishlistNoteController = TextEditingController();
 
@@ -77,25 +80,15 @@ class WishlistDialogState extends State<WishlistDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
+              EasyLoading.show(status: messageService.getRandomUpdateMessage());
+
               final wishlistName = _wishlistNameController.text;
               final wishlistNote = _wishlistNoteController.text;
 
               final message = _validate(wishlistName);
 
               if (message.isNotEmpty) {
-                final snackBar = SnackBar(
-                  content: Text(
-                    message,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.onError),
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  showCloseIcon: true,
-                  closeIconColor: Theme.of(context).colorScheme.onError,
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+                EasyLoading.showInfo(message);
                 return;
               }
 
@@ -106,6 +99,9 @@ class WishlistDialogState extends State<WishlistDialog> {
                     wishlistNote,
                     wish: widget.wish,
                   );
+
+              EasyLoading.showSuccess(
+                  messageService.getRandomDoneUpdateMessage());
 
               //* Close the dialog
               Navigator.of(context).pop(true);

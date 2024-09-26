@@ -1,9 +1,11 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../providers/categories_provider.dart';
+import '../services/message_services.dart';
 
 class CategoryDialog extends StatefulWidget {
   final String type;
@@ -125,6 +127,13 @@ class CategoryDialogState extends State<CategoryDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
+              final MessageService messageService = MessageService();
+
+              EasyLoading.show(
+                  status: widget.action == 'Edit'
+                      ? messageService.getRandomUpdateMessage()
+                      : messageService.getRandomAddMessage());
+
               final categoryName = _categoryNameController.text;
               final categoryBudget = _categoryBudgetController.text;
               final categoryNote = _categoryNoteController.text;
@@ -132,19 +141,7 @@ class CategoryDialogState extends State<CategoryDialog> {
               final message = _validate(categoryName, categoryBudget);
 
               if (message.isNotEmpty) {
-                final snackBar = SnackBar(
-                  content: Text(
-                    message,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.onError),
-                  ),
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  showCloseIcon: true,
-                  closeIconColor: Theme.of(context).colorScheme.onError,
-                );
-
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+                EasyLoading.showInfo(message);
                 return;
               }
 
@@ -158,6 +155,10 @@ class CategoryDialogState extends State<CategoryDialog> {
                     categoryNote,
                     category: widget.category,
                   );
+
+              EasyLoading.showSuccess(widget.action == 'Edit'
+                  ? messageService.getRandomDoneUpdateMessage()
+                  : messageService.getRandomDoneAddMessage());
 
               //* Close the dialog
               Navigator.of(context).pop(true);

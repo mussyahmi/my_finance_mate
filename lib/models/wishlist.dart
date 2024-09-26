@@ -1,11 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/wishlist_provider.dart';
+import '../services/message_services.dart';
 import '../size_config.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/wishlist_dialog.dart';
@@ -134,10 +136,18 @@ class Wishlist {
             ),
             ElevatedButton(
               onPressed: () {
+                final MessageService messageService = MessageService();
+
+                EasyLoading.show(
+                    status: messageService.getRandomDeleteMessage());
+
                 //* Delete the item from Firestore here
                 final wishId = id;
 
                 context.read<WishlistProvider>().deleteWish(context, wishId);
+
+                EasyLoading.showSuccess(
+                    messageService.getRandomDoneDeleteMessage());
 
                 Navigator.of(context).pop(true); //* Close the dialog
               },
