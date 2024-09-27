@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../providers/cycle_provider.dart';
 import '../services/ad_mob_service.dart';
+import '../services/message_services.dart';
 
 class CycleAddPage extends StatefulWidget {
   const CycleAddPage({super.key});
@@ -17,10 +19,12 @@ class CycleAddPage extends StatefulWidget {
 }
 
 class CycleAddPageState extends State<CycleAddPage> {
+  final MessageService messageService = MessageService();
   late Cycle? _cycle;
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
-  DateTimeRange? selectedDateRange;
+  DateTime? _startDate;
+  DateTime? _endDate;
   bool _isLoading = false;
 
   //* Ad related
@@ -39,17 +43,28 @@ class CycleAddPageState extends State<CycleAddPage> {
       startDate =
           DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
 
-      DateTime endDate = _cycle!.endDate.add(Duration(
-          days: _cycle!.endDate.difference(_cycle!.startDate).inDays - 1));
-      endDate = DateTime(endDate.year, endDate.month, endDate.day, 0, 0);
+      DateTime endDate = _cycle!.endDate.add(
+          Duration(days: _cycle!.endDate.difference(_cycle!.startDate).inDays));
 
       setState(() {
         cycleNameController.text = _cycle!.cycleName;
         openingBalanceController.text = _cycle!.amountBalance;
-        selectedDateRange = DateTimeRange(
-          start: startDate,
-          end: endDate,
-        );
+        _startDate = startDate;
+        _endDate = endDate;
+      });
+    } else {
+      DateTime startDate = DateTime.now();
+      startDate =
+          DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
+
+      DateTime endDate = startDate.add(const Duration(days: 29));
+      endDate = endDate
+          .add(const Duration(days: 1))
+          .subtract(const Duration(minutes: 1));
+
+      setState(() {
+        _startDate = startDate;
+        _endDate = endDate;
       });
     }
 
@@ -92,30 +107,31 @@ class CycleAddPageState extends State<CycleAddPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         ElevatedButton(
+                          onPressed: null,
+                          child: Text(
+                            'Start Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_startDate ?? DateTime.now())}',
+                          ),
+                        ),
+                        ElevatedButton(
                           onPressed: () async {
-                            final pickedDateRange = await showDateRangePicker(
+                            final selectedDate = await showDatePicker(
                               context: context,
-                              firstDate: _cycle == null
-                                  ? DateTime.now()
-                                      .subtract(const Duration(days: 365))
-                                  : _cycle!.endDate
-                                      .add(const Duration(days: 1)),
+                              initialDate: _endDate ?? DateTime.now(),
+                              firstDate: _startDate ?? DateTime.now(),
                               lastDate:
                                   DateTime.now().add(const Duration(days: 365)),
-                              initialDateRange: selectedDateRange,
                             );
 
-                            if (pickedDateRange != null) {
+                            if (selectedDate != null) {
                               setState(() {
-                                selectedDateRange = pickedDateRange;
+                                _endDate = selectedDate
+                                    .add(const Duration(days: 1))
+                                    .subtract(const Duration(minutes: 1));
                               });
                             }
                           },
                           child: Text(
-                            selectedDateRange != null
-                                ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                                : 'Select Date Range',
-                            textAlign: TextAlign.center,
+                            'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -192,50 +208,30 @@ class CycleAddPageState extends State<CycleAddPage> {
   }
 
   Future<void> _addCycle() async {
+    EasyLoading.show(status: messageService.getRandomAddMessage());
+
     //* Validate the form data
-    final message = _validate(selectedDateRange, cycleNameController.text,
-        openingBalanceController.text);
+    final message =
+        _validate(cycleNameController.text, openingBalanceController.text);
 
     if (message.isNotEmpty) {
-      final snackBar = SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: Theme.of(context).colorScheme.onError),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        showCloseIcon: true,
-        closeIconColor: Theme.of(context).colorScheme.onError,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+      EasyLoading.showInfo(message);
       return;
     }
-
-    final adjustedEndDate = selectedDateRange!.end
-        .add(const Duration(days: 1))
-        .subtract(const Duration(minutes: 1));
 
     //* Create the new cycle document
     await context.read<CycleProvider>().addCycle(
           context,
           cycleNameController.text,
-          selectedDateRange!.start,
-          adjustedEndDate,
+          _startDate!,
+          _endDate!,
           double.parse(openingBalanceController.text).toStringAsFixed(2),
         );
+
+    EasyLoading.showSuccess(messageService.getRandomDoneAddMessage());
   }
 
-  String _validate(
-      DateTimeRange? selectedDateRange, String cycleName, String amount) {
-    if (selectedDateRange == null) {
-      return 'Please select date range.';
-    }
-
-    if (selectedDateRange.end.isBefore(DateTime.now())) {
-      return 'End date cannot be in the past.';
-    }
-
+  String _validate(String cycleName, String amount) {
     if (cycleName.isEmpty) {
       return 'Please enter cycle\'s name.';
     }
