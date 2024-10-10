@@ -404,13 +404,8 @@ class _LoginPageState extends State<LoginPage> {
         'tags': deviceInfo.tags,
         'type': deviceInfo.type,
         'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'displayMetrics': {
-          'widthPx': deviceInfo.displayMetrics.widthPx,
-          'heightPx': deviceInfo.displayMetrics.heightPx,
-          'xDpi': deviceInfo.displayMetrics.xDpi,
-          'yDpi': deviceInfo.displayMetrics.yDpi,
-        },
         'serialNumber': deviceInfo.serialNumber,
+        'isLowRamDevice': deviceInfo.isLowRamDevice,
       };
 
       //* Convert device info to JSON

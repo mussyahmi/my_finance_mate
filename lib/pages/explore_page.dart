@@ -14,7 +14,7 @@ import 'login_page.dart';
 import 'category_summary_page.dart';
 
 class ExplorePage extends StatefulWidget {
-  const ExplorePage({Key? key}) : super(key: key);
+  const ExplorePage({super.key});
 
   @override
   ExplorePageState createState() => ExplorePageState();

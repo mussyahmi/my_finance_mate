@@ -13,10 +13,10 @@ class WishlistDialog extends StatefulWidget {
   final Wishlist? wish;
 
   const WishlistDialog({
-    Key? key,
+    super.key,
     required this.action,
     required this.wish,
-  }) : super(key: key);
+  });
 
   @override
   WishlistDialogState createState() => WishlistDialogState();

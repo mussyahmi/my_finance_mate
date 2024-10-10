@@ -15,7 +15,7 @@ import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key});
 
   @override
   RegisterPageState createState() => RegisterPageState();
@@ -143,13 +143,8 @@ class RegisterPageState extends State<RegisterPage> {
         'tags': deviceInfo.tags,
         'type': deviceInfo.type,
         'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'displayMetrics': {
-          'widthPx': deviceInfo.displayMetrics.widthPx,
-          'heightPx': deviceInfo.displayMetrics.heightPx,
-          'xDpi': deviceInfo.displayMetrics.xDpi,
-          'yDpi': deviceInfo.displayMetrics.yDpi,
-        },
         'serialNumber': deviceInfo.serialNumber,
+        'isLowRamDevice': deviceInfo.isLowRamDevice,
       };
 
       //* Convert device info to JSON

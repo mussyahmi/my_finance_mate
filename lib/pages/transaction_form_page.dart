@@ -251,7 +251,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             value: category.id,
                             child: Text(category.name),
                           );
-                        }).toList(),
+                        }),
                       ],
                       decoration: const InputDecoration(
                         labelText: 'Category',

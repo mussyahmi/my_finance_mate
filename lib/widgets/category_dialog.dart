@@ -13,11 +13,11 @@ class CategoryDialog extends StatefulWidget {
   final Category? category;
 
   const CategoryDialog({
-    Key? key,
+    super.key,
     required this.type,
     required this.action,
     required this.category,
-  }) : super(key: key);
+  });
 
   @override
   CategoryDialogState createState() => CategoryDialogState();

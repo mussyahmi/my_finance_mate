@@ -426,17 +426,17 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _createAppOpenAd() {
     AppOpenAd.load(
-        adUnitId: _adMobService.appOpenAdUnitId!,
-        request: const AdRequest(),
-        adLoadCallback: AppOpenAdLoadCallback(
-          onAdLoaded: (ad) {
-            _appOpenAd = ad;
-          },
-          onAdFailedToLoad: (error) {
-            _appOpenAd = null;
-          },
-        ),
-        orientation: AppOpenAd.orientationPortrait);
+      adUnitId: _adMobService.appOpenAdUnitId!,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          _appOpenAd = ad;
+        },
+        onAdFailedToLoad: (error) {
+          _appOpenAd = null;
+        },
+      ),
+    );
   }
 
   void _showAppOpenAd() {
