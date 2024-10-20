@@ -12,6 +12,7 @@ import '../services/ad_mob_service.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
+import 'wishlist_page.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -106,6 +107,20 @@ class ExplorePageState extends State<ExplorePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const CategorySummaryPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Card(
+                  child: ListTile(
+                    title: const Text('Wishlist'),
+                    trailing: const Icon(Icons.favorite),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WishlistPage(),
                         ),
                       );
                     },

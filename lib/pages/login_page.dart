@@ -321,7 +321,6 @@ class _LoginPageState extends State<LoginPage> {
             'created_at': now,
             'updated_at': now,
             'deleted_at': null,
-            'version_json': null,
             'email': authResult.user!.email,
             'full_name': authResult.user!.displayName,
             'last_login': now,

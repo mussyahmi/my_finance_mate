@@ -28,7 +28,6 @@ class Category {
   String budget;
   String totalAmount;
   String cycleId;
-  DateTime createdAt;
   DateTime updatedAt;
 
   Category({
@@ -39,7 +38,6 @@ class Category {
     required this.budget,
     required this.totalAmount,
     required this.cycleId,
-    required this.createdAt,
     required this.updatedAt,
   });
 
@@ -308,7 +306,6 @@ class Category {
     print('done updateCategoryNameForAllTransactions');
   }
 
-  //* Function to show the add/edit category dialog
   static Future<bool> showCategoryFormDialog(
       BuildContext context, String selectedType, String action,
       {Category? category}) async {

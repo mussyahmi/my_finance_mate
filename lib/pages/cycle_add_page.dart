@@ -151,7 +151,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                                 '${_cycle == null ? 'Opening' : 'Previous'} Balance',
                             prefixText: 'RM ',
                           ),
-                          enabled: _cycle == null,
+                          enabled: false,
                         ),
                         const SizedBox(height: 30),
                         ElevatedButton(
@@ -211,8 +211,7 @@ class CycleAddPageState extends State<CycleAddPage> {
     EasyLoading.show(status: messageService.getRandomAddMessage());
 
     //* Validate the form data
-    final message =
-        _validate(cycleNameController.text, openingBalanceController.text);
+    final message = _validate(cycleNameController.text);
 
     if (message.isNotEmpty) {
       EasyLoading.showInfo(message);
@@ -231,36 +230,10 @@ class CycleAddPageState extends State<CycleAddPage> {
     EasyLoading.showSuccess(messageService.getRandomDoneAddMessage());
   }
 
-  String _validate(String cycleName, String amount) {
+  String _validate(String cycleName) {
     if (cycleName.isEmpty) {
-      return 'Please enter cycle\'s name.';
+      return 'Please enter the cycle\'s name.';
     }
-
-    if (amount.isEmpty) {
-      return 'Please enter opening balance\'s amount.';
-    }
-
-    //* Remove any commas from the string
-    String cleanedValue = amount.replaceAll(',', '');
-
-    //* Check if the cleaned value is a valid double
-    if (double.tryParse(cleanedValue) == null) {
-      return 'Please enter a valid number.';
-    }
-
-    //* Check if the value is a positive number
-    if (double.parse(cleanedValue) <= 0) {
-      return 'Please enter a positive value.';
-    }
-
-    //* Custom currency validation (you can modify this based on your requirements)
-    //* Here, we are checking if the value has up to 2 decimal places
-    List<String> splitValue = cleanedValue.split('.');
-    if (splitValue.length > 1 && splitValue[1].length > 2) {
-      return 'Please enter a valid currency value with up to 2 decimal places';
-    }
-
-    openingBalanceController.text = cleanedValue;
 
     return '';
   }

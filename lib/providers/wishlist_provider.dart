@@ -92,7 +92,6 @@ class WishlistProvider extends ChangeNotifier {
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
-          'version_json': null,
         });
       } else if (action == 'Edit') {
         await FirebaseFirestore.instance

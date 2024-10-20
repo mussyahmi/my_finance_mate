@@ -172,12 +172,12 @@ class CategoryDialogState extends State<CategoryDialog> {
 
   String _validate(String name, String budget) {
     if (name.isEmpty) {
-      return 'Please enter category\'s name.';
+      return 'Please enter the category\'s name.';
     }
 
     if (_isBudgetEnabled) {
       if (budget.isEmpty) {
-        return 'Please enter category\'s budget.';
+        return 'Please enter the category\'s budget.';
       }
 
       //* Remove any commas from the string

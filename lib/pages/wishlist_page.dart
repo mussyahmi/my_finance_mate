@@ -51,70 +51,78 @@ class _WishlistPageState extends State<WishlistPage> {
                   .fetchWishlist(context, refresh: true);
             }
           },
-          child: FutureBuilder(
-            future: context.watch<WishlistProvider>().getWishlist(context),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(),
-                    ],
-                  ),
-                ); //* Display a loading indicator
-              } else if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: SelectableText(
-                    'Error: ${snapshot.error}',
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    'No wishlist found.',
-                    textAlign: TextAlign.center,
-                  ),
-                ); //* Display a message for no wishlist
-              } else {
-                //* Display the list of wishlist
-                final wishlist = snapshot.data!;
-
-                return ListView.builder(
-                  itemCount: wishlist.length,
-                  itemBuilder: (context, index) {
-                    if (wishlist[index] is BannerAd) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5.0),
-                        height: 50.0,
-                        child: AdWidget(ad: wishlist[index] as BannerAd),
-                      );
-                    } else {
-                      Wishlist wish = wishlist[index] as Wishlist;
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        margin: index == wishlist.length - 1
-                            ? const EdgeInsets.only(bottom: 80)
-                            : null,
-                        child: Card(
-                          child: ListTile(
-                            title: Text(wish.name),
-                            onTap: () =>
-                                wish.showWishlistDetails(context, cycle),
+          child: Center(
+            child: FutureBuilder(
+              future: context.watch<WishlistProvider>().getWishlist(context),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  ); //* Display a loading indicator
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: SelectableText(
+                      'Error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      'No wishlist found.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ); //* Display a message for no wishlist
+                } else {
+                  //* Display the list of wishlist
+                  final wishlist = snapshot.data!;
+            
+                  return ListView.builder(
+                    itemCount: wishlist.length,
+                    itemBuilder: (context, index) {
+                      if (wishlist[index] is BannerAd) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 5.0),
+                          height: 50.0,
+                          child: AdWidget(ad: wishlist[index] as BannerAd),
+                        );
+                      } else {
+                        Wishlist wish = wishlist[index] as Wishlist;
+            
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          margin: index == wishlist.length - 1
+                              ? const EdgeInsets.only(bottom: 80)
+                              : null,
+                          child: Card(
+                            child: ListTile(
+                              title: Text(wish.name),
+                              onTap: () =>
+                                  wish.showWishlistDetails(context, cycle),
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                  },
-                );
-              }
-            },
+                        );
+                      }
+                    },
+                  );
+                }
+              },
+            ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          Wishlist.showWishlistFormDialog(context, 'Add');
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

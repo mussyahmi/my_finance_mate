@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
+import 'providers/accounts_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/cycles_provider.dart';
@@ -48,6 +49,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => TransactionsProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => AccountsProvider(),
       ),
       ChangeNotifierProvider(
         create: (context) => CategoriesProvider(),

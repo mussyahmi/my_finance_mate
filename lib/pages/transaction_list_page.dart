@@ -148,183 +148,177 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 : null,
           ),
         ],
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            //* Transaction List
-            Expanded(
-              child: FutureBuilder<List<t.Transaction>>(
-                future: context
-                    .watch<TransactionsProvider>()
-                    .fetchFilteredTransactions(
-                      context,
-                      selectedDateRange,
-                      selectedType,
-                      widget.subType,
-                      selectedCategoryName,
-                    ),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Column(
-                        children: [
-                          CircularProgressIndicator(),
-                        ],
-                      ),
-                    ); //* Display a loading indicator
-                  } else if (snapshot.hasError) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: SelectableText(
-                        'Error: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        'No transactions found.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ); //* Display a message for no transactions
-                  } else {
-                    //* Display the list of transactions
-                    final transactions = snapshot.data;
-                    double total = 0;
-
-                    if (selectedCategoryName != null ||
-                        widget.subType != null) {
-                      for (var transaction in transactions!) {
-                        if (transaction.type == 'spent') {
-                          total -= double.parse(transaction.amount);
-                        } else {
-                          total += double.parse(transaction.amount);
-                        }
-                      }
+        body: Center(
+          child: FutureBuilder<List<t.Transaction>>(
+            future: context
+                .watch<TransactionsProvider>()
+                .fetchFilteredTransactions(
+                  context,
+                  selectedDateRange,
+                  selectedType,
+                  widget.subType,
+                  selectedCategoryName,
+                ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                    ],
+                  ),
+                ); //* Display a loading indicator
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: SelectableText(
+                    'Error: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    'No transactions found.',
+                    textAlign: TextAlign.center,
+                  ),
+                ); //* Display a message for no transactions
+              } else {
+                //* Display the list of transactions
+                final transactions = snapshot.data;
+                double total = 0;
+                  
+                if (selectedCategoryName != null ||
+                    widget.subType != null) {
+                  for (var transaction in transactions!) {
+                    if (transaction.type == 'spent') {
+                      total -= double.parse(transaction.amount);
+                    } else {
+                      total += double.parse(transaction.amount);
                     }
-
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: transactions!.length,
-                            itemBuilder: (context, index) {
-                              final transaction = transactions[index];
-                              return Column(
-                                children: [
-                                  if (index == 0 ||
-                                      DateTime(
-                                              transaction.dateTime.year,
-                                              transaction.dateTime.month,
-                                              transaction.dateTime.day,
-                                              0,
-                                              0) !=
-                                          DateTime(
-                                              transactions[index - 1]
-                                                  .dateTime
-                                                  .year,
-                                              transactions[index - 1]
-                                                  .dateTime
-                                                  .month,
-                                              transactions[index - 1]
-                                                  .dateTime
-                                                  .day,
-                                              0,
-                                              0))
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        transaction.getDateText(),
-                                        style: const TextStyle(
-                                            fontSize: 14, color: Colors.grey),
-                                      ),
-                                    ),
-                                  Padding(
-                                    padding: EdgeInsets.fromLTRB(
-                                        8,
-                                        0,
-                                        8,
-                                        index + 1 == transactions.length
-                                            ? 20
-                                            : 0),
-                                    child: Card(
-                                      child: ListTile(
-                                        title: Text(
-                                          transaction.categoryName,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              transaction.note.split('\\n')[0],
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontStyle: FontStyle.italic,
-                                                  color: Colors.grey),
-                                            ),
-                                          ],
-                                        ),
-                                        trailing: Text(
-                                          '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: transaction.type == 'spent'
-                                                  ? Colors.red
-                                                  : Colors.green),
-                                        ),
-                                        onTap: () {
-                                          //* Show the transaction summary dialog when tapped
-                                          transaction.showTransactionDetails(
-                                              context, cycle);
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                        if (selectedCategoryName != null ||
-                            widget.subType != null)
-                          Column(
+                  }
+                }
+                  
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: transactions!.length,
+                        itemBuilder: (context, index) {
+                          final transaction = transactions[index];
+                          return Column(
                             children: [
-                              const Divider(
-                                color: Colors.grey,
-                                height: 36,
-                              ),
+                              if (index == 0 ||
+                                  DateTime(
+                                          transaction.dateTime.year,
+                                          transaction.dateTime.month,
+                                          transaction.dateTime.day,
+                                          0,
+                                          0) !=
+                                      DateTime(
+                                          transactions[index - 1]
+                                              .dateTime
+                                              .year,
+                                          transactions[index - 1]
+                                              .dateTime
+                                              .month,
+                                          transactions[index - 1]
+                                              .dateTime
+                                              .day,
+                                          0,
+                                          0))
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    transaction.getDateText(),
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.grey),
+                                  ),
+                                ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 16.0, right: 16.0, bottom: 16.0),
-                                child: Text(
-                                  'Total: ${total < 0 ? '-' : ''}RM${total.abs().toStringAsFixed(2)}',
-                                  textAlign: TextAlign.end,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary),
+                                padding: EdgeInsets.fromLTRB(
+                                    8,
+                                    0,
+                                    8,
+                                    index + 1 == transactions.length
+                                        ? 20
+                                        : 0),
+                                child: Card(
+                                  child: ListTile(
+                                    title: Text(
+                                      transaction.categoryName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          transaction.note.split('\\n')[0],
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: Text(
+                                      '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          color: transaction.type == 'spent'
+                                              ? Colors.red
+                                              : Colors.green),
+                                    ),
+                                    onTap: () {
+                                      //* Show the transaction summary dialog when tapped
+                                      transaction.showTransactionDetails(
+                                          context, cycle);
+                                    },
+                                  ),
                                 ),
                               ),
                             ],
+                          );
+                        },
+                      ),
+                    ),
+                    if (selectedCategoryName != null ||
+                        widget.subType != null)
+                      Column(
+                        children: [
+                          const Divider(
+                            color: Colors.grey,
+                            height: 36,
                           ),
-                      ],
-                    );
-                  }
-                },
-              ),
-            ),
-          ],
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, right: 16.0, bottom: 16.0),
+                            child: Text(
+                              'Total: ${total < 0 ? '-' : ''}RM${total.abs().toStringAsFixed(2)}',
+                              textAlign: TextAlign.end,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                );
+              }
+            },
+          ),
         ),
       ),
     );

@@ -46,7 +46,6 @@ class CategoriesProvider extends ChangeNotifier {
         budget: data['budget'],
         totalAmount: data['total_amount'],
         cycleId: cycle.id,
-        createdAt: (data['created_at'] as Timestamp).toDate(),
         updatedAt: (data['updated_at'] as Timestamp).toDate(),
       );
     }).toList();
@@ -221,6 +220,10 @@ class CategoriesProvider extends ChangeNotifier {
     print('done recalculateCategoryTotalAmount');
   }
 
+  Category getACategoryById(categoryId) {
+    return categories!.firstWhere((category) => category.id == categoryId);
+  }
+
   Future<void> updateCategory(
       BuildContext context,
       String action,
@@ -255,7 +258,6 @@ class CategoriesProvider extends ChangeNotifier {
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
-          'version_json': null,
         });
       } else if (action == 'Edit') {
         await FirebaseFirestore.instance
@@ -309,7 +311,8 @@ class CategoriesProvider extends ChangeNotifier {
   Future<void> updateCategoryFromTransaction(
     BuildContext context,
     String action,
-    String categoryId,
+    String type,
+    String? categoryId,
     String amount,
     DateTime now,
     t.Transaction? transaction,
@@ -319,36 +322,31 @@ class CategoriesProvider extends ChangeNotifier {
     final List<Category> categories =
         context.read<CategoriesProvider>().categories!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
     double prevTotalAmount = 0;
     late Category prevCategory;
 
-    if (action != 'Add') {
+    if (action != 'Add' && transaction!.type != 'transfer') {
       //* Update previous category's data
-      prevCategory = categories
-          .firstWhere((category) => category.id == transaction!.categoryId);
+      prevCategory = getACategoryById(transaction.categoryId);
 
       prevTotalAmount = double.parse(prevCategory.totalAmount) -
-          double.parse(transaction!.amount);
+          double.parse(transaction.amount);
 
-      if (action == 'Edit' || action == 'Delete') {
-        final prevCategoryRef = cyclesRef
-            .doc(cycle.id)
-            .collection('categories')
-            .doc(transaction.categoryId);
-
-        //* Update the category document
-        await prevCategoryRef.update({
-          'total_amount': prevTotalAmount.toStringAsFixed(2),
-          'updated_at': now,
-        });
-      }
+      //* Update previous category document
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(cycle.id)
+          .collection('categories')
+          .doc(transaction.categoryId)
+          .update({
+        'total_amount': prevTotalAmount.toStringAsFixed(2),
+        'updated_at': now,
+      });
     }
 
-    if (action != 'Delete') {
+    if (action != 'Delete' && type != 'transfer') {
       //* Update new category's data
       final Category newCategory =
           categories.firstWhere((category) => category.id == categoryId);
@@ -360,11 +358,15 @@ class CategoriesProvider extends ChangeNotifier {
             double.parse(newCategory.totalAmount) + double.parse(amount);
       }
 
-      final newCategoryRef =
-          cyclesRef.doc(cycle.id).collection('categories').doc(categoryId);
-
-      //* Update the category document
-      await newCategoryRef.update({
+      //* Update new category document
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(cycle.id)
+          .collection('categories')
+          .doc(categoryId)
+          .update({
         'total_amount': newTotalAmount.toStringAsFixed(2),
         'updated_at': now,
       });

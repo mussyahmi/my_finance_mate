@@ -159,7 +159,6 @@ class Wishlist {
     );
   }
 
-  //* Function to show the add category dialog
   static Future<bool> showWishlistFormDialog(
       BuildContext context, String action,
       {Wishlist? wish}) async {

@@ -80,7 +80,10 @@ class WishlistDialogState extends State<WishlistDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
-              EasyLoading.show(status: messageService.getRandomUpdateMessage());
+              EasyLoading.show(
+                  status: widget.action == 'Edit'
+                      ? messageService.getRandomUpdateMessage()
+                      : messageService.getRandomAddMessage());
 
               final wishlistName = _wishlistNameController.text;
               final wishlistNote = _wishlistNoteController.text;
@@ -100,8 +103,9 @@ class WishlistDialogState extends State<WishlistDialog> {
                     wish: widget.wish,
                   );
 
-              EasyLoading.showSuccess(
-                  messageService.getRandomDoneUpdateMessage());
+              EasyLoading.showSuccess(widget.action == 'Edit'
+                  ? messageService.getRandomDoneUpdateMessage()
+                  : messageService.getRandomDoneAddMessage());
 
               //* Close the dialog
               Navigator.of(context).pop(true);
@@ -115,7 +119,7 @@ class WishlistDialogState extends State<WishlistDialog> {
 
   String _validate(String name) {
     if (name.isEmpty) {
-      return 'Please enter wishlist\'s name.';
+      return 'Please enter the wishlist\'s name.';
     }
 
     return '';

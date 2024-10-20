@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
+import '../models/account.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../pages/cycle_add_page.dart';
 import '../pages/dashboard_page.dart';
+import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'transactions_provider.dart';
 import 'user_provider.dart';
@@ -69,6 +71,7 @@ class CycleProvider extends ChangeNotifier {
     cycle = newCycle;
 
     await context.read<CategoriesProvider>().fetchCategories(context, newCycle);
+    await context.read<AccountsProvider>().fetchAccounts(context, newCycle);
     await context
         .read<TransactionsProvider>()
         .fetchTransactions(context, newCycle);
@@ -177,11 +180,11 @@ class CycleProvider extends ChangeNotifier {
     double cycleAmountSpent = double.parse(cycle.amountSpent);
 
     //* Calculate the cycle's amounts before including this transaction
-    if (action == 'Edit' || action == 'Delete') {
-      if (type == 'spent') {
-        cycleAmountSpent -= double.parse(transaction!.amount);
+    if (action != 'Add' && transaction!.type != 'transfer') {
+      if (transaction.type == 'spent') {
+        cycleAmountSpent -= double.parse(transaction.amount);
       } else {
-        cycleAmountReceived -= double.parse(transaction!.amount);
+        cycleAmountReceived -= double.parse(transaction.amount);
       }
     }
 
@@ -190,7 +193,7 @@ class CycleProvider extends ChangeNotifier {
     double updatedAmountBalance =
         cycleOpeningBalance + cycleAmountReceived - cycleAmountSpent;
 
-    if (action != 'Delete') {
+    if (action != 'Delete' && type != 'transfer') {
       updatedAmountBalance += type == 'spent' ? -newAmount : newAmount;
       cycleAmountSpent += type == 'spent' ? newAmount : 0;
       cycleAmountReceived += type == 'received' ? newAmount : 0;
@@ -204,6 +207,49 @@ class CycleProvider extends ChangeNotifier {
     await cyclesRef.doc(cycle.id).update({
       'amount_spent': cycleAmountSpent.toStringAsFixed(2),
       'amount_received': cycleAmountReceived.toStringAsFixed(2),
+      'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+      'updated_at': now,
+    });
+  }
+
+  Future<void> updateCycleFromAccount(
+    BuildContext context,
+    String action,
+    String amount,
+    DateTime now,
+    Account? account,
+  ) async {
+    final Person user = context.read<UserProvider>().user!;
+    final Cycle cycle = context.read<CycleProvider>().cycle!;
+
+    double cycleOpeningBalance = double.parse(cycle.openingBalance);
+    double cycleAmountBalance = double.parse(cycle.amountBalance);
+
+    //* Calculate the cycle's amounts before including this account
+    if (action != 'Add') {
+      cycleOpeningBalance -= double.parse(account!.openingBalance);
+      cycleAmountBalance -= double.parse(account.openingBalance);
+    }
+
+    final newAmount = double.parse(amount);
+    print(newAmount);
+
+    double updatedOpeningBalance = cycleOpeningBalance;
+    double updatedAmountBalance = cycleAmountBalance;
+
+    if (action != 'Delete') {
+      updatedOpeningBalance += newAmount;
+      updatedAmountBalance += newAmount;
+    }
+
+    //* Update the cycle document
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .update({
+      'opening_balance': updatedOpeningBalance.toStringAsFixed(2),
       'amount_balance': updatedAmountBalance.toStringAsFixed(2),
       'updated_at': now,
     });

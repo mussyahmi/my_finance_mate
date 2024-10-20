@@ -30,7 +30,6 @@ class Cycle {
     required this.isLastCycle,
   });
 
-  //* Function to show the add/edit cycle dialog
   Future<bool> showCycleFormDialog(
     BuildContext context,
     Person user,

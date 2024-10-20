@@ -14,6 +14,7 @@ import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../services/ad_mob_service.dart';
+import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
 import 'user_provider.dart';
@@ -51,8 +52,20 @@ class TransactionsProvider extends ChangeNotifier {
         dateTime: (data['date_time'] as Timestamp).toDate(),
         type: data['type'] as String,
         subType: data['subType'],
-        categoryId: data['category_id'],
+        categoryId: data['category_id'] ?? '',
         categoryName: data['category_name'],
+        accountId: data['account_id'] ?? '',
+        accountName: data['account_id'] != null
+            ? context
+                .read<AccountsProvider>()
+                .getAccountName(data['account_id'])
+            : '',
+        accountToId: data['account_to_id'] ?? '',
+        accountToName: data['account_to_id'] != null
+            ? context
+                .read<AccountsProvider>()
+                .getAccountName(data['account_to_id'])
+            : '',
         amount: data['amount'] as String,
         note: data['note'] as String,
         files: data['files'] != null ? data['files'] as List : [],
@@ -133,8 +146,20 @@ class TransactionsProvider extends ChangeNotifier {
                 dateTime: (data['date_time'] as Timestamp).toDate(),
                 type: data['type'] as String,
                 subType: data['subType'],
-                categoryId: data['category_id'],
+                categoryId: data['category_id'] ?? '',
                 categoryName: categoryName,
+                accountId: data['account_id'] ?? '',
+                accountName: data['account_id'] != null
+                    ? context
+                        .read<AccountsProvider>()
+                        .getAccountName(data['account_id'])
+                    : '',
+                accountToId: data['account_to_id'] ?? '',
+                accountToName: data['account_to_id'] != null
+                    ? context
+                        .read<AccountsProvider>()
+                        .getAccountName(data['account_to_id'])
+                    : '',
                 amount: data['amount'] as String,
                 note: data['note'] as String,
                 files: data['files'] != null ? data['files'] as List : [],
@@ -151,8 +176,20 @@ class TransactionsProvider extends ChangeNotifier {
               dateTime: (data['date_time'] as Timestamp).toDate(),
               type: data['type'] as String,
               subType: data['subType'],
-              categoryId: data['category_id'],
+              categoryId: data['category_id'] ?? '',
               categoryName: categoryName,
+              accountId: data['account_id'] ?? '',
+              accountName: data['account_id'] != null
+                  ? context
+                      .read<AccountsProvider>()
+                      .getAccountName(data['account_id'])
+                  : '',
+              accountToId: data['account_to_id'] ?? '',
+              accountToName: data['account_to_id'] != null
+                  ? context
+                      .read<AccountsProvider>()
+                      .getAccountName(data['account_to_id'])
+                  : '',
               amount: data['amount'] as String,
               note: data['note'] as String,
               files: data['files'] != null ? data['files'] as List : [],
@@ -206,13 +243,20 @@ class TransactionsProvider extends ChangeNotifier {
         .any((transaction) => transaction.categoryId == categoryId);
   }
 
+  bool hasAccount(String accountId) {
+    return transactions!
+        .any((transaction) => transaction.accountId == accountId);
+  }
+
   Future<void> updateTransaction(
     BuildContext context,
     String action,
     DateTime dateTime,
     String type,
     String? subType,
-    String categoryId,
+    String? categoryId,
+    String accountId,
+    String? accountToId,
     String amount,
     String note,
     List<dynamic> files,
@@ -228,31 +272,33 @@ class TransactionsProvider extends ChangeNotifier {
     final now = DateTime.now();
 
     try {
-      //* Reference to the Firestore document to add the transaction
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final transactionsRef = userRef.collection('transactions');
-
       List downloadURLs =
           await _uploadAndDeleteFiles(user, action, files, filesToDelete);
 
       if (action == 'Add') {
         //* Create a new transaction document
-        await transactionsRef.add({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .add({
           'cycle_id': cycle.id,
           'date_time': dateTime,
           'type': type,
           'subType': type == 'spent' ? subType : null,
+          'account_id': accountId,
+          'account_to_id': accountToId,
           'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
+          'category_name': categoryId != null
+              ? categories
+                  .firstWhere((category) => category.id == categoryId)
+                  .name
+              : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
-          'version_json': null,
           'files': downloadURLs,
         });
 
@@ -260,18 +306,30 @@ class TransactionsProvider extends ChangeNotifier {
         final adMobService = context.read<AdMobService>();
 
         if (adMobService.status) {
-          await userRef.update(
-              {'daily_transactions_made': user.dailyTransactionsMade + 1});
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update(
+                  {'daily_transactions_made': user.dailyTransactionsMade + 1});
         }
       } else if (action == 'Edit') {
-        await transactionsRef.doc(transaction!.id).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .doc(transaction!.id)
+            .update({
           'date_time': dateTime,
           'type': type,
           'subType': type == 'spent' ? subType : null,
+          'account_id': accountId,
+          'account_to_id': accountToId,
           'category_id': categoryId,
-          'category_name': categories
-              .firstWhere((category) => category.id == categoryId)
-              .name,
+          'category_name': categoryId != null
+              ? categories
+                  .firstWhere((category) => category.id == categoryId)
+                  .name
+              : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,
@@ -279,16 +337,33 @@ class TransactionsProvider extends ChangeNotifier {
         });
       }
 
-      //* Update cycle's data
-      await context.read<CycleProvider>().updateCycleFromTransaction(
-          context, action, type, amount, now, transaction);
+      if (!(action != 'Add' &&
+          transaction!.type == 'transfer' &&
+          type == 'transfer')) {
+        //* Update cycle's data
+        await context.read<CycleProvider>().updateCycleFromTransaction(
+            context, action, type, amount, now, transaction);
 
-      //* Update category's data
-      await context.read<CategoriesProvider>().updateCategoryFromTransaction(
-          context, action, categoryId, amount, now, transaction);
+        //* Update category's data
+        await context.read<CategoriesProvider>().updateCategoryFromTransaction(
+            context, action, type, categoryId, amount, now, transaction);
+      }
+
+      //* Update account's data
+      await context.read<AccountsProvider>().updateAccountFromTransaction(
+            context,
+            action,
+            type,
+            amount,
+            now,
+            transaction,
+            accountId,
+            accountToId,
+          );
 
       await context.read<CycleProvider>().fetchCycle(context);
       await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+      await context.read<AccountsProvider>().fetchAccounts(context, cycle);
       await context
           .read<TransactionsProvider>()
           .fetchTransactions(context, cycle);
@@ -350,11 +425,6 @@ class TransactionsProvider extends ChangeNotifier {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionRef =
-        userRef.collection('transactions').doc(transactionId);
-
     final t.Transaction trans = transactions!
         .firstWhere((transaction) => transaction.id == transactionId);
 
@@ -365,21 +435,55 @@ class TransactionsProvider extends ChangeNotifier {
 
     //* Update the 'deleted_at' field with the current timestamp
     final now = DateTime.now();
-    transactionRef.update({
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .doc(transactionId)
+        .update({
       'files': [],
       'updated_at': now,
       'deleted_at': now,
     });
 
-    //* Update cycle's data
-    await context.read<CycleProvider>().updateCycleFromTransaction(
-        context, 'Delete', trans.type, trans.amount, now, trans);
+    if (trans.type != 'transfer') {
+      //* Update cycle's data
+      await context.read<CycleProvider>().updateCycleFromTransaction(
+            context,
+            'Delete',
+            trans.type,
+            trans.amount,
+            now,
+            trans,
+          );
 
-    await context.read<CategoriesProvider>().updateCategoryFromTransaction(
-        context, 'Delete', trans.categoryId, trans.amount, now, trans);
+      //* Update category's data
+      await context.read<CategoriesProvider>().updateCategoryFromTransaction(
+            context,
+            'Delete',
+            trans.type,
+            trans.categoryId,
+            trans.amount,
+            now,
+            trans,
+          );
+    }
+
+    //* Update account's data
+    await context.read<AccountsProvider>().updateAccountFromTransaction(
+          context,
+          'Delete',
+          trans.type,
+          trans.amount,
+          now,
+          trans,
+          trans.accountId,
+          trans.accountToId,
+        );
 
     await context.read<CycleProvider>().fetchCycle(context);
     await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+    await context.read<AccountsProvider>().fetchAccounts(context, cycle);
     await context
         .read<TransactionsProvider>()
         .fetchTransactions(context, cycle);

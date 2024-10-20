@@ -74,89 +74,91 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
               ],
             ),
           ],
-          body: FutureBuilder(
-            future: context
-                .watch<CategoriesProvider>()
-                .getCategories(context, null, 'category_summary'),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(),
-                    ],
-                  ),
-                ); //* Display a loading indicator
-              } else if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: SelectableText(
-                    'Error: ${snapshot.error}',
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    'No categories found.',
-                    textAlign: TextAlign.center,
-                  ),
-                ); //* Display a message for no categories
-              } else {
-                //* Display the list of categories
-                final categories = snapshot.data!;
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    if (categories[index] is SizedBox) {
-                      return categories[index] as SizedBox;
-                    } else if (categories[index] is BannerAd) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5.0),
-                        height: 50.0,
-                        child: AdWidget(ad: categories[index] as BannerAd),
-                      );
-                    } else {
-                      Category category = categories[index] as Category;
-
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Card(
-                          child: ListTile(
-                            title: Text(
-                              category.name,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
+          body: Center(
+            child: FutureBuilder(
+              future: context
+                  .watch<CategoriesProvider>()
+                  .getCategories(context, null, 'category_summary'),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  ); //* Display a loading indicator
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: SelectableText(
+                      'Error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      'No categories found.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ); //* Display a message for no categories
+                } else {
+                  //* Display the list of categories
+                  final categories = snapshot.data!;
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      if (categories[index] is SizedBox) {
+                        return categories[index] as SizedBox;
+                      } else if (categories[index] is BannerAd) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 5.0),
+                          height: 50.0,
+                          child: AdWidget(ad: categories[index] as BannerAd),
+                        );
+                      } else {
+                        Category category = categories[index] as Category;
+            
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            child: ListTile(
+                              title: Text(
+                                category.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              trailing: Text(
+                                '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: category.type == 'spent'
+                                        ? Colors.red
+                                        : Colors.green),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TransactionListPage(
+                                        type: category.type,
+                                        categoryName: category.name),
+                                  ),
+                                );
+                              },
                             ),
-                            trailing: Text(
-                              '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: category.type == 'spent'
-                                      ? Colors.red
-                                      : Colors.green),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TransactionListPage(
-                                      type: category.type,
-                                      categoryName: category.name),
-                                ),
-                              );
-                            },
                           ),
-                        ),
-                      );
-                    }
-                  },
-                );
-              }
-            },
+                        );
+                      }
+                    },
+                  );
+                }
+              },
+            ),
           ),
         ),
       ),

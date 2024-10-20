@@ -10,8 +10,10 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
@@ -41,6 +43,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   String? selectedSubType;
   String? selectedCategoryId;
   List<Category> categories = [];
+  String? selectedAccountId;
+  String? selectedAccountToId;
+  List<Account> accounts = [];
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
@@ -74,6 +79,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
   Future<void> initAsync() async {
     await _fetchCategories();
+    await _fetchAccounts();
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
@@ -86,7 +92,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       await _fetchCategories();
 
-      selectedCategoryId = widget.transaction!.categoryId;
+      selectedCategoryId = widget.transaction!.categoryId == '' ? null : widget.transaction!.categoryId;
+      selectedAccountId = widget.transaction!.accountId;
+      selectedAccountToId = widget.transaction!.accountToId;
     }
   }
 
@@ -97,6 +105,15 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     setState(() {
       categories = fetchedCategories;
+    });
+  }
+
+  Future<void> _fetchAccounts() async {
+    List<Account> fetchedAccounts = List<Account>.from(
+        await context.read<AccountsProvider>().getAccounts(context));
+
+    setState(() {
+      accounts = fetchedAccounts;
     });
   }
 
@@ -125,6 +142,27 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
+                    DropdownButtonFormField<String>(
+                      value: selectedAccountId,
+                      onChanged: (newValue) async {
+                        setState(() {
+                          selectedAccountId = newValue;
+                          selectedAccountToId = null;
+                        });
+                      },
+                      items: [
+                        ...accounts.map((account) {
+                          return DropdownMenuItem<String>(
+                            value: account.id,
+                            child: Text(account.name),
+                          );
+                        }),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Account',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     SegmentedButton(
                       segments: const [
                         ButtonSegment(
@@ -137,9 +175,21 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           label: Text('Received'),
                           icon: Icon(Icons.file_download_outlined),
                         ),
+                        ButtonSegment(
+                          value: 'transfer',
+                          label: Text('Transfer'),
+                          icon: Icon(Icons.swap_horiz),
+                        ),
                       ],
                       selected: {selectedType},
                       onSelectionChanged: (newSelection) {
+                        if (newSelection.first == 'transfer' &&
+                            accounts.length < 2) {
+                          EasyLoading.showInfo(
+                              'You need at least 2 accounts to make a transfer.');
+                          return;
+                        }
+
                         setState(() {
                           selectedType = newSelection.first;
                           selectedCategoryId = null;
@@ -150,33 +200,38 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     ),
                     const SizedBox(height: 10),
                     if (selectedType == 'spent')
-                      SegmentedButton(
-                        segments: const [
-                          ButtonSegment(
-                            value: 'needs',
-                            label: Text('Needs'),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SegmentedButton(
+                            segments: const [
+                              ButtonSegment(
+                                value: 'needs',
+                                label: Text('Needs'),
+                              ),
+                              ButtonSegment(
+                                value: 'wants',
+                                label: Text('Wants'),
+                              ),
+                              ButtonSegment(
+                                value: 'savings',
+                                label: Text('Savings'),
+                              ),
+                            ],
+                            selected: {selectedSubType},
+                            onSelectionChanged: (newSelection) {
+                              print(newSelection);
+                              setState(() {
+                                selectedSubType = newSelection.isNotEmpty
+                                    ? newSelection.first
+                                    : null;
+                              });
+                            },
+                            emptySelectionAllowed: true,
                           ),
-                          ButtonSegment(
-                            value: 'wants',
-                            label: Text('Wants'),
-                          ),
-                          ButtonSegment(
-                            value: 'savings',
-                            label: Text('Savings'),
-                          ),
+                          const SizedBox(height: 10),
                         ],
-                        selected: {selectedSubType},
-                        onSelectionChanged: (newSelection) {
-                          print(newSelection);
-                          setState(() {
-                            selectedSubType = newSelection.isNotEmpty
-                                ? newSelection.first
-                                : null;
-                          });
-                        },
-                        emptySelectionAllowed: true,
                       ),
-                    const SizedBox(height: 15),
                     ElevatedButton(
                       onPressed: () async {
                         final selectedDate = await showDatePicker(
@@ -209,55 +264,88 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      value: selectedCategoryId,
-                      onChanged: (newValue) async {
-                        setState(() {
-                          selectedCategoryId = newValue;
-                        });
+                    if (selectedType != 'transfer')
+                      Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            value: selectedCategoryId,
+                            onChanged: (newValue) async {
+                              setState(() {
+                                selectedCategoryId = newValue;
+                              });
 
-                        if (newValue == 'add_new') {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return CategoryListPage(
-                                type: selectedType,
-                                isFromTransactionForm: true,
-                              );
-                            }),
-                          );
+                              if (newValue == 'add_new') {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return CategoryListPage(
+                                      type: selectedType,
+                                      isFromTransactionForm: true,
+                                    );
+                                  }),
+                                );
 
-                          setState(() {
-                            selectedCategoryId = null;
-                          });
+                                setState(() {
+                                  selectedCategoryId = null;
+                                });
 
-                          _fetchCategories();
-                        }
-                      },
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: 'add_new',
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_circle),
-                              SizedBox(width: 8),
-                              Text('Add New'),
+                                _fetchCategories();
+                              }
+                            },
+                            items: [
+                              const DropdownMenuItem<String>(
+                                value: 'add_new',
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_circle),
+                                    SizedBox(width: 8),
+                                    Text('Add New'),
+                                  ],
+                                ),
+                              ),
+                              ...categories.map((category) {
+                                return DropdownMenuItem<String>(
+                                  value: category.id,
+                                  child: Text(category.name),
+                                );
+                              }),
                             ],
+                            decoration: const InputDecoration(
+                              labelText: 'Category',
+                            ),
                           ),
-                        ),
-                        ...categories.map((category) {
-                          return DropdownMenuItem<String>(
-                            value: category.id,
-                            child: Text(category.name),
-                          );
-                        }),
-                      ],
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
+                          const SizedBox(height: 20),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                    if (selectedType == 'transfer')
+                      Column(
+                        children: [
+                          DropdownButtonFormField<String>(
+                            value: selectedAccountToId,
+                            onChanged: (newValue) async {
+                              setState(() {
+                                selectedAccountToId = newValue;
+                              });
+                            },
+                            items: [
+                              ...accounts
+                                  .where((account) =>
+                                      account.id != selectedAccountId)
+                                  .map((account) {
+                                return DropdownMenuItem<String>(
+                                  value: account.id,
+                                  child: Text(account.name),
+                                );
+                              }),
+                            ],
+                            decoration: const InputDecoration(
+                              labelText: 'Transfer To',
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     TextField(
                       controller: transactionAmountController,
                       keyboardType: TextInputType.number,
@@ -436,13 +524,16 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           String type = selectedType;
                           String? subType = selectedSubType;
                           String? categoryId = selectedCategoryId;
+                          String? accountId = selectedAccountId;
+                          String? accountToId = selectedAccountToId;
                           String amount = transactionAmountController.text;
                           String note = transactionNoteController.text
                               .replaceAll('\n', '\\n');
                           DateTime dateTime = selectedDateTime;
 
                           //* Validate the form data
-                          final message = _validate(categoryId, amount);
+                          final message = _validate(
+                              accountId, type, categoryId, accountToId, amount);
 
                           if (message.isNotEmpty) {
                             EasyLoading.showInfo(message);
@@ -457,7 +548,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 dateTime,
                                 type,
                                 subType,
-                                categoryId!,
+                                categoryId,
+                                accountId!,
+                                accountToId,
                                 amount,
                                 note,
                                 files,
@@ -502,13 +595,24 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     );
   }
 
-  String _validate(String? categoryId, String amount) {
-    if (categoryId == null || categoryId.isEmpty) {
-      return 'Please choose category.';
+  String _validate(String? accountId, String type, String? categoryId,
+      String? accountToId, String amount) {
+    if (accountId == null || accountId.isEmpty) {
+      return 'Please choose an account.';
+    }
+
+    if (type != 'transfer') {
+      if (categoryId == null || categoryId.isEmpty) {
+        return 'Please choose a category.';
+      }
+    } else {
+      if (accountToId == null || accountToId.isEmpty) {
+        return 'Please choose an account to transfer to.';
+      }
     }
 
     if (amount.isEmpty) {
-      return 'Please enter transaction\'s amount.';
+      return 'Please enter the transaction\'s amount.';
     }
 
     //* Remove any commas from the string

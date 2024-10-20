@@ -5,10 +5,11 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
+import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
-import '../models/wishlist.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
@@ -17,12 +18,12 @@ import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
+import 'account_list_page.dart';
 import 'category_list_page.dart';
 import 'explore_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
-import 'wishlist_page.dart';
 import 'cycle_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -50,22 +51,28 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     super.didChangeDependencies();
 
     if (context.read<CycleProvider>().cycle == null) {
-      context.read<CycleProvider>().fetchCycle(context);
+      await context.read<CycleProvider>().fetchCycle(context);
     }
 
-    if (context.watch<CycleProvider>().cycle != null) {
+    if (context.read<CycleProvider>().cycle != null) {
       if (context.read<CategoriesProvider>().categories == null) {
-        context
+        await context
             .read<CategoriesProvider>()
             .fetchCategories(context, context.read<CycleProvider>().cycle!);
       }
 
+      if (context.read<AccountsProvider>().accounts == null) {
+        await context
+            .read<AccountsProvider>()
+            .fetchAccounts(context, context.read<CycleProvider>().cycle!);
+      }
+
       if (context.read<TransactionsProvider>().transactions == null) {
-        context
+        await context
             .read<TransactionsProvider>()
             .fetchTransactions(context, context.read<CycleProvider>().cycle!);
       }
@@ -165,6 +172,9 @@ class _DashboardPageState extends State<DashboardPage>
                 context
                     .read<CategoriesProvider>()
                     .fetchCategories(context, cycle, refresh: true);
+                context
+                    .read<AccountsProvider>()
+                    .fetchAccounts(context, cycle, refresh: true);
                 context
                     .read<TransactionsProvider>()
                     .fetchTransactions(context, cycle, refresh: true);
@@ -290,12 +300,45 @@ class _DashboardPageState extends State<DashboardPage>
                                     ),
                                   Card(
                                     child: ListTile(
-                                      title: Text(
-                                        transaction.categoryName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
+                                      title: transaction.type == 'transfer'
+                                          ? Row(
+                                              children: [
+                                                Chip(
+                                                  label: Text(
+                                                    transaction.accountName,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  padding: EdgeInsets.all(0),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 4.0),
+                                                  child: Icon(
+                                                      Icons.arrow_forward,
+                                                      color: Colors.grey),
+                                                ),
+                                                Chip(
+                                                  label: Text(
+                                                    transaction.accountToName,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  padding: EdgeInsets.all(0),
+                                                ),
+                                              ],
+                                            )
+                                          : Text(
+                                              transaction.categoryName,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                            ),
                                       subtitle: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -315,9 +358,12 @@ class _DashboardPageState extends State<DashboardPage>
                                         '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
                                         style: TextStyle(
                                             fontSize: 16,
-                                            color: transaction.type == 'spent'
-                                                ? Colors.red
-                                                : Colors.green),
+                                            color: transaction.type ==
+                                                    'transfer'
+                                                ? Colors.grey
+                                                : transaction.type == 'spent'
+                                                    ? Colors.red
+                                                    : Colors.green),
                                       ),
                                       onTap: () {
                                         //* Show the transaction summary dialog when tapped
@@ -340,21 +386,20 @@ class _DashboardPageState extends State<DashboardPage>
             ),
           ),
         ),
-        const Center(
-          child: Text('Coming Soon!'),
-        ),
+        cycle != null ? const AccountListPage() : Container(),
         cycle != null ? const CategoryListPage() : Container(),
-        const WishlistPage(),
         cycle != null ? const ExplorePage() : Container(),
       ][_selectedIndex],
-      floatingActionButton: _selectedIndex != 1 &&
-              _selectedIndex != 4 &&
+      floatingActionButton: _selectedIndex != 3 &&
               cycle != null &&
               cycle.isLastCycle
           ? FloatingActionButton(
               onPressed: () async {
                 if (_selectedIndex == 0) {
-                  if (user.dailyTransactionsMade >= 5) {
+                  if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                    EasyLoading.showInfo(
+                        'No accounts? Let\'s fix that—add one to begin!');
+                  } else if (user.dailyTransactionsMade >= 5) {
                     await showDialog(
                       context: context,
                       builder: (context) {
@@ -392,10 +437,10 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                     );
                   }
+                } else if (_selectedIndex == 1) {
+                  Account.showAccountFormDialog(context, 'Add');
                 } else if (_selectedIndex == 2) {
                   Category.showCategoryFormDialog(context, 'received', 'Add');
-                } else if (_selectedIndex == 3) {
-                  Wishlist.showWishlistFormDialog(context, 'Add');
                 }
               },
               child: const Icon(Icons.add),
@@ -410,7 +455,6 @@ class _DashboardPageState extends State<DashboardPage>
               icon: Icon(Icons.wallet), label: 'Account List'),
           NavigationDestination(
               icon: Icon(Icons.category), label: 'Category List'),
-          NavigationDestination(icon: Icon(Icons.favorite), label: 'Wishlist'),
           NavigationDestination(icon: Icon(Icons.explore), label: 'Explore'),
         ],
         onDestinationSelected: (value) {

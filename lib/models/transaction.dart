@@ -26,6 +26,10 @@ class Transaction {
   String? subType;
   String categoryId;
   String categoryName;
+  String accountId;
+  String accountName;
+  String accountToId;
+  String accountToName;
   String amount;
   String note;
   List files;
@@ -39,6 +43,10 @@ class Transaction {
     required this.subType,
     required this.categoryId,
     required this.categoryName,
+    required this.accountId,
+    required this.accountName,
+    required this.accountToId,
+    required this.accountToName,
     required this.amount,
     required this.note,
     required this.files,
@@ -117,16 +125,34 @@ class Transaction {
           ),
           contents: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Category:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(categoryName),
-                ],
-              ),
+              if (accountName != '')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Account:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(accountName),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                  ],
+                ),
+              if (type != 'transfer')
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Category:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(categoryName),
+                  ],
+                ),
               const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
