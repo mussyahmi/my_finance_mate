@@ -4,21 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../extensions/string_extension.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 
 class TransactionListPage extends StatefulWidget {
+  final String? accountId;
+  final String? accountToId;
   final String? type;
   final String? subType;
   final String? categoryName;
 
   const TransactionListPage({
     super.key,
+    this.accountId,
+    this.accountToId,
     this.type,
     this.subType,
     this.categoryName,
@@ -30,9 +36,13 @@ class TransactionListPage extends StatefulWidget {
 
 class _TransactionListPageState extends State<TransactionListPage> {
   DateTimeRange? selectedDateRange;
+  String? selectedAccountId;
+  String? selectedAccountToId;
   String? selectedType;
   String? selectedCategoryName;
   List<Category> categories = [];
+  List<Account> accounts = [];
+  bool openFilter = false;
 
   @override
   void initState() {
@@ -43,8 +53,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
   Future<void> initAsync() async {
     selectedType = widget.type;
     selectedCategoryName = widget.categoryName;
+    selectedAccountId = widget.accountId;
+    selectedAccountToId = widget.accountToId;
 
     await _fetchCategories();
+    await _fetchAccounts();
   }
 
   Future<void> _fetchCategories() async {
@@ -54,6 +67,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
     setState(() {
       categories = fetchedCategories;
+    });
+  }
+
+  Future<void> _fetchAccounts() async {
+    List<Account> fetchedAccounts = List<Account>.from(
+        await context.read<AccountsProvider>().getAccounts(context));
+
+    setState(() {
+      accounts = fetchedAccounts;
     });
   }
 
@@ -70,9 +92,21 @@ class _TransactionListPageState extends State<TransactionListPage> {
             scrolledUnderElevation: 9999,
             floating: true,
             snap: true,
-            bottom: widget.subType == null
+            actions: [
+              if (widget.subType == null)
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      openFilter = !openFilter;
+                    });
+                  },
+                  icon: Icon(
+                      openFilter ? Icons.filter_list : Icons.filter_list_off),
+                ),
+            ],
+            bottom: openFilter && widget.subType == null
                 ? PreferredSize(
-                    preferredSize: const Size(double.infinity, 200.0),
+                    preferredSize: Size(double.infinity, 250.0),
                     child: Padding(
                       padding: const EdgeInsets.only(
                           left: 16.0, right: 16.0, bottom: 16.0),
@@ -103,6 +137,25 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               textAlign: TextAlign.center,
                             ),
                           ),
+                          //* Account Dropdown
+                          DropdownButtonFormField<String>(
+                            value: selectedAccountId,
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedAccountId = newValue;
+                                selectedAccountToId = null;
+                              });
+                            },
+                            items: accounts.map((account) {
+                              return DropdownMenuItem<String>(
+                                value: account.id,
+                                child: Text(account.name),
+                              );
+                            }).toList(),
+                            decoration: const InputDecoration(
+                              labelText: 'Account',
+                            ),
+                          ),
                           //* Type Dropdown
                           DropdownButtonFormField<String>(
                             value: selectedType,
@@ -110,10 +163,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               setState(() {
                                 selectedType = newValue as String;
                                 selectedCategoryName = null;
+                                selectedAccountToId = null;
                               });
-                              // _fetchCategories();
+                              _fetchCategories();
                             },
-                            items: ['spent', 'received'].map((type) {
+                            items:
+                                ['spent', 'received', 'transfer'].map((type) {
                               return DropdownMenuItem(
                                 value: type,
                                 child: Text(type.capitalize()),
@@ -124,23 +179,46 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             ),
                           ),
                           //* Category Dropdown
-                          DropdownButtonFormField<String>(
-                            value: selectedCategoryName,
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectedCategoryName = newValue;
-                              });
-                            },
-                            items: categories.map((category) {
-                              return DropdownMenuItem<String>(
-                                value: category.name,
-                                child: Text(category.name),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              labelText: 'Category',
+                          if (selectedType != 'transfer')
+                            DropdownButtonFormField<String>(
+                              value: selectedCategoryName,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedCategoryName = newValue;
+                                });
+                              },
+                              items: categories.map((category) {
+                                return DropdownMenuItem<String>(
+                                  value: category.name,
+                                  child: Text(category.name),
+                                );
+                              }).toList(),
+                              decoration: const InputDecoration(
+                                labelText: 'Category',
+                              ),
                             ),
-                          ),
+                          //* Account To Dropdown
+                          if (selectedType == 'transfer')
+                            DropdownButtonFormField<String>(
+                              value: selectedAccountToId,
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedAccountToId = newValue;
+                                });
+                              },
+                              items: accounts
+                                  .where((account) =>
+                                      account.id != selectedAccountId)
+                                  .map((account) {
+                                return DropdownMenuItem<String>(
+                                  value: account.id,
+                                  child: Text(account.name),
+                                );
+                              }).toList(),
+                              decoration: const InputDecoration(
+                                labelText: 'Transfer To',
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -150,15 +228,14 @@ class _TransactionListPageState extends State<TransactionListPage> {
         ],
         body: Center(
           child: FutureBuilder<List<t.Transaction>>(
-            future: context
-                .watch<TransactionsProvider>()
-                .fetchFilteredTransactions(
-                  context,
-                  selectedDateRange,
-                  selectedType,
-                  widget.subType,
-                  selectedCategoryName,
-                ),
+            future:
+                context.watch<TransactionsProvider>().fetchFilteredTransactions(
+                      context,
+                      selectedDateRange,
+                      selectedType,
+                      widget.subType,
+                      selectedCategoryName,
+                    ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Padding(
@@ -189,9 +266,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 //* Display the list of transactions
                 final transactions = snapshot.data;
                 double total = 0;
-                  
-                if (selectedCategoryName != null ||
-                    widget.subType != null) {
+
+                if (selectedCategoryName != null || widget.subType != null) {
                   for (var transaction in transactions!) {
                     if (transaction.type == 'spent') {
                       total -= double.parse(transaction.amount);
@@ -200,7 +276,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     }
                   }
                 }
-                  
+
                 return Column(
                   children: [
                     Expanded(
@@ -219,15 +295,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                           0,
                                           0) !=
                                       DateTime(
-                                          transactions[index - 1]
-                                              .dateTime
-                                              .year,
+                                          transactions[index - 1].dateTime.year,
                                           transactions[index - 1]
                                               .dateTime
                                               .month,
-                                          transactions[index - 1]
-                                              .dateTime
-                                              .day,
+                                          transactions[index - 1].dateTime.day,
                                           0,
                                           0))
                                 Padding(
@@ -239,21 +311,46 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ),
                                 ),
                               Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                    8,
-                                    0,
-                                    8,
-                                    index + 1 == transactions.length
-                                        ? 20
-                                        : 0),
+                                padding: EdgeInsets.fromLTRB(8, 0, 8,
+                                    index + 1 == transactions.length ? 20 : 0),
                                 child: Card(
                                   child: ListTile(
-                                    title: Text(
-                                      transaction.categoryName,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
-                                    ),
+                                    title: transaction.type == 'transfer'
+                                        ? Row(
+                                            children: [
+                                              Chip(
+                                                label: Text(
+                                                  transaction.accountName,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.all(0),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 4.0),
+                                                child: Icon(Icons.arrow_forward,
+                                                    color: Colors.grey),
+                                              ),
+                                              Chip(
+                                                label: Text(
+                                                  transaction.accountToName,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                padding: EdgeInsets.all(0),
+                                              ),
+                                            ],
+                                          )
+                                        : Text(
+                                            transaction.categoryName,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16),
+                                          ),
                                     subtitle: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -273,9 +370,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                       '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
                                       style: TextStyle(
                                           fontSize: 16,
-                                          color: transaction.type == 'spent'
-                                              ? Colors.red
-                                              : Colors.green),
+                                          color: transaction.type == 'transfer'
+                                              ? Colors.grey
+                                              : transaction.type == 'spent'
+                                                  ? Colors.red
+                                                  : Colors.green),
                                     ),
                                     onTap: () {
                                       //* Show the transaction summary dialog when tapped
@@ -290,8 +389,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         },
                       ),
                     ),
-                    if (selectedCategoryName != null ||
-                        widget.subType != null)
+                    if (selectedCategoryName != null || widget.subType != null)
                       Column(
                         children: [
                           const Divider(
@@ -307,9 +405,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary),
+                                  color: Theme.of(context).colorScheme.primary),
                             ),
                           ),
                         ],

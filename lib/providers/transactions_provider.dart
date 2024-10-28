@@ -28,11 +28,10 @@ class TransactionsProvider extends ChangeNotifier {
       {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    var transactionQuery = transactionsRef
+    var transactionQuery = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
         .where('deleted_at', isNull: true)
         .where('date_time', isGreaterThanOrEqualTo: cycle.startDate)
         .where('date_time', isLessThanOrEqualTo: cycle.endDate)
@@ -88,12 +87,11 @@ class TransactionsProvider extends ChangeNotifier {
     List<t.Transaction> filteredTransactions = [];
 
     if (selectedDateRange != null) {
-      final userRef =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final transactionsRef = userRef.collection('transactions');
-
-      Query<Map<String, dynamic>> transactionQuery =
-          transactionsRef.where('deleted_at', isNull: true);
+      Query<Map<String, dynamic>> transactionQuery = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .where('deleted_at', isNull: true);
 
       transactionQuery = transactionQuery
           .where('date_time', isGreaterThanOrEqualTo: selectedDateRange.start)
@@ -125,12 +123,15 @@ class TransactionsProvider extends ChangeNotifier {
         final data = doc.data();
 
         //* Fetch the category name based on the categoryId
-        DocumentSnapshot<Map<String, dynamic>> categoryDoc = await userRef
-            .collection('cycles')
-            .doc(data['cycle_id'])
-            .collection('categories')
-            .doc(data['category_id'])
-            .getSavy();
+        DocumentSnapshot<Map<String, dynamic>> categoryDoc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .collection('cycles')
+                .doc(data['cycle_id'])
+                .collection('categories')
+                .doc(data['category_id'])
+                .getSavy();
         print('fetchFilteredTransactions - categoryDoc: 1');
 
         final categoryName = categoryDoc['name'] as String;

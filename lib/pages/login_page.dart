@@ -241,8 +241,10 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
 
-      final userRef = FirebaseFirestore.instance.collection('users');
-      final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(authResult.user!.uid)
+          .getSavy();
       print('_signInWithEmailAndPassword - userDoc: 1');
 
       if (userDoc.exists) {
@@ -258,7 +260,10 @@ class _LoginPageState extends State<LoginPage> {
         //* User already exists, you can choose to update any information if needed
         final now = DateTime.now();
 
-        await userRef.doc(authResult.user!.uid).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .update({
           'updated_at': now,
           'last_login': now,
           'device_info_json': deviceInfoJson,
@@ -305,8 +310,10 @@ class _LoginPageState extends State<LoginPage> {
             await FirebaseAuth.instance.signInWithCredential(credential);
 
         //* Check if the user already exists in the Firestore collection
-        final userRef = FirebaseFirestore.instance.collection('users');
-        var userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        var userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .getSavy();
         print('_signInWithGoogle - userDoc: 1');
 
         //* Get current timestamp
@@ -317,7 +324,10 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!userDoc.exists) {
           //* Add the user to the collection with UID as the document ID
-          await userRef.doc(authResult.user!.uid).set({
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authResult.user!.uid)
+              .set({
             'created_at': now,
             'updated_at': now,
             'deleted_at': null,
@@ -331,14 +341,20 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           //* User already exists, update last_login and device_info_json
 
-          await userRef.doc(authResult.user!.uid).update({
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authResult.user!.uid)
+              .update({
             'updated_at': now,
             'last_login': now,
             'device_info_json': deviceInfoJson,
           });
         }
 
-        userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .getSavy();
         print('_signInWithGoogle - userDoc: 1');
 
         Person person = Person(

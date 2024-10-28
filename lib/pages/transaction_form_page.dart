@@ -92,7 +92,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       await _fetchCategories();
 
-      selectedCategoryId = widget.transaction!.categoryId == '' ? null : widget.transaction!.categoryId;
+      selectedCategoryId = widget.transaction!.categoryId == ''
+          ? null
+          : widget.transaction!.categoryId;
       selectedAccountId = widget.transaction!.accountId;
       selectedAccountToId = widget.transaction!.accountToId;
     }
@@ -150,14 +152,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           selectedAccountToId = null;
                         });
                       },
-                      items: [
-                        ...accounts.map((account) {
-                          return DropdownMenuItem<String>(
-                            value: account.id,
-                            child: Text(account.name),
-                          );
-                        }),
-                      ],
+                      items: accounts.map((account) {
+                        return DropdownMenuItem<String>(
+                          value: account.id,
+                          child: Text(account.name),
+                        );
+                      }).toList(),
                       decoration: const InputDecoration(
                         labelText: 'Account',
                       ),
@@ -193,6 +193,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         setState(() {
                           selectedType = newSelection.first;
                           selectedCategoryId = null;
+                          selectedAccountToId = null;
                         });
 
                         _fetchCategories();
@@ -328,17 +329,15 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 selectedAccountToId = newValue;
                               });
                             },
-                            items: [
-                              ...accounts
-                                  .where((account) =>
-                                      account.id != selectedAccountId)
-                                  .map((account) {
-                                return DropdownMenuItem<String>(
-                                  value: account.id,
-                                  child: Text(account.name),
-                                );
-                              }),
-                            ],
+                            items: accounts
+                                .where((account) =>
+                                    account.id != selectedAccountId)
+                                .map((account) {
+                              return DropdownMenuItem<String>(
+                                value: account.id,
+                                child: Text(account.name),
+                              );
+                            }).toList(),
                             decoration: const InputDecoration(
                               labelText: 'Transfer To',
                             ),

@@ -19,11 +19,10 @@ class CyclesProvider extends ChangeNotifier {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final cyclesSnapshot = await cyclesRef
+    final cyclesSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
         .orderBy('cycle_no', descending: true)
         .getSavy(refresh: refresh);
     print('fetchCycles: ${cyclesSnapshot.docs.length}');

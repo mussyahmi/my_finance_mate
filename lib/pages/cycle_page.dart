@@ -129,7 +129,7 @@ class _CyclePageState extends State<CyclePage> {
                                   ),
                                 );
                               },
-                              child: const Text('View All'))
+                              child: const Text('See all'))
                       ],
                     ),
                   ),

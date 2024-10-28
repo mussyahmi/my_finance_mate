@@ -25,11 +25,12 @@ class CycleProvider extends ChangeNotifier {
     final Person user = context.read<UserProvider>().user!;
     final DateTime now = DateTime.now();
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
-    final cycleQuery = cyclesRef.orderBy('cycle_no', descending: true).limit(1);
+    final cycleQuery = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .orderBy('cycle_no', descending: true)
+        .limit(1);
     final cycleSnapshot = await cycleQuery.getSavy(refresh: refresh);
     print('fetchCycle: ${cycleSnapshot.docs.length}');
 
@@ -104,8 +105,25 @@ class CycleProvider extends ChangeNotifier {
     });
 
     if (cycle != null) {
-      await _copyCategoriesFromLastCycle(user, cycle!.id, newCycleDoc.id);
+      await _copyCategoriesFromLastCycle(user, cycle!.id, newCycleDoc.id, now);
+      await _copyAccountsFromLastCycle(user, cycle!.id, newCycleDoc.id, now);
     }
+
+    await context.read<CycleProvider>().fetchCycle(context);
+    await context
+        .read<CategoriesProvider>()
+        .fetchCategories(context, context.read<CycleProvider>().cycle!);
+    await context
+        .read<CategoriesProvider>()
+        .fetchCategories(context, context.read<CycleProvider>().cycle!);
+    await context
+        .read<AccountsProvider>()
+        .fetchAccounts(context, context.read<CycleProvider>().cycle!);
+    await context
+        .read<TransactionsProvider>()
+        .fetchTransactions(context, context.read<CycleProvider>().cycle!);
+
+    notifyListeners();
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -115,28 +133,68 @@ class CycleProvider extends ChangeNotifier {
   }
 
   Future<void> _copyCategoriesFromLastCycle(
-      Person user, String lastCycleId, String newCycleId) async {
-    final categoriesRef = FirebaseFirestore.instance
+    Person user,
+    String lastCycleId,
+    String newCycleId,
+    DateTime now,
+  ) async {
+    final categoriesSnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid)
         .collection('cycles')
         .doc(lastCycleId)
-        .collection('categories');
-
-    final newCycleRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('cycles')
-        .doc(newCycleId);
-
-    final categoriesSnapshot =
-        await categoriesRef.where('deleted_at', isNull: true).getSavy();
+        .collection('categories')
+        .where('deleted_at', isNull: true)
+        .getSavy();
     print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
 
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();
-      categoryData['total_amount'] = '0.00'; //* Set total_amount to '0.00'
-      await newCycleRef.collection('categories').add(categoryData);
+      categoryData['total_amount'] = '0.00';
+      categoryData['created_at'] = now;
+      categoryData['updated_at'] = now;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(newCycleId)
+          .collection('categories')
+          .add(categoryData);
+    }
+  }
+
+  Future<void> _copyAccountsFromLastCycle(
+    Person user,
+    String lastCycleId,
+    String newCycleId,
+    DateTime now,
+  ) async {
+    final accountsSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(lastCycleId)
+        .collection('accounts')
+        .where('deleted_at', isNull: true)
+        .getSavy();
+    print('_copyAccountsFromLastCycle: ${accountsSnapshot.docs.length}');
+
+    for (var doc in accountsSnapshot.docs) {
+      final accountData = doc.data();
+      accountData['opening_balance'] = accountData['amount_balance'];
+      accountData['amount_received'] = '0.00';
+      accountData['amount_spent'] = '0.00';
+      accountData['created_at'] = now;
+      accountData['updated_at'] = now;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(newCycleId)
+          .collection('accounts')
+          .add(accountData);
     }
   }
 
@@ -199,12 +257,13 @@ class CycleProvider extends ChangeNotifier {
       cycleAmountReceived += type == 'received' ? newAmount : 0;
     }
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles');
-
     //* Update the cycle document
-    await cyclesRef.doc(cycle.id).update({
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .update({
       'amount_spent': cycleAmountSpent.toStringAsFixed(2),
       'amount_received': cycleAmountReceived.toStringAsFixed(2),
       'amount_balance': updatedAmountBalance.toStringAsFixed(2),

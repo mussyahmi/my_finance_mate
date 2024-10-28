@@ -24,12 +24,12 @@ class CategoriesProvider extends ChangeNotifier {
       {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(cycle.id);
-    final categoriesRef = cyclesRef.collection('categories');
-
-    final categorySnapshot = await categoriesRef
+    final categorySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('categories')
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
@@ -163,12 +163,13 @@ class CategoriesProvider extends ChangeNotifier {
     final List<t.Transaction> transactions =
         context.read<TransactionsProvider>().transactions!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(cycle.id);
-    final categoriesRef = cyclesRef.collection('categories');
-
-    final categoriesSnapshot = await categoriesRef.getSavy();
+    final categoriesSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('categories')
+        .getSavy();
     print(
         'recalculateCategoryAndCycleTotalAmount - categoriesSnapshot: ${categoriesSnapshot.docs.length}');
 
@@ -197,7 +198,14 @@ class CategoriesProvider extends ChangeNotifier {
       }
 
       //* Update each cateogry's data
-      await categoriesRef.doc(category.id).update({
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(cycle.id)
+          .collection('categories')
+          .doc(category.id)
+          .update({
         'total_amount': totalAmount.toStringAsFixed(2),
         'updated_at': now,
       });
@@ -207,7 +215,12 @@ class CategoriesProvider extends ChangeNotifier {
     }
 
     //* Update the cycle document
-    await cyclesRef.update({
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .update({
       'amount_spent': totalAmountSpent.toStringAsFixed(2),
       'amount_received': totalAmountReceived.toStringAsFixed(2),
       'amount_balance': (double.parse(cycle.openingBalance) +
@@ -277,12 +290,10 @@ class CategoriesProvider extends ChangeNotifier {
 
         //* If the category name is modified, propagate the change to all associated transactions
         if (category.name != categoryName) {
-          final transactionsRef = FirebaseFirestore.instance
+          final transactionsSnapshot = await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
-              .collection('transactions');
-
-          final transactionsSnapshot = await transactionsRef
+              .collection('transactions')
               .where('category_id', isEqualTo: category.id)
               .where('deleted_at', isNull: true)
               .getSavy();
@@ -290,7 +301,10 @@ class CategoriesProvider extends ChangeNotifier {
               'updateCategory - transactionsSnapshot: ${transactionsSnapshot.docs.length}');
 
           for (var doc in transactionsSnapshot.docs) {
-            await transactionsRef
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .collection('transactions')
                 .doc(doc.id)
                 .update({'category_name': categoryName});
           }
@@ -380,15 +394,16 @@ class CategoriesProvider extends ChangeNotifier {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(cycle.id);
-    final categoriesRef = cyclesRef.collection('categories');
-    final categoryRef = categoriesRef.doc(categoryId);
-
     //* Update the 'deleted_at' field with the current timestamp
     final now = DateTime.now();
-    categoryRef.update({
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('categories')
+        .doc(categoryId)
+        .update({
       'updated_at': now,
       'deleted_at': now,
     });

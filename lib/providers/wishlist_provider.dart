@@ -19,11 +19,10 @@ class WishlistProvider extends ChangeNotifier {
   Future<void> fetchWishlist(BuildContext context, {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final wishlistRef = userRef.collection('wishlist');
-
-    final wishlistSnapshot = await wishlistRef
+    final wishlistSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('wishlist')
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
@@ -116,14 +115,14 @@ class WishlistProvider extends ChangeNotifier {
   Future<void> deleteWish(BuildContext context, String wishId) async {
     final Person user = context.read<UserProvider>().user!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final wishlistRef = userRef.collection('wishlist');
-    final wishRef = wishlistRef.doc(wishId);
-
     //* Update the 'deleted_at' field with the current timestamp
     final now = DateTime.now();
-    wishRef.update({
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('wishlist')
+        .doc(wishId)
+        .update({
       'updated_at': now,
       'deleted_at': now,
     });

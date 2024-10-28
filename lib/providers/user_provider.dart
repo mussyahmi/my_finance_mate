@@ -25,11 +25,11 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> resetTransactionMade() async {
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user!.uid);
-
     //* Update transactions made
-    await userRef.update({'daily_transactions_made': 0});
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .update({'daily_transactions_made': 0});
 
     user!.dailyTransactionsMade = 0;
     notifyListeners();

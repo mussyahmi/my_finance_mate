@@ -276,11 +276,11 @@ class Category {
   }
 
   static Future<void> updateCategoryNameForAllTransactions(Person user) async {
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final transactionsRef = userRef.collection('transactions');
-
-    final transactionsSnapshot = await transactionsRef.getSavy();
+    final transactionsSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .getSavy();
     print(
         'updateCategoryNameForAllTransactions: ${transactionsSnapshot.docs.length}');
 
@@ -290,7 +290,9 @@ class Category {
       final data = doc.data();
 
       DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      categoryDoc = await userRef
+      categoryDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
           .collection('cycles')
           .doc(data['cycle_id'])
           .collection('categories')
@@ -300,7 +302,12 @@ class Category {
 
       final categoryName = categoryDoc['name'] as String;
 
-      await transactionsRef.doc(doc.id).update({'category_name': categoryName});
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('transactions')
+          .doc(doc.id)
+          .update({'category_name': categoryName});
     }
 
     print('done updateCategoryNameForAllTransactions');

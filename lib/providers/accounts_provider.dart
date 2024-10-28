@@ -22,12 +22,12 @@ class AccountsProvider extends ChangeNotifier {
       {bool? refresh}) async {
     final Person user = context.read<UserProvider>().user!;
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final cyclesRef = userRef.collection('cycles').doc(cycle.id);
-    final accountsRef = cyclesRef.collection('accounts');
-
-    final accountsSnapshot = await accountsRef
+    final accountsSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('accounts')
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
@@ -354,11 +354,10 @@ class AccountsProvider extends ChangeNotifier {
     //* Get current timestamp
     final now = DateTime.now();
 
-    final userRef =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
-
     //* Create the new account document
-    final newAccountDoc = await userRef
+    final newAccountDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
         .collection('cycles')
         .doc(cycle.id)
         .collection('accounts')
@@ -374,7 +373,9 @@ class AccountsProvider extends ChangeNotifier {
     });
 
     //* Query the transactions within the cycle dates
-    var transactionSnapshot = await userRef
+    var transactionSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
         .collection('transactions')
         .where('deleted_at', isNull: true)
         .where('date_time', isGreaterThanOrEqualTo: cycle.startDate)

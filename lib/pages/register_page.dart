@@ -189,9 +189,6 @@ class RegisterPageState extends State<RegisterPage> {
       );
 
       if (authResult.user != null) {
-        //* Check if the user already exists in the Firestore collection
-        final userRef = FirebaseFirestore.instance.collection('users');
-
         //* Get current timestamp
         final now = DateTime.now();
 
@@ -199,7 +196,10 @@ class RegisterPageState extends State<RegisterPage> {
         final deviceInfoJson = await _getDeviceInfoJson();
 
         //* Add the user to the collection with UID as the document ID
-        await userRef.doc(authResult.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .set({
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -213,7 +213,10 @@ class RegisterPageState extends State<RegisterPage> {
           'daily_transactions_made': 0,
         });
 
-        final userDoc = await userRef.doc(authResult.user!.uid).getSavy();
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authResult.user!.uid)
+            .getSavy();
         print('register - userDoc: 1');
 
         Person person = Person(
