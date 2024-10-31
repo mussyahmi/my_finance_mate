@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -144,22 +145,49 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    DropdownButtonFormField<String>(
-                      value: selectedAccountId,
+                    DropdownSearch<String>(
+                      selectedItem: selectedAccountId != null
+                          ? accounts
+                              .firstWhere(
+                                  (account) => account.id == selectedAccountId)
+                              .name
+                          : null,
                       onChanged: (newValue) async {
+                        final selectedAccount = accounts
+                            .firstWhere((account) => account.name == newValue);
+
                         setState(() {
-                          selectedAccountId = newValue;
+                          selectedAccountId = selectedAccount.id;
                           selectedAccountToId = null;
                         });
                       },
-                      items: accounts.map((account) {
-                        return DropdownMenuItem<String>(
-                          value: account.id,
-                          child: Text(account.name),
-                        );
-                      }).toList(),
-                      decoration: const InputDecoration(
-                        labelText: 'Account',
+                      items: (filter, loadProps) {
+                        final filteredAccounts = accounts
+                            .where((account) => account.name
+                                .toLowerCase()
+                                .contains(filter.toLowerCase()))
+                            .toList();
+
+                        return filteredAccounts
+                            .map((account) => account.name)
+                            .toList();
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                          labelText: 'Account',
+                        ),
+                        baseStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      popupProps: PopupProps.menu(
+                        showSearchBox: true,
+                        searchDelay: const Duration(milliseconds: 500),
+                        menuProps: MenuProps(surfaceTintColor: Colors.grey),
+                        itemBuilder: (context, item, isDisabled, isSelected) {
+                          return ListTile(title: Text(item));
+                        },
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -268,13 +296,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     if (selectedType != 'transfer')
                       Column(
                         children: [
-                          DropdownButtonFormField<String>(
-                            value: selectedCategoryId,
+                          DropdownSearch<String>(
+                            selectedItem: selectedCategoryId != null
+                                ? categories
+                                    .firstWhere((category) =>
+                                        category.id == selectedCategoryId)
+                                    .name
+                                : null,
                             onChanged: (newValue) async {
-                              setState(() {
-                                selectedCategoryId = newValue;
-                              });
-
                               if (newValue == 'add_new') {
                                 await Navigator.push(
                                   context,
@@ -290,30 +319,54 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   selectedCategoryId = null;
                                 });
 
-                                _fetchCategories();
+                                await _fetchCategories();
+                              } else {
+                                final selectedCategory = categories.firstWhere(
+                                    (category) => category.name == newValue);
+
+                                setState(() {
+                                  selectedCategoryId = selectedCategory.id;
+                                });
                               }
                             },
-                            items: [
-                              const DropdownMenuItem<String>(
-                                value: 'add_new',
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.add_circle),
-                                    SizedBox(width: 8),
-                                    Text('Add New'),
-                                  ],
-                                ),
+                            items: (filter, loadProps) {
+                              final filteredCategories = categories
+                                  .where((category) => category.name
+                                      .toLowerCase()
+                                      .contains(filter.toLowerCase()))
+                                  .toList();
+
+                              return [
+                                'add_new',
+                                ...filteredCategories
+                                    .map((category) => category.name),
+                              ];
+                            },
+                            decoratorProps: DropDownDecoratorProps(
+                              decoration: InputDecoration(
+                                labelText: 'Category',
                               ),
-                              ...categories.map((category) {
-                                return DropdownMenuItem<String>(
-                                  value: category.id,
-                                  child: Text(category.name),
-                                );
-                              }),
-                            ],
-                            decoration: const InputDecoration(
-                              labelText: 'Category',
+                              baseStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            popupProps: PopupProps.menu(
+                              showSearchBox: true,
+                              searchDelay: const Duration(milliseconds: 500),
+                              menuProps:
+                                  MenuProps(surfaceTintColor: Colors.grey),
+                              itemBuilder:
+                                  (context, item, isDisabled, isSelected) {
+                                if (item == 'add_new') {
+                                  return ListTile(
+                                    leading: Icon(Icons.add_circle),
+                                    title: Text('Add New'),
+                                  );
+                                } else {
+                                  return ListTile(title: Text(item));
+                                }
+                              },
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -322,24 +375,52 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     if (selectedType == 'transfer')
                       Column(
                         children: [
-                          DropdownButtonFormField<String>(
-                            value: selectedAccountToId,
+                          DropdownSearch<String>(
+                            selectedItem: selectedAccountToId != null
+                                ? accounts
+                                    .firstWhere((account) =>
+                                        account.id == selectedAccountToId)
+                                    .name
+                                : null,
                             onChanged: (newValue) async {
+                              final selectedAccount = accounts.firstWhere(
+                                  (account) => account.name == newValue);
+
                               setState(() {
-                                selectedAccountToId = newValue;
+                                selectedAccountToId = selectedAccount.id;
                               });
                             },
-                            items: accounts
-                                .where((account) =>
-                                    account.id != selectedAccountId)
-                                .map((account) {
-                              return DropdownMenuItem<String>(
-                                value: account.id,
-                                child: Text(account.name),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              labelText: 'Transfer To',
+                            items: (filter, loadProps) {
+                              final filteredAccounts = accounts
+                                  .where((account) =>
+                                      account.id != selectedAccountId)
+                                  .where((account) => account.name
+                                      .toLowerCase()
+                                      .contains(filter.toLowerCase()))
+                                  .toList();
+
+                              return filteredAccounts
+                                  .map((account) => account.name)
+                                  .toList();
+                            },
+                            decoratorProps: DropDownDecoratorProps(
+                              decoration: InputDecoration(
+                                labelText: 'Transfer To',
+                              ),
+                              baseStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            popupProps: PopupProps.menu(
+                              showSearchBox: true,
+                              searchDelay: const Duration(milliseconds: 500),
+                              menuProps:
+                                  MenuProps(surfaceTintColor: Colors.grey),
+                              itemBuilder:
+                                  (context, item, isDisabled, isSelected) {
+                                return ListTile(title: Text(item));
+                              },
                             ),
                           ),
                           const SizedBox(height: 20),
