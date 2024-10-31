@@ -1,14 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
-import '../extensions/string_extension.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
@@ -19,7 +19,7 @@ class TransactionListPage extends StatefulWidget {
   final String? accountToId;
   final String? type;
   final String? subType;
-  final String? categoryName;
+  final String? categoryId;
 
   const TransactionListPage({
     super.key,
@@ -27,7 +27,7 @@ class TransactionListPage extends StatefulWidget {
     this.accountToId,
     this.type,
     this.subType,
-    this.categoryName,
+    this.categoryId,
   });
 
   @override
@@ -39,7 +39,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
   String? selectedAccountId;
   String? selectedAccountToId;
   String? selectedType;
-  String? selectedCategoryName;
+  String? selectedCategoryId;
   List<Category> categories = [];
   List<Account> accounts = [];
   bool openFilter = false;
@@ -52,7 +52,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
   Future<void> initAsync() async {
     selectedType = widget.type;
-    selectedCategoryName = widget.categoryName;
+    selectedCategoryId = widget.categoryId;
     selectedAccountId = widget.accountId;
     selectedAccountToId = widget.accountToId;
 
@@ -106,119 +106,225 @@ class _TransactionListPageState extends State<TransactionListPage> {
             ],
             bottom: openFilter && widget.subType == null
                 ? PreferredSize(
-                    preferredSize: Size(double.infinity, 250.0),
+                    preferredSize: Size(double.infinity, 275.0),
                     child: Padding(
                       padding: const EdgeInsets.only(
                           left: 16.0, right: 16.0, bottom: 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          ElevatedButton(
-                            onPressed: () async {
-                              final pickedDateRange = await showDateRangePicker(
-                                context: context,
-                                initialDateRange: selectedDateRange,
-                                firstDate: DateTime.now()
-                                    .subtract(const Duration(days: 365)),
-                                lastDate: DateTime.now()
-                                    .add(const Duration(days: 365)),
-                              );
+                          // ElevatedButton(
+                          //   onPressed: () async {
+                          //     final pickedDateRange = await showDateRangePicker(
+                          //       context: context,
+                          //       initialDateRange: selectedDateRange,
+                          //       firstDate: DateTime.now()
+                          //           .subtract(const Duration(days: 365)),
+                          //       lastDate: DateTime.now()
+                          //           .add(const Duration(days: 365)),
+                          //     );
 
-                              if (pickedDateRange != null) {
-                                setState(() {
-                                  selectedDateRange = pickedDateRange;
-                                });
-                              }
-                            },
-                            child: Text(
-                              selectedDateRange != null
-                                  ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
-                                  : 'Select Date Range',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          //* Account Dropdown
-                          DropdownButtonFormField<String>(
-                            value: selectedAccountId,
-                            onChanged: (newValue) {
+                          //     if (pickedDateRange != null) {
+                          //       setState(() {
+                          //         selectedDateRange = pickedDateRange;
+                          //       });
+                          //     }
+                          //   },
+                          //   child: Text(
+                          //     selectedDateRange != null
+                          //         ? 'Date Range:\n${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.start)} - ${DateFormat('EE, d MMM yyyy').format(selectedDateRange!.end)}'
+                          //         : 'Select Date Range',
+                          //     textAlign: TextAlign.center,
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 10),
+                          SegmentedButton(
+                            segments: const [
+                              ButtonSegment(
+                                value: 'spent',
+                                label: Text('Spent'),
+                                icon: Icon(Icons.file_upload_outlined),
+                              ),
+                              ButtonSegment(
+                                value: 'received',
+                                label: Text('Received'),
+                                icon: Icon(Icons.file_download_outlined),
+                              ),
+                              ButtonSegment(
+                                value: 'transfer',
+                                label: Text('Transfer'),
+                                icon: Icon(Icons.swap_horiz),
+                              ),
+                            ],
+                            selected: {selectedType},
+                            onSelectionChanged: (newSelection) {
                               setState(() {
-                                selectedAccountId = newValue;
+                                selectedType = newSelection.first;
+                                selectedCategoryId = null;
                                 selectedAccountToId = null;
                               });
-                            },
-                            items: accounts.map((account) {
-                              return DropdownMenuItem<String>(
-                                value: account.id,
-                                child: Text(account.name),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              labelText: 'Account',
-                            ),
-                          ),
-                          //* Type Dropdown
-                          DropdownButtonFormField<String>(
-                            value: selectedType,
-                            onChanged: (newValue) {
-                              setState(() {
-                                selectedType = newValue as String;
-                                selectedCategoryName = null;
-                                selectedAccountToId = null;
-                              });
+
                               _fetchCategories();
                             },
-                            items:
-                                ['spent', 'received', 'transfer'].map((type) {
-                              return DropdownMenuItem(
-                                value: type,
-                                child: Text(type.capitalize()),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              labelText: 'Type',
+                          ),
+                          const SizedBox(height: 10),
+                          DropdownSearch<String>(
+                            selectedItem: selectedAccountId != null
+                                ? accounts
+                                    .firstWhere((account) =>
+                                        account.id == selectedAccountId)
+                                    .name
+                                : null,
+                            onChanged: (newValue) async {
+                              final selectedAccount = accounts.firstWhere(
+                                  (account) => account.name == newValue);
+
+                              setState(() {
+                                selectedAccountId = selectedAccount.id;
+                                selectedAccountToId = null;
+                              });
+                            },
+                            items: (filter, loadProps) {
+                              final filteredAccounts = accounts
+                                  .where((account) => account.name
+                                      .toLowerCase()
+                                      .contains(filter.toLowerCase()))
+                                  .toList();
+
+                              return filteredAccounts
+                                  .map((account) => account.name)
+                                  .toList();
+                            },
+                            decoratorProps: DropDownDecoratorProps(
+                              decoration: InputDecoration(
+                                labelText: 'Account',
+                              ),
+                              baseStyle: TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                            popupProps: PopupProps.menu(
+                              showSearchBox: true,
+                              searchDelay: const Duration(milliseconds: 500),
+                              menuProps:
+                                  MenuProps(surfaceTintColor: Colors.grey),
+                              itemBuilder:
+                                  (context, item, isDisabled, isSelected) {
+                                return ListTile(title: Text(item));
+                              },
                             ),
                           ),
-                          //* Category Dropdown
+                          const SizedBox(height: 10),
                           if (selectedType != 'transfer')
-                            DropdownButtonFormField<String>(
-                              value: selectedCategoryName,
-                              onChanged: (newValue) {
+                            DropdownSearch<String>(
+                              selectedItem: selectedCategoryId != null
+                                  ? categories
+                                      .firstWhere((category) =>
+                                          category.id == selectedCategoryId)
+                                      .name
+                                  : null,
+                              onChanged: (newValue) async {
+                                final selectedCategory = categories.firstWhere(
+                                    (category) => category.name == newValue);
+
                                 setState(() {
-                                  selectedCategoryName = newValue;
+                                  selectedCategoryId = selectedCategory.id;
                                 });
                               },
-                              items: categories.map((category) {
-                                return DropdownMenuItem<String>(
-                                  value: category.name,
-                                  child: Text(category.name),
-                                );
-                              }).toList(),
-                              decoration: const InputDecoration(
-                                labelText: 'Category',
+                              items: (filter, loadProps) {
+                                final filteredCategories = categories
+                                    .where((category) => category.name
+                                        .toLowerCase()
+                                        .contains(filter.toLowerCase()))
+                                    .toList();
+
+                                return filteredCategories
+                                    .map((category) => category.name)
+                                    .toList();
+                              },
+                              decoratorProps: DropDownDecoratorProps(
+                                decoration: InputDecoration(
+                                  labelText: 'Category',
+                                ),
+                                baseStyle: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                              popupProps: PopupProps.menu(
+                                showSearchBox: true,
+                                searchDelay: const Duration(milliseconds: 500),
+                                menuProps:
+                                    MenuProps(surfaceTintColor: Colors.grey),
+                                itemBuilder:
+                                    (context, item, isDisabled, isSelected) {
+                                  return ListTile(title: Text(item));
+                                },
                               ),
                             ),
-                          //* Account To Dropdown
                           if (selectedType == 'transfer')
-                            DropdownButtonFormField<String>(
-                              value: selectedAccountToId,
-                              onChanged: (newValue) {
+                            DropdownSearch<String>(
+                              selectedItem: selectedAccountToId != null
+                                  ? accounts
+                                      .firstWhere((account) =>
+                                          account.id == selectedAccountToId)
+                                      .name
+                                  : null,
+                              onChanged: (newValue) async {
+                                final selectedAccount = accounts.firstWhere(
+                                    (account) => account.name == newValue);
+
                                 setState(() {
-                                  selectedAccountToId = newValue;
+                                  selectedAccountToId = selectedAccount.id;
                                 });
                               },
-                              items: accounts
-                                  .where((account) =>
-                                      account.id != selectedAccountId)
-                                  .map((account) {
-                                return DropdownMenuItem<String>(
-                                  value: account.id,
-                                  child: Text(account.name),
-                                );
-                              }).toList(),
-                              decoration: const InputDecoration(
-                                labelText: 'Transfer To',
+                              items: (filter, loadProps) {
+                                final filteredAccounts = accounts
+                                    .where((account) =>
+                                        account.id != selectedAccountId)
+                                    .where((account) => account.name
+                                        .toLowerCase()
+                                        .contains(filter.toLowerCase()))
+                                    .toList();
+
+                                return filteredAccounts
+                                    .map((account) => account.name)
+                                    .toList();
+                              },
+                              decoratorProps: DropDownDecoratorProps(
+                                decoration: InputDecoration(
+                                  labelText: 'Transfer To',
+                                ),
+                                baseStyle: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                              popupProps: PopupProps.menu(
+                                showSearchBox: true,
+                                searchDelay: const Duration(milliseconds: 500),
+                                menuProps:
+                                    MenuProps(surfaceTintColor: Colors.grey),
+                                itemBuilder:
+                                    (context, item, isDisabled, isSelected) {
+                                  return ListTile(title: Text(item));
+                                },
                               ),
                             ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      selectedType = null;
+                                      selectedAccountId = null;
+                                      selectedCategoryId = null;
+                                      selectedAccountToId = null;
+                                    });
+                                  },
+                                  child: Text('Clear')),
+                            ],
+                          )
                         ],
                       ),
                     ),
@@ -234,7 +340,9 @@ class _TransactionListPageState extends State<TransactionListPage> {
                       selectedDateRange,
                       selectedType,
                       widget.subType,
-                      selectedCategoryName,
+                      selectedAccountId,
+                      selectedCategoryId,
+                      selectedAccountToId,
                     ),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -267,7 +375,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                 final transactions = snapshot.data;
                 double total = 0;
 
-                if (selectedCategoryName != null || widget.subType != null) {
+                if (selectedCategoryId != null || widget.subType != null) {
                   for (var transaction in transactions!) {
                     if (transaction.type == 'spent') {
                       total -= double.parse(transaction.amount);
@@ -389,7 +497,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         },
                       ),
                     ),
-                    if (selectedCategoryName != null || widget.subType != null)
+                    if (selectedCategoryId != null || widget.subType != null)
                       Column(
                         children: [
                           const Divider(

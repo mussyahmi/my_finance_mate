@@ -144,53 +144,39 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    DropdownSearch<String>(
-                      selectedItem: selectedAccountId != null
-                          ? accounts
-                              .firstWhere(
-                                  (account) => account.id == selectedAccountId)
-                              .name
-                          : null,
-                      onChanged: (newValue) async {
-                        final selectedAccount = accounts
-                            .firstWhere((account) => account.name == newValue);
-
-                        setState(() {
-                          selectedAccountId = selectedAccount.id;
-                          selectedAccountToId = null;
-                        });
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedDate = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDateTime,
+                          firstDate: cycle.startDate,
+                          lastDate: cycle.endDate,
+                        );
+                        if (selectedDate != null) {
+                          final selectedTime = await showTimePicker(
+                            context: context,
+                            initialTime:
+                                TimeOfDay.fromDateTime(selectedDateTime),
+                          );
+                          if (selectedTime != null) {
+                            setState(() {
+                              selectedDateTime = DateTime(
+                                selectedDate.year,
+                                selectedDate.month,
+                                selectedDate.day,
+                                selectedTime.hour,
+                                selectedTime.minute,
+                              );
+                            });
+                          }
+                        }
                       },
-                      items: (filter, loadProps) {
-                        final filteredAccounts = accounts
-                            .where((account) => account.name
-                                .toLowerCase()
-                                .contains(filter.toLowerCase()))
-                            .toList();
-
-                        return filteredAccounts
-                            .map((account) => account.name)
-                            .toList();
-                      },
-                      decoratorProps: DropDownDecoratorProps(
-                        decoration: InputDecoration(
-                          labelText: 'Account',
-                        ),
-                        baseStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      popupProps: PopupProps.menu(
-                        showSearchBox: true,
-                        searchDelay: const Duration(milliseconds: 500),
-                        menuProps: MenuProps(surfaceTintColor: Colors.grey),
-                        itemBuilder: (context, item, isDisabled, isSelected) {
-                          return ListTile(title: Text(item));
-                        },
+                      child: Text(
+                        'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     SegmentedButton(
                       segments: const [
                         ButtonSegment(
@@ -261,38 +247,52 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           const SizedBox(height: 10),
                         ],
                       ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedDate = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDateTime,
-                          firstDate: cycle.startDate,
-                          lastDate: cycle.endDate,
-                        );
-                        if (selectedDate != null) {
-                          final selectedTime = await showTimePicker(
-                            context: context,
-                            initialTime:
-                                TimeOfDay.fromDateTime(selectedDateTime),
-                          );
-                          if (selectedTime != null) {
-                            setState(() {
-                              selectedDateTime = DateTime(
-                                selectedDate.year,
-                                selectedDate.month,
-                                selectedDate.day,
-                                selectedTime.hour,
-                                selectedTime.minute,
-                              );
-                            });
-                          }
-                        }
+                    const SizedBox(height: 10),
+                    DropdownSearch<String>(
+                      selectedItem: selectedAccountId != null
+                          ? accounts
+                              .firstWhere(
+                                  (account) => account.id == selectedAccountId)
+                              .name
+                          : null,
+                      onChanged: (newValue) async {
+                        final selectedAccount = accounts
+                            .firstWhere((account) => account.name == newValue);
+
+                        setState(() {
+                          selectedAccountId = selectedAccount.id;
+                          selectedAccountToId = null;
+                        });
                       },
-                      child: Text(
-                        'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
+                      items: (filter, loadProps) {
+                        final filteredAccounts = accounts
+                            .where((account) => account.name
+                                .toLowerCase()
+                                .contains(filter.toLowerCase()))
+                            .toList();
+
+                        return filteredAccounts
+                            .map((account) => account.name)
+                            .toList();
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                          labelText: 'Account',
+                        ),
+                        baseStyle: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      popupProps: PopupProps.menu(
+                        showSearchBox: true,
+                        searchDelay: const Duration(milliseconds: 500),
+                        menuProps: MenuProps(surfaceTintColor: Colors.grey),
+                        itemBuilder: (context, item, isDisabled, isSelected) {
+                          return ListTile(title: Text(item));
+                        },
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     if (selectedType != 'transfer')
                       Column(
                         children: [
@@ -347,7 +347,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 labelText: 'Category',
                               ),
                               baseStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
@@ -408,7 +407,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 labelText: 'Transfer To',
                               ),
                               baseStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
@@ -434,7 +432,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         prefixText: 'RM ',
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     TextField(
                       controller: transactionNoteController,
                       maxLines: 5,

@@ -122,7 +122,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                         );
                       } else {
                         Category category = categories[index] as Category;
-            
+
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Card(
@@ -146,7 +146,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                                   MaterialPageRoute(
                                     builder: (context) => TransactionListPage(
                                         type: category.type,
-                                        categoryName: category.name),
+                                        categoryId: category.id),
                                   ),
                                 );
                               },

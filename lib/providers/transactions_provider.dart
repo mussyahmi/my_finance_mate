@@ -81,7 +81,9 @@ class TransactionsProvider extends ChangeNotifier {
     DateTimeRange? selectedDateRange,
     String? selectedType,
     String? subType,
-    String? selectedCategoryName,
+    String? selectedAccountId,
+    String? selectedCategoryId,
+    String? selectedAccountToId,
   ) async {
     final Person user = context.read<UserProvider>().user!;
     List<t.Transaction> filteredTransactions = [];
@@ -110,9 +112,19 @@ class TransactionsProvider extends ChangeNotifier {
               transactionQuery.where('type', isEqualTo: selectedType);
         }
 
-        if (selectedCategoryName != null) {
-          transactionQuery = transactionQuery.where('category_name',
-              isEqualTo: selectedCategoryName);
+        if (selectedAccountId != null) {
+          transactionQuery = transactionQuery.where('account_id',
+              isEqualTo: selectedAccountId);
+        }
+
+        if (selectedCategoryId != null) {
+          transactionQuery = transactionQuery.where('category_id',
+              isEqualTo: selectedCategoryId);
+        }
+
+        if (selectedAccountToId != null) {
+          transactionQuery = transactionQuery.where('account_to_id',
+              isEqualTo: selectedAccountToId);
         }
       }
 
@@ -203,22 +215,30 @@ class TransactionsProvider extends ChangeNotifier {
       Iterable<t.Transaction> query = transactions!;
 
       if (subType != null) {
-        query =
-            transactions!.where((transaction) => transaction.type == 'spent');
+        query = query.where((transaction) => transaction.type == 'spent');
 
         if (subType != 'others') {
-          query = transactions!
-              .where((transaction) => transaction.subType == subType);
+          query = query.where((transaction) => transaction.subType == subType);
         }
       } else {
         if (selectedType != null) {
-          query = transactions!
-              .where((transaction) => transaction.type == selectedType);
+          query =
+              query.where((transaction) => transaction.type == selectedType);
         }
 
-        if (selectedCategoryName != null) {
-          query = transactions!.where((transaction) =>
-              transaction.categoryName == selectedCategoryName);
+        if (selectedAccountId != null) {
+          query = query.where(
+              (transaction) => transaction.accountId == selectedAccountId);
+        }
+
+        if (selectedCategoryId != null) {
+          query = query.where(
+              (transaction) => transaction.categoryId == selectedCategoryId);
+        }
+
+        if (selectedAccountToId != null) {
+          query = query.where(
+              (transaction) => transaction.accountToId == selectedAccountToId);
         }
       }
 

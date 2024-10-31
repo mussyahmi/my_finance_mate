@@ -105,7 +105,7 @@ class Category {
                         context,
                         MaterialPageRoute(
                           builder: (context) => TransactionListPage(
-                              type: 'spent', categoryName: name),
+                              type: 'spent', categoryId: id),
                         ),
                       );
                     },
