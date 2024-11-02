@@ -26,7 +26,7 @@ void main() async {
 
   final savedThemeColor = prefs.getInt('theme_color');
   final themeColor =
-      savedThemeColor != null ? Color(savedThemeColor) : Colors.deepPurple;
+      savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

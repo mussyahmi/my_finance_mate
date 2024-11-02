@@ -440,7 +440,7 @@ class _DashboardPageState extends State<DashboardPage>
                 } else if (_selectedIndex == 1) {
                   Account.showAccountFormDialog(context, 'Add');
                 } else if (_selectedIndex == 2) {
-                  Category.showCategoryFormDialog(context, 'received', 'Add');
+                  Category.showCategoryFormDialog(context, 'spent', 'Add');
                 }
               },
               child: const Icon(Icons.add),
