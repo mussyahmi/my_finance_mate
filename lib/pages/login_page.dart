@@ -57,10 +57,27 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      Center(
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            image: DecorationImage(
+                              image: AssetImage('assets/icon/icon.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       const Text('Welcome to My Finance Mate!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 20)),
-                      const SizedBox(height: 20),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          )),
+                      const SizedBox(height: 30),
                       TextField(
                         controller: emailController,
                         decoration: const InputDecoration(
