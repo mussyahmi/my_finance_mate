@@ -3,10 +3,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/person.dart';
@@ -24,8 +26,11 @@ class RegisterPage extends StatefulWidget {
 class RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +74,29 @@ class RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: !_isConfirmPasswordVisible,
+              decoration: InputDecoration(
+                labelText: 'Confirm Password',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isConfirmPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  onPressed: () {
+                    //* Toggle the password visibility when the button is pressed
+                    setState(() {
+                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+            ),
             const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () async {
@@ -82,6 +110,7 @@ class RegisterPageState extends State<RegisterPage> {
                   await _register(
                     _emailController.text.trim(),
                     _passwordController.text.trim(),
+                    _confirmPasswordController.text.trim(),
                   );
                 } finally {
                   setState(() {
@@ -176,9 +205,17 @@ class RegisterPageState extends State<RegisterPage> {
     return deviceInfoJson;
   }
 
-  Future<void> _register(String email, String password) async {
+  Future<void> _register(
+    String email,
+    String password,
+    String confirmPassword,
+  ) async {
     try {
-      if (email.isEmpty || password.isEmpty) {
+      //* Validate the form data
+      final message = _validate(email, password, confirmPassword);
+
+      if (message.isNotEmpty) {
+        EasyLoading.showInfo(message);
         return;
       }
 
@@ -242,5 +279,52 @@ class RegisterPageState extends State<RegisterPage> {
     } on FirebaseAuthException catch (e) {
       print('Email/Password Sign-In Error: $e');
     }
+  }
+
+  String _validate(String email, String password, String confirmPassword) {
+    //* Check if email is empty
+    if (email.isEmpty) {
+      return 'Email cannot be empty.';
+    }
+
+    //* Validate email format
+    if (!EmailValidator.validate(email)) {
+      return 'Please enter a valid email address.';
+    }
+
+    //* Check if password is empty
+    if (password.isEmpty) {
+      return 'Password cannot be empty.';
+    }
+
+    //* Validate password length and content
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long.';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return 'Password must contain at least one uppercase letter.';
+    }
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return 'Password must contain at least one lowercase letter.';
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Password must contain at least one digit.';
+    }
+    if (!RegExp(r'[@$!%*?&]').hasMatch(password)) {
+      return 'Password must contain at least one special character.';
+    }
+
+    //* Check if confirmPassword is empty
+    if (confirmPassword.isEmpty) {
+      return 'Confirm password cannot be empty.';
+    }
+
+    //* Check if password and confirmPassword match
+    if (password != confirmPassword) {
+      return 'Passwords do not match.';
+    }
+
+    //* If all validations pass, return an empty string (indicating no errors)
+    return '';
   }
 }
