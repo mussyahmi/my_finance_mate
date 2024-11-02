@@ -140,7 +140,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                         Text(
                           'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: Colors.orange,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -204,7 +204,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                                               .red; //* Change color when budget is greater than 1
                                         } else {
                                           return Colors
-                                              .orange; //* Change color when budget is less than 1
+                                              .deepOrange; //* Change color when budget is less than 1
                                         }
                                       }(),
                                     ),
