@@ -233,11 +233,11 @@ class CategoriesProvider extends ChangeNotifier {
     print('done recalculateCategoryTotalAmount');
   }
 
-  Category getACategoryById(categoryId) {
+  Category getCategoryById(categoryId) {
     return categories!.firstWhere((category) => category.id == categoryId);
   }
 
-  Category getACategoryByName(categoryName) {
+  Category getCategoryByName(categoryName) {
     return categories!.firstWhere((category) => category.name == categoryName);
   }
 
@@ -343,7 +343,7 @@ class CategoriesProvider extends ChangeNotifier {
 
     if (action != 'Add' && transaction!.type != 'transfer') {
       //* Update previous category's data
-      prevCategory = getACategoryById(transaction.categoryId);
+      prevCategory = getCategoryById(transaction.categoryId);
 
       prevTotalAmount = double.parse(prevCategory.totalAmount) -
           double.parse(transaction.amount);
@@ -364,7 +364,7 @@ class CategoriesProvider extends ChangeNotifier {
 
     if (action != 'Delete' && type != 'transfer') {
       //* Update new category's data
-      final Category newCategory = getACategoryById(categoryId);
+      final Category newCategory = getCategoryById(categoryId);
 
       double newTotalAmount = prevTotalAmount + double.parse(amount);
 

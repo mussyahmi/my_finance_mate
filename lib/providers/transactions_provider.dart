@@ -51,7 +51,12 @@ class TransactionsProvider extends ChangeNotifier {
         type: data['type'] as String,
         subType: data['subType'],
         categoryId: data['category_id'] ?? '',
-        categoryName: data['category_name'],
+        categoryName: data['category_id'] != null
+            ? context
+                .read<CategoriesProvider>()
+                .getCategoryById(data['category_id'])
+                .name
+            : '',
         accountId: data['account_id'] ?? '',
         accountName: data['account_id'] != null
             ? context
@@ -147,7 +152,12 @@ class TransactionsProvider extends ChangeNotifier {
                 type: data['type'] as String,
                 subType: data['subType'],
                 categoryId: data['category_id'] ?? '',
-                categoryName: data['category_name'],
+                categoryName: data['category_id'] != null
+                    ? context
+                        .read<CategoriesProvider>()
+                        .getCategoryById(data['category_id'])
+                        .name
+                    : '',
                 accountId: data['account_id'] ?? '',
                 accountName: data['account_id'] != null
                     ? context
@@ -179,7 +189,12 @@ class TransactionsProvider extends ChangeNotifier {
               type: data['type'] as String,
               subType: data['subType'],
               categoryId: data['category_id'] ?? '',
-              categoryName: data['category_name'],
+              categoryName: data['category_id'] != null
+                  ? context
+                      .read<CategoriesProvider>()
+                      .getCategoryById(data['category_id'])
+                      .name
+                  : '',
               accountId: data['account_id'] ?? '',
               accountName: data['account_id'] != null
                   ? context
@@ -306,7 +321,7 @@ class TransactionsProvider extends ChangeNotifier {
           'category_name': categoryId != null
               ? context
                   .read<CategoriesProvider>()
-                  .getACategoryById(categoryId)
+                  .getCategoryById(categoryId)
                   .name
               : '',
           'amount': double.parse(amount).toStringAsFixed(2),
@@ -343,7 +358,7 @@ class TransactionsProvider extends ChangeNotifier {
           'category_name': categoryId != null
               ? context
                   .read<CategoriesProvider>()
-                  .getACategoryById(categoryId)
+                  .getCategoryById(categoryId)
                   .name
               : '',
           'amount': double.parse(amount).toStringAsFixed(2),

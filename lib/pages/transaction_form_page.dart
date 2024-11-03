@@ -286,7 +286,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             selectedItem: selectedCategoryId != null
                                 ? context
                                     .read<CategoriesProvider>()
-                                    .getACategoryById(selectedCategoryId)
+                                    .getCategoryById(selectedCategoryId)
                                     .name
                                 : null,
                             onChanged: (newValue) async {
@@ -309,7 +309,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               } else {
                                 final selectedCategory = context
                                     .read<CategoriesProvider>()
-                                    .getACategoryByName(newValue);
+                                    .getCategoryById(newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;

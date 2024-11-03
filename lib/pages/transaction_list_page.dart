@@ -205,13 +205,13 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               selectedItem: selectedCategoryId != null
                                   ? context
                                       .read<CategoriesProvider>()
-                                      .getACategoryById(selectedCategoryId)
+                                      .getCategoryById(selectedCategoryId)
                                       .name
                                   : null,
                               onChanged: (newValue) async {
                                 final selectedCategory = context
                                     .read<CategoriesProvider>()
-                                    .getACategoryByName(newValue);
+                                    .getCategoryByName(newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;
