@@ -11,7 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../providers/accounts_provider.dart';
@@ -46,7 +45,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   List<Category> categories = [];
   String? selectedAccountId;
   String? selectedAccountToId;
-  List<Account> accounts = [];
   TextEditingController transactionAmountController = TextEditingController();
   TextEditingController transactionNoteController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
@@ -80,7 +78,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
   Future<void> initAsync() async {
     await _fetchCategories();
-    await _fetchAccounts();
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
@@ -108,15 +105,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     setState(() {
       categories = fetchedCategories;
-    });
-  }
-
-  Future<void> _fetchAccounts() async {
-    List<Account> fetchedAccounts = List<Account>.from(
-        await context.read<AccountsProvider>().getAccounts(context));
-
-    setState(() {
-      accounts = fetchedAccounts;
     });
   }
 
@@ -198,7 +186,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       selected: {selectedType},
                       onSelectionChanged: (newSelection) {
                         if (newSelection.first == 'transfer' &&
-                            accounts.length < 2) {
+                            context.read<AccountsProvider>().accounts!.length <
+                                2) {
                           EasyLoading.showInfo(
                               'You need at least 2 accounts to make a transfer.');
                           return;
@@ -250,14 +239,15 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     const SizedBox(height: 10),
                     DropdownSearch<String>(
                       selectedItem: selectedAccountId != null
-                          ? accounts
-                              .firstWhere(
-                                  (account) => account.id == selectedAccountId)
+                          ? context
+                              .read<AccountsProvider>()
+                              .getAccountById(selectedAccountId)
                               .name
                           : null,
                       onChanged: (newValue) async {
-                        final selectedAccount = accounts
-                            .firstWhere((account) => account.name == newValue);
+                        final selectedAccount = context
+                            .read<AccountsProvider>()
+                            .getAccountByName(newValue);
 
                         setState(() {
                           selectedAccountId = selectedAccount.id;
@@ -265,13 +255,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         });
                       },
                       items: (filter, loadProps) {
-                        final filteredAccounts = accounts
-                            .where((account) => account.name
-                                .toLowerCase()
-                                .contains(filter.toLowerCase()))
-                            .toList();
-
-                        return filteredAccounts
+                        return context
+                            .read<AccountsProvider>()
+                            .getFilteredAccountsByName(context, filter)
                             .map((account) => account.name)
                             .toList();
                       },
@@ -298,9 +284,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         children: [
                           DropdownSearch<String>(
                             selectedItem: selectedCategoryId != null
-                                ? categories
-                                    .firstWhere((category) =>
-                                        category.id == selectedCategoryId)
+                                ? context
+                                    .read<CategoriesProvider>()
+                                    .getACategoryById(selectedCategoryId)
                                     .name
                                 : null,
                             onChanged: (newValue) async {
@@ -321,8 +307,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
                                 await _fetchCategories();
                               } else {
-                                final selectedCategory = categories.firstWhere(
-                                    (category) => category.name == newValue);
+                                final selectedCategory = context
+                                    .read<CategoriesProvider>()
+                                    .getACategoryByName(newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;
@@ -376,29 +363,26 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         children: [
                           DropdownSearch<String>(
                             selectedItem: selectedAccountToId != null
-                                ? accounts
-                                    .firstWhere((account) =>
-                                        account.id == selectedAccountToId)
+                                ? context
+                                    .read<AccountsProvider>()
+                                    .getAccountById(selectedAccountToId)
                                     .name
                                 : null,
                             onChanged: (newValue) async {
-                              final selectedAccount = accounts.firstWhere(
-                                  (account) => account.name == newValue);
+                              final selectedAccount = context
+                                  .read<AccountsProvider>()
+                                  .getAccountByName(newValue);
 
                               setState(() {
                                 selectedAccountToId = selectedAccount.id;
                               });
                             },
                             items: (filter, loadProps) {
-                              final filteredAccounts = accounts
+                              return context
+                                  .read<AccountsProvider>()
+                                  .getFilteredAccountsByName(context, filter)
                                   .where((account) =>
                                       account.id != selectedAccountId)
-                                  .where((account) => account.name
-                                      .toLowerCase()
-                                      .contains(filter.toLowerCase()))
-                                  .toList();
-
-                              return filteredAccounts
                                   .map((account) => account.name)
                                   .toList();
                             },

@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
-import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
@@ -57,13 +56,15 @@ class TransactionsProvider extends ChangeNotifier {
         accountName: data['account_id'] != null
             ? context
                 .read<AccountsProvider>()
-                .getAccountName(data['account_id'])
+                .getAccountById(data['account_id'])
+                .name
             : '',
         accountToId: data['account_to_id'] ?? '',
         accountToName: data['account_to_id'] != null
             ? context
                 .read<AccountsProvider>()
-                .getAccountName(data['account_to_id'])
+                .getAccountById(data['account_to_id'])
+                .name
             : '',
         amount: data['amount'] as String,
         note: data['note'] as String,
@@ -134,20 +135,6 @@ class TransactionsProvider extends ChangeNotifier {
       for (var doc in transactionSnapshot.docs) {
         final data = doc.data();
 
-        //* Fetch the category name based on the categoryId
-        DocumentSnapshot<Map<String, dynamic>> categoryDoc =
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .collection('cycles')
-                .doc(data['cycle_id'])
-                .collection('categories')
-                .doc(data['category_id'])
-                .getSavy();
-        print('fetchFilteredTransactions - categoryDoc: 1');
-
-        final categoryName = categoryDoc['name'] as String;
-
         //* Map data to your Transaction class
         if (subType == 'others') {
           if (!data.containsKey('subType') || data['subType'] == null) {
@@ -160,18 +147,20 @@ class TransactionsProvider extends ChangeNotifier {
                 type: data['type'] as String,
                 subType: data['subType'],
                 categoryId: data['category_id'] ?? '',
-                categoryName: categoryName,
+                categoryName: data['category_name'],
                 accountId: data['account_id'] ?? '',
                 accountName: data['account_id'] != null
                     ? context
                         .read<AccountsProvider>()
-                        .getAccountName(data['account_id'])
+                        .getAccountById(data['account_id'])
+                        .name
                     : '',
                 accountToId: data['account_to_id'] ?? '',
                 accountToName: data['account_to_id'] != null
                     ? context
                         .read<AccountsProvider>()
-                        .getAccountName(data['account_to_id'])
+                        .getAccountById(data['account_to_id'])
+                        .name
                     : '',
                 amount: data['amount'] as String,
                 note: data['note'] as String,
@@ -190,18 +179,20 @@ class TransactionsProvider extends ChangeNotifier {
               type: data['type'] as String,
               subType: data['subType'],
               categoryId: data['category_id'] ?? '',
-              categoryName: categoryName,
+              categoryName: data['category_name'],
               accountId: data['account_id'] ?? '',
               accountName: data['account_id'] != null
                   ? context
                       .read<AccountsProvider>()
-                      .getAccountName(data['account_id'])
+                      .getAccountById(data['account_id'])
+                      .name
                   : '',
               accountToId: data['account_to_id'] ?? '',
               accountToName: data['account_to_id'] != null
                   ? context
                       .read<AccountsProvider>()
-                      .getAccountName(data['account_to_id'])
+                      .getAccountById(data['account_to_id'])
+                      .name
                   : '',
               amount: data['amount'] as String,
               note: data['note'] as String,
@@ -269,6 +260,10 @@ class TransactionsProvider extends ChangeNotifier {
         .any((transaction) => transaction.accountId == accountId);
   }
 
+  t.Transaction getTransactionById(transactionId) {
+    return transactions!.firstWhere((account) => account.id == transactionId);
+  }
+
   Future<void> updateTransaction(
     BuildContext context,
     String action,
@@ -286,8 +281,6 @@ class TransactionsProvider extends ChangeNotifier {
   ) async {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
-    final List<Category> categories =
-        context.read<CategoriesProvider>().categories!;
 
     //* Get current timestamp
     final now = DateTime.now();
@@ -311,8 +304,9 @@ class TransactionsProvider extends ChangeNotifier {
           'account_to_id': accountToId,
           'category_id': categoryId,
           'category_name': categoryId != null
-              ? categories
-                  .firstWhere((category) => category.id == categoryId)
+              ? context
+                  .read<CategoriesProvider>()
+                  .getACategoryById(categoryId)
                   .name
               : '',
           'amount': double.parse(amount).toStringAsFixed(2),
@@ -347,8 +341,9 @@ class TransactionsProvider extends ChangeNotifier {
           'account_to_id': accountToId,
           'category_id': categoryId,
           'category_name': categoryId != null
-              ? categories
-                  .firstWhere((category) => category.id == categoryId)
+              ? context
+                  .read<CategoriesProvider>()
+                  .getACategoryById(categoryId)
                   .name
               : '',
           'amount': double.parse(amount).toStringAsFixed(2),
@@ -446,8 +441,7 @@ class TransactionsProvider extends ChangeNotifier {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
-    final t.Transaction trans = transactions!
-        .firstWhere((transaction) => transaction.id == transactionId);
+    final t.Transaction trans = getTransactionById(transactionId);
 
     for (var file in trans.files) {
       t.Transaction.deleteFile(

@@ -237,6 +237,10 @@ class CategoriesProvider extends ChangeNotifier {
     return categories!.firstWhere((category) => category.id == categoryId);
   }
 
+  Category getACategoryByName(categoryName) {
+    return categories!.firstWhere((category) => category.name == categoryName);
+  }
+
   Future<void> updateCategory(
       BuildContext context,
       String action,
@@ -333,8 +337,6 @@ class CategoriesProvider extends ChangeNotifier {
   ) async {
     final Person user = context.read<UserProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
-    final List<Category> categories =
-        context.read<CategoriesProvider>().categories!;
 
     double prevTotalAmount = 0;
     late Category prevCategory;
@@ -362,8 +364,7 @@ class CategoriesProvider extends ChangeNotifier {
 
     if (action != 'Delete' && type != 'transfer') {
       //* Update new category's data
-      final Category newCategory =
-          categories.firstWhere((category) => category.id == categoryId);
+      final Category newCategory = getACategoryById(categoryId);
 
       double newTotalAmount = prevTotalAmount + double.parse(amount);
 

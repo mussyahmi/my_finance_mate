@@ -54,14 +54,22 @@ class AccountsProvider extends ChangeNotifier {
     return accounts!;
   }
 
-  String getAccountName(accountId) {
-    if (accounts == null || accountId == '') return '';
+  List<Account> getFilteredAccountsByName(
+      BuildContext context, String accountName) {
+    if (accounts == null) return [];
 
-    return accounts!.firstWhere((account) => account.id == accountId).name;
+    return accounts!
+        .where((account) =>
+            account.name.toLowerCase().contains(accountName.toLowerCase()))
+        .toList();
   }
 
   Account getAccountById(accountId) {
     return accounts!.firstWhere((account) => account.id == accountId);
+  }
+
+  Account getAccountByName(accountName) {
+    return accounts!.firstWhere((account) => account.name == accountName);
   }
 
   Future<void> updateAccount(
