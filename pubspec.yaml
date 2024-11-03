@@ -59,6 +59,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.1
   email_validator: ^3.0.0
   upgrader: ^11.3.0
+  change_app_package_name: ^1.4.0
 
 dev_dependencies:
   flutter_test:
