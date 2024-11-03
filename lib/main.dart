@@ -5,7 +5,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:upgrader/upgrader.dart';
 
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
@@ -96,7 +95,7 @@ class _MyAppState extends State<MyApp> {
         title: 'My Finance Mate',
         theme: theme,
         darkTheme: darkTheme,
-        home: UpgradeAlert(child: const LoginPage()),
+        home: const LoginPage(),
         builder: EasyLoading.init(),
       ),
     );
