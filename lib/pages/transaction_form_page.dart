@@ -309,7 +309,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               } else {
                                 final selectedCategory = context
                                     .read<CategoriesProvider>()
-                                    .getCategoryById(newValue);
+                                    .getCategoryByName(newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;
