@@ -293,30 +293,31 @@ class CategoriesProvider extends ChangeNotifier {
         });
 
         //* If the category name is modified, propagate the change to all associated transactions
-        if (category.name != categoryName) {
-          final transactionsSnapshot = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .collection('transactions')
-              .where('category_id', isEqualTo: category.id)
-              .where('deleted_at', isNull: true)
-              .getSavy();
-          print(
-              'updateCategory - transactionsSnapshot: ${transactionsSnapshot.docs.length}');
+        //* Not use anymore
+        // if (category.name != categoryName) {
+        //   final transactionsSnapshot = await FirebaseFirestore.instance
+        //       .collection('users')
+        //       .doc(user.uid)
+        //       .collection('transactions')
+        //       .where('category_id', isEqualTo: category.id)
+        //       .where('deleted_at', isNull: true)
+        //       .getSavy();
+        //   print(
+        //       'updateCategory - transactionsSnapshot: ${transactionsSnapshot.docs.length}');
 
-          for (var doc in transactionsSnapshot.docs) {
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .collection('transactions')
-                .doc(doc.id)
-                .update({'category_name': categoryName});
-          }
+        //   for (var doc in transactionsSnapshot.docs) {
+        //     await FirebaseFirestore.instance
+        //         .collection('users')
+        //         .doc(user.uid)
+        //         .collection('transactions')
+        //         .doc(doc.id)
+        //         .update({'category_name': categoryName});
+        //   }
 
-          await context
-              .read<TransactionsProvider>()
-              .fetchTransactions(context, cycle);
-        }
+        //   await context
+        //       .read<TransactionsProvider>()
+        //       .fetchTransactions(context, cycle);
+        // }
       }
 
       await context.read<CategoriesProvider>().fetchCategories(context, cycle);

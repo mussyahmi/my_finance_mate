@@ -318,12 +318,13 @@ class TransactionsProvider extends ChangeNotifier {
           'account_id': accountId,
           'account_to_id': accountToId,
           'category_id': categoryId,
-          'category_name': categoryId != null
-              ? context
-                  .read<CategoriesProvider>()
-                  .getCategoryById(categoryId)
-                  .name
-              : '',
+          //* Not use anymore
+          // 'category_name': categoryId != null
+          //     ? context
+          //         .read<CategoriesProvider>()
+          //         .getCategoryById(categoryId)
+          //         .name
+          //     : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'created_at': now,
@@ -355,12 +356,13 @@ class TransactionsProvider extends ChangeNotifier {
           'account_id': accountId,
           'account_to_id': accountToId,
           'category_id': categoryId,
-          'category_name': categoryId != null
-              ? context
-                  .read<CategoriesProvider>()
-                  .getCategoryById(categoryId)
-                  .name
-              : '',
+          //* Not use anymore
+          // 'category_name': categoryId != null
+          //     ? context
+          //         .read<CategoriesProvider>()
+          //         .getCategoryById(categoryId)
+          //         .name
+          //     : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,

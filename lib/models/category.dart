@@ -275,6 +275,7 @@ class Category {
     }
   }
 
+  //* Not use anymore
   static Future<void> updateCategoryNameForAllTransactions(Person user) async {
     final transactionsSnapshot = await FirebaseFirestore.instance
         .collection('users')
