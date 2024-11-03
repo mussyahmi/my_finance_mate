@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7.apps.googleusercontent.com</string>
+	<string>301321629117-49v7numbttskobsd5689pmchj4mt6d9m.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7</string>
+	<string>com.googleusercontent.apps.301321629117-49v7numbttskobsd5689pmchj4mt6d9m</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>301321629117-16vs78ajniv94k4qv3s4mk7gg545adia.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCfVgsZ0-xDGwsBUnD7qWsgCMqzW_ICDic</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.myFinanceMate</string>
+	<string>com.mustafasyahmi.myfinancemate</string>
 	<key>PROJECT_ID</key>
 	<string>my-finance-mate</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:301321629117:ios:f776aedbf867a072f376d4</string>
+	<string>1:301321629117:ios:7a3349c0d82f26d5f376d4</string>
 </dict>
 </plist>
