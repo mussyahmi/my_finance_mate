@@ -58,6 +58,7 @@ dependencies:
   dropdown_search: ^6.0.1
   flutter_launcher_icons: ^0.14.1
   email_validator: ^3.0.0
+  upgrader: ^11.3.0
 
 dev_dependencies:
   flutter_test:
