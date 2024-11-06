@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdMobService {
-  bool status = false;
+  bool status = true;
 
   Future<InitializationStatus> initialization;
 
@@ -30,7 +30,7 @@ class AdMobService {
     return null;
   }
 
-  String? get bannerSettingAdUnitId {
+  String? get bannerExploreAdUnitId {
     if (kReleaseMode) {
       if (Platform.isAndroid) {
         return 'ca-app-pub-2773996115717784/7085332225';
@@ -126,6 +126,150 @@ class AdMobService {
         return 'ca-app-pub-2773996115717784/8368007197';
       } else if (Platform.isIOS) {
         return 'ca-app-pub-2773996115717784/6009437164';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerChartAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/3677672588';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/3545810642';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerTransactionLatestAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/3543609517';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/2230527847';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerTransactionFilteredAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/1818903226';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/9505821551';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerTransactionFormAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/9342731103';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/7103019491';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerCycleAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/5095803253';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/8404492876';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerCycleListAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/5196005484';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/5307686125';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerCycleLatestAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/1811164362';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/3016434822';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/6300978111';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/2934735716';
+      }
+    }
+
+    return null;
+  }
+
+  String? get bannerAccountListAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/2929537430';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/1616455769';
       }
     } else {
       if (Platform.isAndroid) {

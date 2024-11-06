@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
@@ -7,6 +10,9 @@ import '../models/cycle.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_mob_service.dart';
+import '../widgets/account_summary.dart';
+import '../widgets/ad_container.dart';
 
 class AccountListPage extends StatefulWidget {
   const AccountListPage({super.key});
@@ -16,6 +22,8 @@ class AccountListPage extends StatefulWidget {
 }
 
 class _AccountListPageState extends State<AccountListPage> {
+  late AdMobService _adMobService;
+
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
@@ -29,6 +37,8 @@ class _AccountListPageState extends State<AccountListPage> {
 
       EasyLoading.showSuccess('Done! Transactions moved. 🏁');
     }
+
+    _adMobService = context.read<AdMobService>();
   }
 
   @override
@@ -38,7 +48,7 @@ class _AccountListPageState extends State<AccountListPage> {
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          const SliverAppBar(
+          SliverAppBar(
             title: Text('Account List'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
@@ -90,20 +100,27 @@ class _AccountListPageState extends State<AccountListPage> {
                   return ListView.builder(
                     itemCount: accounts.length,
                     itemBuilder: (context, index) {
-                      Account account = accounts[index];
+                      Account account = accounts[index] as Account;
 
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        margin: index == accounts.length - 1
-                            ? const EdgeInsets.only(bottom: 80)
-                            : null,
-                        child: Card(
-                          child: ListTile(
-                            title: Text(account.name),
-                            onTap: () =>
-                                account.showAccountDetails(context, cycle),
+                      return Column(
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: AccountSummary(account: account),
                           ),
-                        ),
+                          if (_adMobService.status &&
+                              (index == 1 || index == 7 || index == 13))
+                            AdContainer(
+                              adMobService: _adMobService,
+                              adSize: AdSize.largeBanner,
+                              adUnitId:
+                                  _adMobService.bannerAccountListAdUnitId!,
+                              height: 100.0,
+                            ),
+                          if (index == accounts.length - 1)
+                            const SizedBox(height: 80),
+                        ],
                       );
                     },
                   );

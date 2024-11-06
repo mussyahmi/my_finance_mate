@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
@@ -19,6 +20,7 @@ import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
+import '../widgets/ad_container.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
@@ -51,8 +53,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   bool _isLoading = false;
   List<dynamic> files = [];
   List<dynamic> filesToDelete = [];
-
-  //* Ad related
   late AdMobService _adMobService;
   InterstitialAd? _interstitialAd;
 
@@ -68,11 +68,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     _adMobService = context.read<AdMobService>();
 
     if (_adMobService.status) {
-      _adMobService.initialization.then((value) {
-        setState(() {
-          _createInterstitialAd();
-        });
-      });
+      _createInterstitialAd();
     }
   }
 
@@ -90,11 +86,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
       await _fetchCategories();
 
-      selectedCategoryId = widget.transaction!.categoryId == ''
+      selectedCategoryId = widget.transaction!.categoryId.isEmpty
           ? null
           : widget.transaction!.categoryId;
       selectedAccountId = widget.transaction!.accountId;
-      selectedAccountToId = widget.transaction!.accountToId;
+      selectedAccountToId = widget.transaction!.accountToId.isEmpty
+          ? null
+          : widget.transaction!.accountToId;
     }
   }
 
@@ -106,6 +104,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     setState(() {
       categories = fetchedCategories;
     });
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
   }
 
   @override
@@ -309,7 +313,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               } else {
                                 final selectedCategory = context
                                     .read<CategoriesProvider>()
-                                    .getCategoryByName(newValue);
+                                    .getCategoryByName(selectedType, newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;
@@ -564,6 +568,19 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       child: const Text('Add Attachment'),
                     ),
                     const SizedBox(height: 30),
+                    if (_adMobService.status)
+                      Column(
+                        children: [
+                          AdContainer(
+                            adMobService: _adMobService,
+                            adSize: AdSize.largeBanner,
+                            adUnitId:
+                                _adMobService.bannerTransactionFormAdUnitId!,
+                            height: 100.0,
+                          ),
+                          const SizedBox(height: 30),
+                        ],
+                      ),
                     ElevatedButton(
                       onPressed: () async {
                         FocusManager.instance.primaryFocus?.unfocus();
@@ -573,8 +590,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         setState(() {
                           _isLoading = true;
                         });
-
-                        if (_adMobService.status) _showInterstitialAd();
 
                         try {
                           EasyLoading.show(
@@ -601,6 +616,25 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             EasyLoading.showInfo(message);
                             return;
                           }
+
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          int? transactionActionCounter =
+                              prefs.getInt('transaction_action_counter');
+
+                          if (transactionActionCounter == null) {
+                            await prefs.setInt('transaction_action_counter', 0);
+                            transactionActionCounter = 0;
+                          }
+
+                          transactionActionCounter += 1;
+                          await prefs.setInt('transaction_action_counter',
+                              transactionActionCounter);
+
+                          print(transactionActionCounter);
+
+                          if (transactionActionCounter >= 3 &&
+                              _adMobService.status) _showInterstitialAd(prefs);
 
                           await context
                               .read<TransactionsProvider>()
@@ -744,7 +778,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     );
   }
 
-  void _showInterstitialAd() {
+  void _showInterstitialAd(SharedPreferences prefs) async {
     if (_interstitialAd != null) {
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
@@ -757,7 +791,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
         },
       );
 
-      _interstitialAd!.show();
+      await _interstitialAd!.show();
+      await prefs.setInt('transaction_action_counter', 0);
       _interstitialAd = null;
     }
   }

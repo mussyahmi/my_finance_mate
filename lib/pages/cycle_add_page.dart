@@ -10,6 +10,7 @@ import '../models/cycle.dart';
 import '../providers/cycle_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
+import '../widgets/ad_container.dart';
 
 class CycleAddPage extends StatefulWidget {
   const CycleAddPage({super.key});
@@ -26,10 +27,7 @@ class CycleAddPageState extends State<CycleAddPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
-
-  //* Ad related
   late AdMobService _adMobService;
-  BannerAd? _bannerAd;
 
   @override
   void didChangeDependencies() {
@@ -68,21 +66,7 @@ class CycleAddPageState extends State<CycleAddPage> {
       });
     }
 
-    //* Ads realted
     _adMobService = context.read<AdMobService>();
-
-    if (_adMobService.status) {
-      _adMobService.initialization.then((value) {
-        setState(() {
-          _bannerAd = BannerAd(
-            size: AdSize.fullBanner,
-            adUnitId: _adMobService.bannerCycleAddAdUnitId!,
-            listener: _adMobService.bannerAdListener,
-            request: const AdRequest(),
-          )..load();
-        });
-      });
-    }
   }
 
   @override
@@ -195,10 +179,12 @@ class CycleAddPageState extends State<CycleAddPage> {
                   ),
                 ),
               ),
-              if (_bannerAd != null)
-                SizedBox(
+              if (_adMobService.status)
+                AdContainer(
+                  adMobService: _adMobService,
+                  adSize: AdSize.fullBanner,
+                  adUnitId: _adMobService.bannerCycleAddAdUnitId!,
                   height: 60.0,
-                  child: AdWidget(ad: _bannerAd!),
                 ),
             ],
           ),

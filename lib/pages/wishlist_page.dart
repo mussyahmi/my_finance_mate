@@ -8,6 +8,8 @@ import '../models/cycle.dart';
 import '../models/wishlist.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -18,6 +20,7 @@ class WishlistPage extends StatefulWidget {
 
 class _WishlistPageState extends State<WishlistPage> {
   List<Object> wishlist = [];
+  late AdMobService _adMobService;
 
   @override
   void didChangeDependencies() {
@@ -26,6 +29,8 @@ class _WishlistPageState extends State<WishlistPage> {
     if (context.read<WishlistProvider>().wishlist == null) {
       context.read<WishlistProvider>().fetchWishlist(context);
     }
+
+    _adMobService = context.read<AdMobService>();
   }
 
   @override
@@ -83,33 +88,37 @@ class _WishlistPageState extends State<WishlistPage> {
                 } else {
                   //* Display the list of wishlist
                   final wishlist = snapshot.data!;
-            
+
                   return ListView.builder(
                     itemCount: wishlist.length,
                     itemBuilder: (context, index) {
-                      if (wishlist[index] is BannerAd) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 5.0),
-                          height: 50.0,
-                          child: AdWidget(ad: wishlist[index] as BannerAd),
-                        );
-                      } else {
-                        Wishlist wish = wishlist[index] as Wishlist;
-            
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          margin: index == wishlist.length - 1
-                              ? const EdgeInsets.only(bottom: 80)
-                              : null,
-                          child: Card(
-                            child: ListTile(
-                              title: Text(wish.name),
-                              onTap: () =>
-                                  wish.showWishlistDetails(context, cycle),
+                      Wishlist wish = wishlist[index] as Wishlist;
+
+                      return Column(
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(wish.name),
+                                onTap: () =>
+                                    wish.showWishlistDetails(context, cycle),
+                              ),
                             ),
                           ),
-                        );
-                      }
+                          if (_adMobService.status &&
+                              (index == 1 || index == 7 || index == 13))
+                            AdContainer(
+                              adMobService: _adMobService,
+                              adSize: AdSize.banner,
+                              adUnitId: _adMobService.bannerWishlistAdUnitId!,
+                              height: 50.0,
+                            ),
+                          if (index == wishlist.length - 1)
+                            const SizedBox(height: 80),
+                        ],
+                      );
                     },
                   );
                 }

@@ -82,7 +82,7 @@ class TransactionsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<t.Transaction>> fetchFilteredTransactions(
+  Future<List<Object>> fetchFilteredTransactions(
     BuildContext context,
     DateTimeRange? selectedDateRange,
     String? selectedType,
@@ -92,9 +92,11 @@ class TransactionsProvider extends ChangeNotifier {
     String? selectedAccountToId,
   ) async {
     final Person user = context.read<UserProvider>().user!;
+    List<t.Transaction> transferTransactions = [];
     List<t.Transaction> filteredTransactions = [];
 
     if (selectedDateRange != null) {
+      //TODO: need to maintain later when want to use
       Query<Map<String, dynamic>> transactionQuery = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -218,6 +220,7 @@ class TransactionsProvider extends ChangeNotifier {
         }
       }
     } else {
+      Iterable<t.Transaction> queryTranfer = [];
       Iterable<t.Transaction> query = transactions!;
 
       if (subType != null) {
@@ -225,9 +228,20 @@ class TransactionsProvider extends ChangeNotifier {
 
         if (subType != 'others') {
           query = query.where((transaction) => transaction.subType == subType);
+        } else {
+          query = query.where((transaction) =>
+              transaction.subType != 'needs' &&
+              transaction.subType != 'wants' &&
+              transaction.subType != 'savings');
         }
       } else {
         if (selectedType != null) {
+          if (selectedType == 'received' && selectedAccountId != null) {
+            queryTranfer = query.where((transaction) =>
+                transaction.accountToId == selectedAccountId &&
+                transaction.type == 'transfer');
+          }
+
           query =
               query.where((transaction) => transaction.type == selectedType);
         }
@@ -248,10 +262,11 @@ class TransactionsProvider extends ChangeNotifier {
         }
       }
 
+      transferTransactions = queryTranfer.toList();
       filteredTransactions = query.toList();
     }
 
-    var result = filteredTransactions;
+    var result = (transferTransactions + filteredTransactions).toSet().toList();
 
     //* Sort the list as needed
     result.sort((a, b) => b.dateTime.compareTo(a.dateTime));
@@ -259,7 +274,7 @@ class TransactionsProvider extends ChangeNotifier {
     return result;
   }
 
-  Future<List<t.Transaction>> getLatestTransactions() async {
+  Future<List<Object>> getLatestTransactions(BuildContext context) async {
     if (transactions == null) return [];
 
     return transactions!.take(10).toList();
@@ -336,7 +351,7 @@ class TransactionsProvider extends ChangeNotifier {
         //* Update transactions made
         final adMobService = context.read<AdMobService>();
 
-        if (adMobService.status) {
+        if (action == 'Add' && adMobService.status) {
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)

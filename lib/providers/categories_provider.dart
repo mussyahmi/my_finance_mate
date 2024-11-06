@@ -2,7 +2,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
@@ -10,7 +9,6 @@ import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
-import '../services/ad_mob_service.dart';
 import 'cycle_provider.dart';
 import 'transactions_provider.dart';
 import 'user_provider.dart';
@@ -112,46 +110,7 @@ class CategoriesProvider extends ChangeNotifier {
           .toList();
     }
 
-    List<Object> objectList = List<Object>.from(filteredCategories);
-
-    final adMobService = context.read<AdMobService>();
-
-    if (adMobService.status) {
-      String adUnitId = '';
-
-      if (fromPage == 'category_list') {
-        adUnitId = adMobService.bannerCategoryListAdUnitId!;
-      } else if (fromPage == 'category_summary') {
-        adUnitId = adMobService.bannerCategorySummaryAdUnitId!;
-      }
-
-      adMobService.initialization.then((value) {
-        for (var i = 2; i < objectList.length; i += 7) {
-          objectList.insert(
-              i,
-              BannerAd(
-                size: AdSize.banner,
-                adUnitId: adUnitId,
-                listener: adMobService.bannerAdListener,
-                request: const AdRequest(),
-              )..load());
-
-          if (i >= 16) {
-            //* max 3 ads
-            break;
-          }
-        }
-      });
-    }
-
-    if (fromPage == 'category_summary') {
-      objectList.insert(
-        objectList.length,
-        const SizedBox(height: 20),
-      );
-    }
-
-    return objectList;
+    return filteredCategories;
   }
 
   Future<void> recalculateCategoryAndCycleTotalAmount(
@@ -237,8 +196,9 @@ class CategoriesProvider extends ChangeNotifier {
     return categories!.firstWhere((category) => category.id == categoryId);
   }
 
-  Category getCategoryByName(categoryName) {
-    return categories!.firstWhere((category) => category.name == categoryName);
+  Category getCategoryByName(type, categoryName) {
+    return categories!.firstWhere(
+        (category) => category.type == type && category.name == categoryName);
   }
 
   Future<void> updateCategory(

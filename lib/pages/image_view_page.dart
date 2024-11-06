@@ -6,6 +6,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 
 import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 
 class ImageViewPage extends StatefulWidget {
   final dynamic imageSource;
@@ -19,27 +20,12 @@ class ImageViewPage extends StatefulWidget {
 }
 
 class _ImageViewPageState extends State<ImageViewPage> {
-  //* Ad related
   late AdMobService _adMobService;
-  BannerAd? _bannerAd;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
-
-    if (_adMobService.status) {
-      _adMobService.initialization.then((value) {
-        setState(() {
-          _bannerAd = BannerAd(
-            size: AdSize.fullBanner,
-            adUnitId: _adMobService.bannerImageViewAdUnitId!,
-            listener: _adMobService.bannerAdListener,
-            request: const AdRequest(),
-          )..load();
-        });
-      });
-    }
   }
 
   @override
@@ -56,10 +42,12 @@ class _ImageViewPageState extends State<ImageViewPage> {
               maxScale: PhotoViewComputedScale.covered * 1.8,
             ),
           ),
-          if (_bannerAd != null)
-            SizedBox(
+          if (_adMobService.status)
+            AdContainer(
+              adMobService: _adMobService,
+              adSize: AdSize.fullBanner,
+              adUnitId: _adMobService.bannerImageViewAdUnitId!,
               height: 60.0,
-              child: AdWidget(ad: _bannerAd!),
             ),
         ],
       ),

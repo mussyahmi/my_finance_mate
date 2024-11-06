@@ -2,13 +2,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../models/person.dart';
 import '../models/wishlist.dart';
-import '../services/ad_mob_service.dart';
 import 'user_provider.dart';
 
 class WishlistProvider extends ChangeNotifier {
@@ -43,31 +41,7 @@ class WishlistProvider extends ChangeNotifier {
   Future<List<Object>> getWishlist(BuildContext context) async {
     if (wishlist == null) return [];
 
-    List<Object> list = wishlist!;
-
-    final adMobService = context.read<AdMobService>();
-
-    if (adMobService.status) {
-      adMobService.initialization.then((value) {
-        for (var i = 2; i < list.length; i += 7) {
-          list.insert(
-              i,
-              BannerAd(
-                size: AdSize.banner,
-                adUnitId: adMobService.bannerCategoryListAdUnitId!,
-                listener: adMobService.bannerAdListener,
-                request: const AdRequest(),
-              )..load());
-
-          if (i >= 16) {
-            //* max 3 ads
-            break;
-          }
-        }
-      });
-    }
-
-    return list;
+    return wishlist!;
   }
 
   Future<void> updateWishlist(BuildContext context, String action,

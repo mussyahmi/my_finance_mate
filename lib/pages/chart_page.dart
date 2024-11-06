@@ -2,13 +2,16 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_mob_service.dart';
 import '../size_config.dart';
+import '../widgets/ad_container.dart';
 import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
@@ -31,10 +34,12 @@ class _ChartPageState extends State<ChartPage> {
   double savingsPercentage = 0;
   double othersPercentage = 0;
   bool _isLoading = false;
+  late AdMobService _adMobService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
     _calculateTransactions(context);
   }
 
@@ -231,11 +236,24 @@ class _ChartPageState extends State<ChartPage> {
                           ),
                         ),
                 ),
+                if (_adMobService.status)
+                  Column(
+                    children: [
+                      AdContainer(
+                        adMobService: _adMobService,
+                        adSize: AdSize.largeBanner,
+                        adUnitId: _adMobService.bannerChartAdUnitId!,
+                        height: 100.0,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
                 _card('needs', needsPercentage, needsTotal),
                 _card('wants', wantsPercentage, wantsTotal),
                 _card('savings', savingsPercentage, savingsTotal),
                 if (othersTotal > 0)
                   _card('others', othersPercentage, othersTotal),
+                const SizedBox(height: 20),
               ],
             ),
           ),

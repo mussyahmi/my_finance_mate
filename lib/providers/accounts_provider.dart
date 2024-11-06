@@ -48,7 +48,7 @@ class AccountsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Account>> getAccounts(BuildContext context) async {
+  Future<List<Object>> getAccounts(BuildContext context) async {
     if (accounts == null) return [];
 
     return accounts!;

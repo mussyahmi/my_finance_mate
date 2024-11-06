@@ -8,6 +8,8 @@ import '../models/cycle.dart';
 import '../providers/categories_provider.dart';
 import '../models/category.dart';
 import '../providers/cycle_provider.dart';
+import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 
 class CategoryListPage extends StatefulWidget {
   final String? type;
@@ -25,6 +27,7 @@ class CategoryListPage extends StatefulWidget {
 
 class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
+  late AdMobService _adMobService;
 
   @override
   void initState() {
@@ -35,6 +38,12 @@ class _CategoryListPageState extends State<CategoryListPage> {
         Category.showCategoryFormDialog(context, selectedType, 'Add');
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
   }
 
   @override
@@ -125,35 +134,38 @@ class _CategoryListPageState extends State<CategoryListPage> {
           } else {
             //* Display the list of categories
             final categories = snapshot.data!;
-      
+
             return ListView.builder(
               itemCount: categories.length,
               itemBuilder: (context, index) {
-                if (categories[index] is BannerAd) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5.0),
-                    height: 50.0,
-                    child: AdWidget(ad: categories[index] as BannerAd),
-                  );
-                } else {
-                  Category category = categories[index] as Category;
-      
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    margin: index == categories.length - 1
-                        ? const EdgeInsets.only(bottom: 80)
-                        : null,
-                    child: Card(
-                      child: ListTile(
-                        title: Text(category.name),
-                        onTap: () {
-                          category.showCategoryDetails(
-                              context, cycle, selectedType);
-                        },
+                Category category = categories[index] as Category;
+
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Card(
+                        child: ListTile(
+                          title: Text(category.name),
+                          onTap: () {
+                            category.showCategoryDetails(
+                                context, cycle, selectedType);
+                          },
+                        ),
                       ),
                     ),
-                  );
-                }
+                    if (_adMobService.status &&
+                        (index == 1 || index == 7 || index == 13))
+                      AdContainer(
+                        adMobService: _adMobService,
+                        adSize: AdSize.banner,
+                        adUnitId: _adMobService.bannerCategoryListAdUnitId!,
+                        height: 50.0,
+                      ),
+                    if (index == categories.length - 1)
+                      const SizedBox(height: 80),
+                  ],
+                );
               },
             );
           }

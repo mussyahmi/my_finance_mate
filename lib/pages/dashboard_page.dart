@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:upgrader/upgrader.dart';
 
 import '../models/account.dart';
@@ -17,6 +18,7 @@ import '../providers/transactions_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
+import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'account_list_page.dart';
@@ -37,11 +39,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
-  bool _isPaused = false;
-
-  //* Ad related
   late AdMobService _adMobService;
-  BannerAd? _bannerAd;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
 
@@ -79,20 +77,10 @@ class _DashboardPageState extends State<DashboardPage>
       }
     }
 
-    //* Ads related
     _adMobService = context.read<AdMobService>();
 
     if (_adMobService.status) {
-      _adMobService.initialization.then((value) {
-        setState(() {
-          _bannerAd = BannerAd(
-            size: AdSize.mediumRectangle,
-            adUnitId: _adMobService.bannerDasboardAdUnitId!,
-            listener: _adMobService.bannerAdListener,
-            request: const AdRequest(),
-          )..load();
-        });
-      });
+      await _adMobService.initialization;
 
       _createAppOpenAd();
       _createRewardedAd();
@@ -100,24 +88,33 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? pauseCounter = prefs.getInt('pause_counter');
+
+    if (pauseCounter == null) {
+      await prefs.setInt('pause_counter', 0);
+      pauseCounter = 0;
+    }
+
     if (state == AppLifecycleState.paused) {
-      _isPaused = true;
+      await prefs.setInt('pause_counter', pauseCounter + 1);
       print('Paused');
-    } else if (state == AppLifecycleState.resumed && _isPaused) {
-      if (_adMobService.status) _showAppOpenAd();
-      _isPaused = false;
+    } else if (state == AppLifecycleState.resumed && pauseCounter >= 3) {
+      if (_adMobService.status) _showAppOpenAd(prefs);
       print('Resumed');
     }
+
+    print('Pause counter: $pauseCounter');
   }
 
   @override
   void dispose() {
-    super.dispose();
-
+    _rewardedAd?.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override
@@ -191,17 +188,19 @@ class _DashboardPageState extends State<DashboardPage>
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: CycleSummary(),
                     ),
-                    if (_bannerAd != null)
+                    const SizedBox(height: 20),
+                    if (_adMobService.status)
                       Column(
                         children: [
-                          const SizedBox(height: 20),
-                          SizedBox(
+                          AdContainer(
+                            adMobService: _adMobService,
+                            adSize: AdSize.mediumRectangle,
+                            adUnitId: _adMobService.bannerDasboardAdUnitId!,
                             height: 250.0,
-                            child: AdWidget(ad: _bannerAd!),
                           ),
+                          const SizedBox(height: 20),
                         ],
                       ),
-                    const SizedBox(height: 30),
                     const ForecastBudget(),
                     const SizedBox(height: 30),
                     Padding(
@@ -228,10 +227,10 @@ class _DashboardPageState extends State<DashboardPage>
                         ],
                       ),
                     ),
-                    FutureBuilder<List<t.Transaction>>(
+                    FutureBuilder(
                       future: context
                           .watch<TransactionsProvider>()
-                          .getLatestTransactions(),
+                          .getLatestTransactions(context),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                                 ConnectionState.waiting ||
@@ -270,116 +269,153 @@ class _DashboardPageState extends State<DashboardPage>
                                 .entries
                                 .map<Widget>((entry) {
                               int index = entry.key;
-                              t.Transaction transaction = entry.value;
+                              t.Transaction transaction =
+                                  entry.value as t.Transaction;
 
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Column(
-                                  children: [
-                                    if (index == 0 ||
-                                        DateTime(
-                                                transaction.dateTime.year,
-                                                transaction.dateTime.month,
-                                                transaction.dateTime.day,
-                                                0,
-                                                0) !=
+                              late t.Transaction prevTransaction;
+
+                              if (index > 0) {
+                                if (transactions[index - 1] is t.Transaction) {
+                                  prevTransaction =
+                                      transactions[index - 1] as t.Transaction;
+                                } else {
+                                  prevTransaction =
+                                      transactions[index - 2] as t.Transaction;
+                                }
+                              }
+
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Column(
+                                      children: [
+                                        if (index == 0 ||
                                             DateTime(
-                                                transactions[index - 1]
-                                                    .dateTime
-                                                    .year,
-                                                transactions[index - 1]
-                                                    .dateTime
-                                                    .month,
-                                                transactions[index - 1]
-                                                    .dateTime
-                                                    .day,
-                                                0,
-                                                0))
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          transaction.getDateText(),
-                                          style: const TextStyle(
-                                              fontSize: 14, color: Colors.grey),
-                                        ),
-                                      ),
-                                    Card(
-                                      child: ListTile(
-                                        title: transaction.type == 'transfer'
-                                            ? Row(
-                                                children: [
-                                                  Chip(
-                                                    label: Text(
-                                                      transaction.accountName,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    padding: EdgeInsets.all(0),
-                                                  ),
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 4.0),
-                                                    child: Icon(
-                                                        Icons.arrow_forward,
-                                                        color: Colors.grey),
-                                                  ),
-                                                  Chip(
-                                                    label: Text(
-                                                      transaction.accountToName,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    padding: EdgeInsets.all(0),
-                                                  ),
-                                                ],
-                                              )
-                                            : Text(
-                                                transaction.categoryName,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16),
-                                              ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              transaction.note.split('\\n')[0],
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
+                                                    transaction.dateTime.year,
+                                                    transaction.dateTime.month,
+                                                    transaction.dateTime.day,
+                                                    0,
+                                                    0) !=
+                                                DateTime(
+                                                    prevTransaction
+                                                        .dateTime.year,
+                                                    prevTransaction
+                                                        .dateTime.month,
+                                                    prevTransaction
+                                                        .dateTime.day,
+                                                    0,
+                                                    0))
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              transaction.getDateText(),
                                               style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontStyle: FontStyle.italic,
+                                                  fontSize: 14,
                                                   color: Colors.grey),
                                             ),
-                                          ],
+                                          ),
+                                        Card(
+                                          child: ListTile(
+                                            title: transaction.type ==
+                                                    'transfer'
+                                                ? Row(
+                                                    children: [
+                                                      Chip(
+                                                        label: Text(
+                                                          transaction
+                                                              .accountName,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        padding:
+                                                            EdgeInsets.all(0),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal:
+                                                                    4.0),
+                                                        child: Icon(
+                                                            Icons.arrow_forward,
+                                                            color: Colors.grey),
+                                                      ),
+                                                      Chip(
+                                                        label: Text(
+                                                          transaction
+                                                              .accountToName,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        padding:
+                                                            EdgeInsets.all(0),
+                                                      ),
+                                                    ],
+                                                  )
+                                                : Text(
+                                                    transaction.categoryName,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 16),
+                                                  ),
+                                            subtitle: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  transaction.note
+                                                      .split('\\n')[0],
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                      color: Colors.grey),
+                                                ),
+                                              ],
+                                            ),
+                                            trailing: Text(
+                                              '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: transaction.type ==
+                                                          'transfer'
+                                                      ? Colors.grey
+                                                      : transaction.type ==
+                                                              'spent'
+                                                          ? Colors.red
+                                                          : Colors.green),
+                                            ),
+                                            onTap: () {
+                                              //* Show the transaction summary dialog when tapped
+                                              transaction
+                                                  .showTransactionDetails(
+                                                      context, cycle);
+                                            },
+                                          ),
                                         ),
-                                        trailing: Text(
-                                          '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: transaction.type ==
-                                                      'transfer'
-                                                  ? Colors.grey
-                                                  : transaction.type == 'spent'
-                                                      ? Colors.red
-                                                      : Colors.green),
-                                        ),
-                                        onTap: () {
-                                          //* Show the transaction summary dialog when tapped
-                                          transaction.showTransactionDetails(
-                                              context, cycle);
-                                        },
-                                      ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  if (_adMobService.status &&
+                                      (index == 1 || index == 7 || index == 13))
+                                    AdContainer(
+                                      adMobService: _adMobService,
+                                      adSize: AdSize.fullBanner,
+                                      adUnitId: _adMobService
+                                          .bannerTransactionLatestAdUnitId!,
+                                      height: 60.0,
+                                    )
+                                ],
                               );
                             }).toList(),
                           );
@@ -490,7 +526,7 @@ class _DashboardPageState extends State<DashboardPage>
     );
   }
 
-  void _showAppOpenAd() {
+  void _showAppOpenAd(SharedPreferences prefs) async {
     if (_appOpenAd != null) {
       _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdDismissedFullScreenContent: (ad) {
@@ -503,7 +539,8 @@ class _DashboardPageState extends State<DashboardPage>
         },
       );
 
-      _appOpenAd!.show();
+      await _appOpenAd!.show();
+      await prefs.setInt('pause_counter', 0);
       _appOpenAd = null;
     }
   }

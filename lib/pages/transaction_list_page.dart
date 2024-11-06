@@ -2,6 +2,7 @@
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -12,6 +13,8 @@ import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 
 class TransactionListPage extends StatefulWidget {
   final String? accountId;
@@ -41,11 +44,18 @@ class _TransactionListPageState extends State<TransactionListPage> {
   String? selectedCategoryId;
   List<Category> categories = [];
   bool openFilter = false;
+  late AdMobService _adMobService;
 
   @override
   void initState() {
     super.initState();
     initAsync();
+  }
+
+  @override
+  void didChangeDependencies() async {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
   }
 
   Future<void> initAsync() async {
@@ -211,7 +221,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               onChanged: (newValue) async {
                                 final selectedCategory = context
                                     .read<CategoriesProvider>()
-                                    .getCategoryByName(newValue);
+                                    .getCategoryByName(selectedType, newValue);
 
                                 setState(() {
                                   selectedCategoryId = selectedCategory.id;
@@ -316,7 +326,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
           ),
         ],
         body: Center(
-          child: FutureBuilder<List<t.Transaction>>(
+          child: FutureBuilder(
             future:
                 context.watch<TransactionsProvider>().fetchFilteredTransactions(
                       context,
@@ -360,10 +370,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
 
                 if (selectedCategoryId != null || widget.subType != null) {
                   for (var transaction in transactions!) {
-                    if (transaction.type == 'spent') {
-                      total -= double.parse(transaction.amount);
-                    } else {
-                      total += double.parse(transaction.amount);
+                    if (transaction is t.Transaction) {
+                      if (transaction.type == 'spent') {
+                        total -= double.parse(transaction.amount);
+                      } else {
+                        total += double.parse(transaction.amount);
+                      }
                     }
                   }
                 }
@@ -375,7 +387,21 @@ class _TransactionListPageState extends State<TransactionListPage> {
                         shrinkWrap: true,
                         itemCount: transactions!.length,
                         itemBuilder: (context, index) {
-                          final transaction = transactions[index];
+                          t.Transaction transaction =
+                              transactions[index] as t.Transaction;
+
+                          late t.Transaction prevTransaction;
+
+                          if (index > 0) {
+                            if (transactions[index - 1] is t.Transaction) {
+                              prevTransaction =
+                                  transactions[index - 1] as t.Transaction;
+                            } else {
+                              prevTransaction =
+                                  transactions[index - 2] as t.Transaction;
+                            }
+                          }
+
                           return Column(
                             children: [
                               if (index == 0 ||
@@ -386,11 +412,9 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                           0,
                                           0) !=
                                       DateTime(
-                                          transactions[index - 1].dateTime.year,
-                                          transactions[index - 1]
-                                              .dateTime
-                                              .month,
-                                          transactions[index - 1].dateTime.day,
+                                          prevTransaction.dateTime.year,
+                                          prevTransaction.dateTime.month,
+                                          prevTransaction.dateTime.day,
                                           0,
                                           0))
                                 Padding(
@@ -402,8 +426,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ),
                                 ),
                               Padding(
-                                padding: EdgeInsets.fromLTRB(8, 0, 8,
-                                    index + 1 == transactions.length ? 20 : 0),
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
                                 child: Card(
                                   child: ListTile(
                                     title: transaction.type == 'transfer'
@@ -475,6 +498,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ),
                                 ),
                               ),
+                              if (_adMobService.status &&
+                                  (index == 1 || index == 7 || index == 13))
+                                AdContainer(
+                                  adMobService: _adMobService,
+                                  adSize: AdSize.fullBanner,
+                                  adUnitId: _adMobService
+                                      .bannerTransactionFilteredAdUnitId!,
+                                  height: 60.0,
+                                ),
+                              if (index == transactions.length - 1)
+                                const SizedBox(height: 20),
                             ],
                           );
                         },

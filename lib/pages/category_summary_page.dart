@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/category.dart';
 import '../providers/categories_provider.dart';
 import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 import 'transaction_list_page.dart';
 
 class CategorySummaryPage extends StatefulWidget {
@@ -16,8 +17,6 @@ class CategorySummaryPage extends StatefulWidget {
 
 class _CategorySummaryPageState extends State<CategorySummaryPage> {
   bool _isLoading = false;
-
-  //* Ad related
   late AdMobService _adMobService;
   InterstitialAd? _interstitialAd;
 
@@ -25,7 +24,16 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
-    _createInterstitialAd();
+
+    if (_adMobService.status) {
+      _createInterstitialAd();
+    }
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
   }
 
   @override
@@ -112,48 +120,55 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                     shrinkWrap: true,
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
-                      if (categories[index] is SizedBox) {
-                        return categories[index] as SizedBox;
-                      } else if (categories[index] is BannerAd) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 5.0),
-                          height: 50.0,
-                          child: AdWidget(ad: categories[index] as BannerAd),
-                        );
-                      } else {
-                        Category category = categories[index] as Category;
+                      Category category = categories[index] as Category;
 
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Card(
-                            child: ListTile(
-                              title: Text(
-                                category.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
+                      return Column(
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(
+                                  category.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                trailing: Text(
+                                  '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: category.type == 'spent'
+                                          ? Colors.red
+                                          : Colors.green),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TransactionListPage(
+                                          type: category.type,
+                                          categoryId: category.id),
+                                    ),
+                                  );
+                                },
                               ),
-                              trailing: Text(
-                                '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: category.type == 'spent'
-                                        ? Colors.red
-                                        : Colors.green),
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransactionListPage(
-                                        type: category.type,
-                                        categoryId: category.id),
-                                  ),
-                                );
-                              },
                             ),
                           ),
-                        );
-                      }
+                          if (_adMobService.status &&
+                              (index == 1 || index == 7 || index == 13))
+                            AdContainer(
+                              adMobService: _adMobService,
+                              adSize: AdSize.banner,
+                              adUnitId:
+                                  _adMobService.bannerCategorySummaryAdUnitId!,
+                              height: 50.0,
+                            ),
+                          if (index == categories.length - 1)
+                            const SizedBox(height: 20),
+                        ],
+                      );
                     },
                   );
                 }

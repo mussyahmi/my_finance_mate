@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
@@ -24,11 +25,8 @@ class ExplorePage extends StatefulWidget {
 class ExplorePageState extends State<ExplorePage> {
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
-  Color themeColor = Colors.deepPurple;
-
-  //* Ad related
+  Color themeColor = Colors.teal;
   late AdMobService _adMobService;
-  BannerAd? _bannerAd;
 
   @override
   void initState() {
@@ -40,19 +38,6 @@ class ExplorePageState extends State<ExplorePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
-
-    if (_adMobService.status) {
-      _adMobService.initialization.then((value) {
-        setState(() {
-          _bannerAd = BannerAd(
-            size: AdSize.largeBanner,
-            adUnitId: _adMobService.bannerSettingAdUnitId!,
-            listener: _adMobService.bannerAdListener,
-            request: const AdRequest(),
-          )..load();
-        });
-      });
-    }
   }
 
   Future<void> initAsync() async {
@@ -65,7 +50,7 @@ class ExplorePageState extends State<ExplorePage> {
       prefs = sharedPreferences;
       savedThemeMode = adaptiveThemeMode;
       themeColor =
-          savedThemeColor != null ? Color(savedThemeColor) : Colors.deepPurple;
+          savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
     });
   }
 
@@ -255,14 +240,16 @@ class ExplorePageState extends State<ExplorePage> {
               ],
             ),
           ),
-          if (_bannerAd != null)
+          if (_adMobService.status)
             Column(
               children: [
-                const SizedBox(height: 20),
-                SizedBox(
+                AdContainer(
+                  adMobService: _adMobService,
+                  adSize: AdSize.largeBanner,
+                  adUnitId: _adMobService.bannerExploreAdUnitId!,
                   height: 100.0,
-                  child: AdWidget(ad: _bannerAd!),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
         ],

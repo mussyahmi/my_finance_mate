@@ -60,6 +60,107 @@ class _CycleSummaryState extends State<CycleSummary> {
                         color: Colors.grey,
                       ),
                     ),
+                    const Divider(
+                      color: Colors.grey,
+                      height: 36,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: cycle != null
+                                ? () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TransactionListPage(
+                                          type: 'received',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null,
+                            child: Card(
+                              elevation: 0,
+                              margin: const EdgeInsets.only(left: 8, right: 16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    const Text(
+                                      'Received',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      !_isAmountVisible
+                                          ? 'RM ****'
+                                          : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: cycle != null
+                                ? () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TransactionListPage(
+                                          type: 'spent',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                : null,
+                            child: Card(
+                              elevation: 0,
+                              margin: const EdgeInsets.only(left: 16, right: 8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  children: [
+                                    const Text(
+                                      'Spent',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      !_isAmountVisible
+                                          ? 'RM ****'
+                                          : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -80,101 +181,6 @@ class _CycleSummaryState extends State<CycleSummary> {
               )
             ],
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: cycle != null
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TransactionListPage(
-                              type: 'received',
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                child: Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Received',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          !_isAmountVisible
-                              ? 'RM ****'
-                              : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: cycle != null
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TransactionListPage(
-                              type: 'spent',
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                child: Card(
-                  elevation: 3,
-                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Spent',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          !_isAmountVisible
-                              ? 'RM ****'
-                              : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
