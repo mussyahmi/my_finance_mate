@@ -39,7 +39,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
-  late AdMobService _adMobService;
+  AdMobService? _adMobService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
 
@@ -79,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     _adMobService = context.read<AdMobService>();
 
-    if (_adMobService.status) {
+    if (_adMobService!.status) {
       _createAppOpenAd();
       _createRewardedAd();
     }
@@ -101,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage>
       await prefs.setInt('pause_counter', pauseCounter + 1);
       print('Paused');
     } else if (state == AppLifecycleState.resumed && pauseCounter >= 3) {
-      if (_adMobService.status) _showAppOpenAd(prefs);
+      if (_adMobService!.status) _showAppOpenAd(prefs);
       print('Resumed');
     }
 
@@ -187,13 +187,13 @@ class _DashboardPageState extends State<DashboardPage>
                       child: CycleSummary(),
                     ),
                     const SizedBox(height: 20),
-                    if (_adMobService.status)
+                    if (_adMobService != null && _adMobService!.status)
                       Column(
                         children: [
                           AdContainer(
-                            adMobService: _adMobService,
+                            adMobService: _adMobService!,
                             adSize: AdSize.mediumRectangle,
-                            adUnitId: _adMobService.bannerDasboardAdUnitId!,
+                            adUnitId: _adMobService!.bannerDasboardAdUnitId!,
                             height: 250.0,
                           ),
                           const SizedBox(height: 20),
@@ -404,12 +404,12 @@ class _DashboardPageState extends State<DashboardPage>
                                       ],
                                     ),
                                   ),
-                                  if (_adMobService.status &&
+                                  if (_adMobService!.status &&
                                       (index == 1 || index == 7 || index == 13))
                                     AdContainer(
-                                      adMobService: _adMobService,
+                                      adMobService: _adMobService!,
                                       adSize: AdSize.fullBanner,
-                                      adUnitId: _adMobService
+                                      adUnitId: _adMobService!
                                           .bannerTransactionLatestAdUnitId!,
                                       height: 60.0,
                                     )
@@ -457,7 +457,7 @@ class _DashboardPageState extends State<DashboardPage>
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  if (_adMobService.status) _showRewardedAd();
+                                  if (_adMobService!.status) _showRewardedAd();
 
                                   Navigator.of(context)
                                       .pop(); //* Close the dialog
@@ -511,7 +511,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _createAppOpenAd() {
     AppOpenAd.load(
-      adUnitId: _adMobService.appOpenAdUnitId!,
+      adUnitId: _adMobService!.appOpenAdUnitId!,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
@@ -545,7 +545,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _createRewardedAd() {
     RewardedAd.load(
-      adUnitId: _adMobService.rewardedAdUnitId!,
+      adUnitId: _adMobService!.rewardedAdUnitId!,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {

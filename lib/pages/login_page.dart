@@ -33,11 +33,33 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading2 = false;
   bool _isPasswordVisible = false;
   bool _isRememberMeChecked = false;
+  late AdMobService _adMobService;
+  bool _adMobServiceInit = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadSavedCredentials();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    //* Initialize AdMobService only once
+    if (!_adMobServiceInit) {
+      _adMobService = context.read<AdMobService>();
+
+      if (_adMobService.status) {
+        _adMobService.initialization.then((value) {
+          setState(() {
+            _adMobServiceInit = true;
+          });
+
+          //* Load saved credentials after AdMobService initialization
+          if (_adMobServiceInit) {
+            _loadSavedCredentials();
+          }
+        }).catchError((error) {
+          //* Handle initialization error if necessary
+          print('AdMob initialization error: $error');
+        });
+      }
+    }
   }
 
   @override
@@ -301,9 +323,6 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
-        AdMobService adMobService = context.read<AdMobService>();
-        await adMobService.initialization;
-
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
@@ -392,9 +411,6 @@ class _LoginPageState extends State<LoginPage> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
-
-        AdMobService adMobService = context.read<AdMobService>();
-        await adMobService.initialization;
 
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
