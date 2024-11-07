@@ -351,12 +351,15 @@ class TransactionsProvider extends ChangeNotifier {
         //* Update transactions made
         final adMobService = context.read<AdMobService>();
 
-        if (action == 'Add' && adMobService.status) {
+        if (adMobService.status) {
+          final int newDailyTransactionsMade = user.dailyTransactionsMade + 1;
+
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
-              .update(
-                  {'daily_transactions_made': user.dailyTransactionsMade + 1});
+              .update({'daily_transactions_made': newDailyTransactionsMade});
+
+          user.dailyTransactionsMade = newDailyTransactionsMade;
         }
       } else if (action == 'Edit') {
         await FirebaseFirestore.instance

@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-bool forceRefresh = true;
+bool forceRefresh = false;
 
 extension FirestoreDocumentExtension
     on DocumentReference<Map<String, dynamic>> {
