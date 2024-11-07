@@ -15,7 +15,7 @@ import 'providers/cycles_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'services/ad_mob_service.dart';
-import 'providers/user_provider.dart';
+import 'providers/person_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +39,7 @@ void main() async {
     providers: [
       Provider.value(value: adMobService),
       ChangeNotifierProvider(
-        create: (context) => UserProvider(),
+        create: (context) => PersonProvider(),
       ),
       ChangeNotifierProvider(
         create: (context) => CycleProvider(),

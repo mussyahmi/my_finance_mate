@@ -12,7 +12,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/person.dart';
-import '../providers/user_provider.dart';
+import '../providers/person_provider.dart';
 import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
 
@@ -241,10 +241,10 @@ class RegisterPageState extends State<RegisterPage> {
           'updated_at': now,
           'deleted_at': null,
           'email': authResult.user!.email,
-          'full_name': authResult.user!.displayName,
+          'display_name': authResult.user!.displayName ??
+              authResult.user!.uid.substring(0, 10),
           'last_login': now,
-          'nickname': authResult.additionalUserInfo!.profile!['given_name'],
-          'photo_url': authResult.user!.photoURL,
+          'image_url': authResult.user!.photoURL,
           'device_info_json': deviceInfoJson,
           'password': password,
           'daily_transactions_made': 0,
@@ -258,15 +258,14 @@ class RegisterPageState extends State<RegisterPage> {
 
         Person person = Person(
           uid: userDoc.id,
-          fullName: userDoc['full_name'] ?? '',
-          nickname: userDoc['nickname'] ?? '',
+          displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],
-          photoUrl: userDoc['photo_url'] ?? '',
+          imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
-        context.read<UserProvider>().setUser(newUser: person);
+        context.read<PersonProvider>().setUser(newUser: person);
 
         //* Navigate to the dashboard or home page upon successful register
         Navigator.pushAndRemoveUntil(

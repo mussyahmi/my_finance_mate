@@ -14,7 +14,7 @@ import '../pages/dashboard_page.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'transactions_provider.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class CycleProvider extends ChangeNotifier {
   Cycle? cycle;
@@ -22,7 +22,7 @@ class CycleProvider extends ChangeNotifier {
   CycleProvider({this.cycle});
 
   Future<void> fetchCycle(BuildContext context, {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final DateTime now = DateTime.now();
 
     final cycleQuery = FirebaseFirestore.instance
@@ -82,7 +82,7 @@ class CycleProvider extends ChangeNotifier {
 
   Future<void> addCycle(BuildContext context, String cycleName,
       DateTime startDate, DateTime endDate, String openingBalance) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final DateTime now = DateTime.now();
 
     //* Create the new cycle document
@@ -203,7 +203,7 @@ class CycleProvider extends ChangeNotifier {
     String attribute,
     dynamic value,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     await FirebaseFirestore.instance
@@ -230,7 +230,7 @@ class CycleProvider extends ChangeNotifier {
     DateTime now,
     t.Transaction? transaction,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final double cycleOpeningBalance = double.parse(cycle.openingBalance);
@@ -278,7 +278,7 @@ class CycleProvider extends ChangeNotifier {
     DateTime now,
     Account? account,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     double cycleOpeningBalance = double.parse(cycle.openingBalance);

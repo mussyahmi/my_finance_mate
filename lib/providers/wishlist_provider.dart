@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../extensions/firestore_extensions.dart';
 import '../models/person.dart';
 import '../models/wishlist.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class WishlistProvider extends ChangeNotifier {
   List<Wishlist>? wishlist;
@@ -15,7 +15,7 @@ class WishlistProvider extends ChangeNotifier {
   WishlistProvider({this.wishlist});
 
   Future<void> fetchWishlist(BuildContext context, {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
 
     final wishlistSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -48,7 +48,7 @@ class WishlistProvider extends ChangeNotifier {
       String wishlistName, String wishlistNote,
       {Wishlist? wish}) async {
     try {
-      final Person user = context.read<UserProvider>().user!;
+      final Person user = context.read<PersonProvider>().user!;
 
       //* Get current timestamp
       final now = DateTime.now();
@@ -87,7 +87,7 @@ class WishlistProvider extends ChangeNotifier {
   }
 
   Future<void> deleteWish(BuildContext context, String wishId) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
 
     //* Update the 'deleted_at' field with the current timestamp
     final now = DateTime.now();

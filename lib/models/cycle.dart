@@ -33,7 +33,6 @@ class Cycle {
   Future<bool> showCycleFormDialog(
     BuildContext context,
     Person user,
-    Cycle cycle,
     String title,
   ) async {
     return await showDialog(
@@ -41,7 +40,7 @@ class Cycle {
       builder: (context) {
         return CycleDialog(
           user: user,
-          cycle: cycle,
+          cycle: this,
           title: title,
         );
       },

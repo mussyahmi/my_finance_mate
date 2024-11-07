@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
-import '../providers/user_provider.dart';
+import '../providers/person_provider.dart';
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
@@ -288,15 +288,14 @@ class _LoginPageState extends State<LoginPage> {
 
         Person person = Person(
           uid: userDoc.id,
-          fullName: userDoc['full_name'] ?? '',
-          nickname: userDoc['nickname'] ?? '',
+          displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],
-          photoUrl: userDoc['photo_url'] ?? '',
+          imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
-        context.read<UserProvider>().setUser(newUser: person);
+        context.read<PersonProvider>().setUser(newUser: person);
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
@@ -352,7 +351,7 @@ class _LoginPageState extends State<LoginPage> {
             'full_name': authResult.user!.displayName,
             'last_login': now,
             'nickname': authResult.additionalUserInfo!.profile!['given_name'],
-            'photo_url': authResult.user!.photoURL,
+            'image_url': authResult.user!.photoURL,
             'device_info_json': deviceInfoJson,
           });
         } else {
@@ -376,15 +375,14 @@ class _LoginPageState extends State<LoginPage> {
 
         Person person = Person(
           uid: userDoc.id,
-          fullName: userDoc['full_name'] ?? '',
-          nickname: userDoc['nickname'] ?? '',
+          displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],
-          photoUrl: userDoc['photo_url'] ?? '',
+          imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
         );
 
-        context.read<UserProvider>().setUser(newUser: person);
+        context.read<PersonProvider>().setUser(newUser: person);
 
         print('Google Sign-In Successful');
 

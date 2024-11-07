@@ -16,7 +16,7 @@ import '../services/ad_mob_service.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class TransactionsProvider extends ChangeNotifier {
   List<t.Transaction>? transactions;
@@ -25,7 +25,7 @@ class TransactionsProvider extends ChangeNotifier {
 
   Future<void> fetchTransactions(BuildContext context, Cycle cycle,
       {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
 
     var transactionQuery = FirebaseFirestore.instance
         .collection('users')
@@ -91,12 +91,12 @@ class TransactionsProvider extends ChangeNotifier {
     String? selectedCategoryId,
     String? selectedAccountToId,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     List<t.Transaction> transferTransactions = [];
     List<t.Transaction> filteredTransactions = [];
 
     if (selectedDateRange != null) {
-      //TODO: need to maintain later when want to use
+      // TODO: need to maintain later when want to use
       Query<Map<String, dynamic>> transactionQuery = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -309,7 +309,7 @@ class TransactionsProvider extends ChangeNotifier {
     List<dynamic> filesToDelete,
     t.Transaction? transaction,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     //* Get current timestamp
@@ -470,7 +470,7 @@ class TransactionsProvider extends ChangeNotifier {
     BuildContext context,
     String transactionId,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final t.Transaction trans = getTransactionById(transactionId);

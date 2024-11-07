@@ -11,7 +11,7 @@ import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class AccountsProvider extends ChangeNotifier {
   List<Account>? accounts;
@@ -20,7 +20,7 @@ class AccountsProvider extends ChangeNotifier {
 
   Future<void> fetchAccounts(BuildContext context, Cycle cycle,
       {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
 
     final accountsSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -76,7 +76,7 @@ class AccountsProvider extends ChangeNotifier {
       BuildContext context, String action, String name, String openingBalance,
       {Account? account}) async {
     try {
-      final Person user = context.read<UserProvider>().user!;
+      final Person user = context.read<PersonProvider>().user!;
       final Cycle cycle = context.read<CycleProvider>().cycle!;
 
       //* Get current timestamp
@@ -143,7 +143,7 @@ class AccountsProvider extends ChangeNotifier {
     String accountId,
     String? accountToId,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
     late Map<String, double> result;
 
@@ -327,7 +327,7 @@ class AccountsProvider extends ChangeNotifier {
     BuildContext context,
     Account account,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     //* Update the 'deleted_at' field with the current timestamp
@@ -356,7 +356,7 @@ class AccountsProvider extends ChangeNotifier {
   }
 
   Future<void> migrateAccountFeature(BuildContext context) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     //* Get current timestamp

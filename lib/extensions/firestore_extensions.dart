@@ -2,11 +2,13 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+bool forceRefresh = true;
+
 extension FirestoreDocumentExtension
     on DocumentReference<Map<String, dynamic>> {
   Future<DocumentSnapshot<Map<String, dynamic>>> getSavy(
       {bool? refresh}) async {
-    if (refresh != null && refresh == true) {
+    if (refresh != null && refresh == true || forceRefresh) {
       print('get from server');
       return get(const GetOptions(source: Source.server));
     }
@@ -31,7 +33,7 @@ extension FirestoreDocumentExtension
 
 extension FirestoreQueryExtension on Query<Map<String, dynamic>> {
   Future<QuerySnapshot<Map<String, dynamic>>> getSavy({bool? refresh}) async {
-    if (refresh != null && refresh == true) {
+    if (refresh != null && refresh == true || forceRefresh) {
       print('get from server');
       return get(const GetOptions(source: Source.server));
     }

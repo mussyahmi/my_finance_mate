@@ -15,7 +15,7 @@ import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
@@ -23,7 +23,7 @@ import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
-import 'explore_page.dart';
+import 'profile_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
@@ -135,7 +135,7 @@ class _DashboardPageState extends State<DashboardPage>
       ..userInteractions = false
       ..dismissOnTap = false;
 
-    Person user = context.watch<UserProvider>().user!;
+    Person user = context.watch<PersonProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 
     //* Initialize SizeConfig
@@ -435,7 +435,7 @@ class _DashboardPageState extends State<DashboardPage>
           ),
           cycle != null ? const AccountListPage() : Container(),
           cycle != null ? const CategoryListPage() : Container(),
-          cycle != null ? const ExplorePage() : Container(),
+          cycle != null ? const ProfilePage() : Container(),
         ][_selectedIndex],
         floatingActionButton: _selectedIndex != 3 &&
                 cycle != null &&
@@ -502,7 +502,7 @@ class _DashboardPageState extends State<DashboardPage>
                 icon: Icon(Icons.wallet), label: 'Account List'),
             NavigationDestination(
                 icon: Icon(Icons.category), label: 'Category List'),
-            NavigationDestination(icon: Icon(Icons.explore), label: 'Explore'),
+            NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           ],
           onDestinationSelected: (value) {
             setState(() {
@@ -584,7 +584,7 @@ class _DashboardPageState extends State<DashboardPage>
 
       _rewardedAd!.show(
         onUserEarnedReward: (ad, reward) async {
-          await context.read<UserProvider>().resetTransactionMade();
+          await context.read<PersonProvider>().resetTransactionMade();
         },
       );
     }

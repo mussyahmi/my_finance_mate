@@ -30,7 +30,7 @@ class AdMobService {
     return null;
   }
 
-  String? get bannerExploreAdUnitId {
+  String? get bannerProfileAdUnitId {
     if (kReleaseMode) {
       if (Platform.isAndroid) {
         return 'ca-app-pub-2773996115717784/7085332225';

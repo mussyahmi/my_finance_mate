@@ -7,7 +7,7 @@ import '../models/cycle.dart';
 import '../models/person.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/cycles_provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
@@ -36,7 +36,7 @@ class _CyclePageState extends State<CyclePage> {
 
   @override
   Widget build(BuildContext context) {
-    Person user = context.watch<UserProvider>().user!;
+    Person user = context.watch<PersonProvider>().user!;
     Cycle cycle = context.watch<CycleProvider>().cycle!;
 
     Card card(String title) {
@@ -67,7 +67,6 @@ class _CyclePageState extends State<CyclePage> {
                     await cycle.showCycleFormDialog(
                       context,
                       user,
-                      cycle,
                       title,
                     );
                   },

@@ -11,7 +11,7 @@ import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import 'cycle_provider.dart';
 import 'transactions_provider.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class CategoriesProvider extends ChangeNotifier {
   List<Category>? categories;
@@ -20,7 +20,7 @@ class CategoriesProvider extends ChangeNotifier {
 
   Future<void> fetchCategories(BuildContext context, Cycle cycle,
       {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
 
     final categorySnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -115,7 +115,7 @@ class CategoriesProvider extends ChangeNotifier {
 
   Future<void> recalculateCategoryAndCycleTotalAmount(
       BuildContext context) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
     final List<Category> categories =
         context.read<CategoriesProvider>().categories!;
@@ -210,7 +210,7 @@ class CategoriesProvider extends ChangeNotifier {
       String categoryBudget,
       String categoryNote,
       {Category? category}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     try {
@@ -296,7 +296,7 @@ class CategoriesProvider extends ChangeNotifier {
     DateTime now,
     t.Transaction? transaction,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     double prevTotalAmount = 0;
@@ -353,7 +353,7 @@ class CategoriesProvider extends ChangeNotifier {
     BuildContext context,
     String categoryId,
   ) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     //* Update the 'deleted_at' field with the current timestamp

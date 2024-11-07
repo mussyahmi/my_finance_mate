@@ -8,7 +8,7 @@ import '../extensions/firestore_extensions.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import 'cycle_provider.dart';
-import 'user_provider.dart';
+import 'person_provider.dart';
 
 class CyclesProvider extends ChangeNotifier {
   List<Cycle>? cycles;
@@ -16,7 +16,7 @@ class CyclesProvider extends ChangeNotifier {
   CyclesProvider({this.cycles});
 
   Future<void> fetchCycles(BuildContext context, {bool? refresh}) async {
-    final Person user = context.read<UserProvider>().user!;
+    final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     final cyclesSnapshot = await FirebaseFirestore.instance

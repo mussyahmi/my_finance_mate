@@ -31,7 +31,11 @@ class _ImageViewPageState extends State<ImageViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          // TODO: add download image button for type = url
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
