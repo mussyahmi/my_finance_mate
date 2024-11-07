@@ -39,7 +39,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
-  bool _initialized = false;
   late AdMobService _adMobService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
@@ -81,12 +80,6 @@ class _DashboardPageState extends State<DashboardPage>
     _adMobService = context.read<AdMobService>();
 
     if (_adMobService.status) {
-      await _adMobService.initialization.then((value) {
-        setState(() {
-          _initialized = true;
-        });
-      });
-
       _createAppOpenAd();
       _createRewardedAd();
     }
@@ -194,7 +187,7 @@ class _DashboardPageState extends State<DashboardPage>
                       child: CycleSummary(),
                     ),
                     const SizedBox(height: 20),
-                    if (_initialized && _adMobService.status)
+                    if (_adMobService.status)
                       Column(
                         children: [
                           AdContainer(

@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
@@ -300,6 +301,9 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
+        AdMobService adMobService = context.read<AdMobService>();
+        await adMobService.initialization;
+
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
@@ -388,6 +392,9 @@ class _LoginPageState extends State<LoginPage> {
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
+
+        AdMobService adMobService = context.read<AdMobService>();
+        await adMobService.initialization;
 
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
