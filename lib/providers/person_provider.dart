@@ -19,12 +19,13 @@ class PersonProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkTransactionMade(DateTime lastTansactionDate) async {
-    DateTime today = DateTime.now();
+  Future<void> checkTransactionMade(DateTime lastTransactionDate) async {
+    DateTime now = DateTime.now();
 
-    if (!(lastTansactionDate.year == today.year &&
-            lastTansactionDate.month == today.month &&
-            lastTansactionDate.day == today.day) &&
+    if (!(lastTransactionDate.year == now.year &&
+            lastTransactionDate.month == now.month &&
+            lastTransactionDate.day == now.day) &&
+        lastTransactionDate.isBefore(now) &&
         user!.dailyTransactionsMade > 0) {
       await resetTransactionMade();
     }

@@ -79,6 +79,13 @@ class TransactionsProvider extends ChangeNotifier {
     }).toList();
 
     transactions = await Future.wait(futureTransactions);
+
+    if (transactions!.isNotEmpty) {
+      context
+          .read<PersonProvider>()
+          .checkTransactionMade(transactions![0].dateTime);
+    }
+
     notifyListeners();
   }
 
