@@ -30,7 +30,9 @@ import 'transaction_list_page.dart';
 import 'cycle_page.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool refresh;
+
+  const DashboardPage({super.key, required this.refresh});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -54,26 +56,28 @@ class _DashboardPageState extends State<DashboardPage>
     super.didChangeDependencies();
 
     if (context.read<CycleProvider>().cycle == null) {
-      await context.read<CycleProvider>().fetchCycle(context);
+      await context
+          .read<CycleProvider>()
+          .fetchCycle(context, refresh: widget.refresh);
     }
 
     if (context.read<CycleProvider>().cycle != null) {
       if (context.read<CategoriesProvider>().categories == null) {
-        await context
-            .read<CategoriesProvider>()
-            .fetchCategories(context, context.read<CycleProvider>().cycle!);
+        await context.read<CategoriesProvider>().fetchCategories(
+            context, context.read<CycleProvider>().cycle!,
+            refresh: widget.refresh);
       }
 
       if (context.read<AccountsProvider>().accounts == null) {
-        await context
-            .read<AccountsProvider>()
-            .fetchAccounts(context, context.read<CycleProvider>().cycle!);
+        await context.read<AccountsProvider>().fetchAccounts(
+            context, context.read<CycleProvider>().cycle!,
+            refresh: widget.refresh);
       }
 
       if (context.read<TransactionsProvider>().transactions == null) {
-        await context
-            .read<TransactionsProvider>()
-            .fetchTransactions(context, context.read<CycleProvider>().cycle!);
+        await context.read<TransactionsProvider>().fetchTransactions(
+            context, context.read<CycleProvider>().cycle!,
+            refresh: widget.refresh);
       }
     }
 
@@ -117,17 +121,6 @@ class _DashboardPageState extends State<DashboardPage>
 
   @override
   Widget build(BuildContext context) {
-    EasyLoading.instance
-      ..loadingStyle = EasyLoadingStyle.custom
-      ..backgroundColor = Theme.of(context).colorScheme.secondary
-      ..indicatorType = EasyLoadingIndicatorType.ripple
-      ..indicatorColor = Theme.of(context).colorScheme.onSecondary
-      ..textColor = Theme.of(context).colorScheme.onSecondary
-      ..progressColor = Colors.blue
-      ..maskColor = Colors.green.withOpacity(0.5)
-      ..userInteractions = false
-      ..dismissOnTap = false;
-
     Person user = context.watch<PersonProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 

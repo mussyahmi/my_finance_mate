@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import 'dashboard_page.dart';
+import 'email_verification_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
 import '../extensions/firestore_extensions.dart';
@@ -64,6 +66,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    EasyLoading.instance
+      ..loadingStyle = EasyLoadingStyle.custom
+      ..backgroundColor = Theme.of(context).colorScheme.secondary
+      ..indicatorType = EasyLoadingIndicatorType.ripple
+      ..indicatorColor = Theme.of(context).colorScheme.onSecondary
+      ..textColor = Theme.of(context).colorScheme.onSecondary
+      ..progressColor = Colors.blue
+      ..maskColor = Colors.green.withOpacity(0.5)
+      ..userInteractions = false
+      ..dismissOnTap = false;
+
     //* Initialize SizeConfig
     SizeConfig().init(context);
 
@@ -323,12 +336,26 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
+        if (!authResult.user!.emailVerified) {
+          await authResult.user!.sendEmailVerification();
+
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  EmailVerificationPage(user: authResult.user!),
+            ),
+          );
+        }
+
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(
+              builder: (context) => const DashboardPage(refresh: false)),
         );
       }
     } catch (error) {
+      EasyLoading.showInfo(error.toString());
       print('Email/Password Sign-In Error: $error');
       //todo: Handle sign-in errors as needed, such as displaying an error message
     }
@@ -414,12 +441,14 @@ class _LoginPageState extends State<LoginPage> {
 
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(
+              builder: (context) => const DashboardPage(refresh: false)),
         );
       } else {
         print('Google Sign-In Cancelled');
       }
     } catch (error) {
+      EasyLoading.showInfo(error.toString());
       print('Google Sign-In Error: $error');
     }
   }

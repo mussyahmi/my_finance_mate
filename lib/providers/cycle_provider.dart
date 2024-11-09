@@ -127,7 +127,8 @@ class CycleProvider extends ChangeNotifier {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const DashboardPage()),
+      MaterialPageRoute(
+          builder: (context) => const DashboardPage(refresh: true)),
       (route) => false, //* This line removes all previous routes from the stack
     );
   }

@@ -15,6 +15,7 @@ import '../models/person.dart';
 import '../providers/person_provider.dart';
 import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
+import 'email_verification_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -253,7 +254,7 @@ class RegisterPageState extends State<RegisterPage> {
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(authResult.user!.uid)
-            .getSavy();
+            .getSavy(refresh: true);
         print('register - userDoc: 1');
 
         Person person = Person(
@@ -267,10 +268,23 @@ class RegisterPageState extends State<RegisterPage> {
 
         context.read<PersonProvider>().setUser(newUser: person);
 
+        if (!authResult.user!.emailVerified) {
+          await authResult.user!.sendEmailVerification();
+
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  EmailVerificationPage(user: authResult.user!),
+            ),
+          );
+        }
+
         //* Navigate to the dashboard or home page upon successful register
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(
+              builder: (context) => const DashboardPage(refresh: true)),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );
