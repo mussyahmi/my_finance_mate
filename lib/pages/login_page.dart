@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,8 +30,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _forgotPasswordEmailController =
+      TextEditingController();
   bool _isLoading = false;
   bool _isLoading2 = false;
   bool _isPasswordVisible = false;
@@ -115,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                           )),
                       const SizedBox(height: 30),
                       TextField(
-                        controller: emailController,
+                        controller: _emailController,
                         decoration: const InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
@@ -123,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 20),
                       TextField(
-                        controller: passwordController,
+                        controller: _passwordController,
                         obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
                           labelText: 'Password',
@@ -145,16 +148,28 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Checkbox(
-                            value: _isRememberMeChecked,
-                            onChanged: (value) {
-                              setState(() {
-                                _isRememberMeChecked = value!;
-                              });
-                            },
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _isRememberMeChecked,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isRememberMeChecked = value!;
+                                  });
+                                },
+                              ),
+                              const Text('Remember me'),
+                            ],
                           ),
-                          const Text('Remember Me'),
+                          TextButton(
+                            onPressed: () => _showForgotPasswordDialog(context),
+                            child: Text(
+                              'Forgot password?',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
                         ],
                       ),
 
@@ -169,8 +184,8 @@ class _LoginPageState extends State<LoginPage> {
 
                           try {
                             await _signInWithEmailAndPassword(
-                              emailController.text.trim(),
-                              passwordController.text.trim(),
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
                             );
                           } finally {
                             setState(() {
@@ -261,7 +276,7 @@ class _LoginPageState extends State<LoginPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Dont\'t have an account?'),
+                    const Text('Don\'t have an account?'),
                     TextButton(
                         onPressed: () {
                           Navigator.push(
@@ -355,7 +370,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (error) {
-      EasyLoading.showInfo(error.toString());
+      EasyLoading.showError(error.toString());
       print('Email/Password Sign-In Error: $error');
       //todo: Handle sign-in errors as needed, such as displaying an error message
     }
@@ -448,7 +463,7 @@ class _LoginPageState extends State<LoginPage> {
         print('Google Sign-In Cancelled');
       }
     } catch (error) {
-      EasyLoading.showInfo(error.toString());
+      EasyLoading.showError(error.toString());
       print('Google Sign-In Error: $error');
     }
   }
@@ -538,8 +553,8 @@ class _LoginPageState extends State<LoginPage> {
 
     if (savedEmail != null && savedPassword != null) {
       setState(() {
-        emailController.text = savedEmail;
-        passwordController.text = savedPassword;
+        _emailController.text = savedEmail;
+        _passwordController.text = savedPassword;
         _isRememberMeChecked = true; //* Update the checkbox state
       });
     }
@@ -552,16 +567,16 @@ class _LoginPageState extends State<LoginPage> {
     String? lastLoginWith = prefs.getString('last_login_with');
 
     if (lastLoginWith == 'email' &&
-        emailController.text.trim().isNotEmpty &&
-        passwordController.text.trim().isNotEmpty) {
+        _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.trim().isNotEmpty) {
       setState(() {
         _isLoading = true;
       });
 
       try {
         await _signInWithEmailAndPassword(
-          emailController.text.trim(),
-          passwordController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
         );
       } finally {
         setState(() {
@@ -582,5 +597,58 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     }
+  }
+
+  // Function to show the forgot password dialog
+  void _showForgotPasswordDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextField(
+            controller: _forgotPasswordEmailController,
+            decoration: const InputDecoration(
+              labelText: 'Enter your email address',
+            ),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String email = _forgotPasswordEmailController.text.trim();
+
+                //* Check if email is empty
+                if (email.isEmpty) {
+                  return EasyLoading.showInfo('Email cannot be empty.');
+                }
+
+                //* Validate email format
+                if (!EmailValidator.validate(email)) {
+                  return EasyLoading.showInfo(
+                      'Please enter a valid email address.');
+                }
+
+                try {
+                  await FirebaseAuth.instance
+                      .sendPasswordResetEmail(email: email);
+                  EasyLoading.showSuccess('Password reset email sent!');
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  EasyLoading.showError('Error: $e');
+                }
+              },
+              child: const Text('Send Reset Link'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

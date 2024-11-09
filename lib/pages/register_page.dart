@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
@@ -227,6 +228,9 @@ class RegisterPageState extends State<RegisterPage> {
       );
 
       if (authResult.user != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.remove('last_login_with');
+
         //* Get current timestamp
         final now = DateTime.now();
 
