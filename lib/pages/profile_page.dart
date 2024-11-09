@@ -336,6 +336,7 @@ class ProfilePageState extends State<ProfilePage> {
                         child: const Text('Sign Out'),
                       ),
                     ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -348,12 +349,12 @@ class ProfilePageState extends State<ProfilePage> {
 
   Future<void> _signOut() async {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('last_login_with');
+
       await GoogleSignIn().signOut();
       await FirebaseAuth.instance.signOut();
       print('Sign Out Successful');
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.remove('last_login_with');
     } catch (error) {
       print('Sign Out Error: $error');
     }
