@@ -52,18 +52,22 @@ class CycleProvider extends ChangeNotifier {
 
       if (cycle!.endDate.isBefore(now)) {
         //* Last cycle has ended, redirect to add cycle page
-        await Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const CycleAddPage()),
+          (route) =>
+              false, //* This line removes all previous routes from the stack
         );
       }
 
       notifyListeners();
     } else {
       //* No cycles found, redirect to add cycle page
-      await Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const CycleAddPage()),
+        (route) =>
+            false, //* This line removes all previous routes from the stack
       );
     }
   }

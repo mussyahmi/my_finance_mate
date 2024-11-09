@@ -61,6 +61,7 @@ class CycleAddPageState extends State<CycleAddPage> {
           .subtract(const Duration(minutes: 1));
 
       setState(() {
+        openingBalanceController.text = '0.00';
         _startDate = startDate;
         _endDate = endDate;
       });

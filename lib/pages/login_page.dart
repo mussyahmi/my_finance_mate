@@ -363,10 +363,16 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
 
+        bool refresh = false;
+
+        if (prefs.getString('last_login_with') == null) {
+          refresh = true;
+        }
+
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-              builder: (context) => const DashboardPage(refresh: false)),
+              builder: (context) => DashboardPage(refresh: refresh)),
         );
       }
     } catch (error) {
@@ -454,10 +460,16 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
 
+        bool refresh = false;
+
+        if (prefs.getString('last_login_with') == null) {
+          refresh = true;
+        }
+
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-              builder: (context) => const DashboardPage(refresh: false)),
+              builder: (context) => DashboardPage(refresh: refresh)),
         );
       } else {
         print('Google Sign-In Cancelled');
