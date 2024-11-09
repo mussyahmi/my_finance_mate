@@ -549,14 +549,10 @@ class _DashboardPageState extends State<DashboardPage>
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
-          setState(() {
-            _rewardedAd = ad;
-          });
+          _rewardedAd = ad;
         },
         onAdFailedToLoad: (error) {
-          setState(() {
-            _rewardedAd = null;
-          });
+          _rewardedAd = null;
         },
       ),
     );
