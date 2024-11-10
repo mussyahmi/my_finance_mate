@@ -311,7 +311,7 @@ class _LoginPageState extends State<LoginPage> {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(authResult.user!.uid)
-          .getSavy();
+          .getSavy(refresh: true);
       print('_signInWithEmailAndPassword - userDoc: 1');
 
       if (userDoc.exists) {
@@ -352,7 +352,7 @@ class _LoginPageState extends State<LoginPage> {
 
         context.read<PersonProvider>().setUser(newUser: person);
 
-         print('Email/Password Sign-In Successful');
+        print('Email/Password Sign-In Successful');
 
         if (!authResult.user!.emailVerified) {
           await authResult.user!.sendEmailVerification();
@@ -394,7 +394,7 @@ class _LoginPageState extends State<LoginPage> {
         var userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(authResult.user!.uid)
-            .getSavy();
+            .getSavy(refresh: true);
         print('_signInWithGoogle - userDoc: 1');
 
         //* Get current timestamp
@@ -435,7 +435,7 @@ class _LoginPageState extends State<LoginPage> {
         userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(authResult.user!.uid)
-            .getSavy();
+            .getSavy(refresh: true);
         print('_signInWithGoogle - userDoc: 1');
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
