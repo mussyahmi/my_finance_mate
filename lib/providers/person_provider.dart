@@ -1,13 +1,16 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../models/person.dart';
+import '../services/message_services.dart';
 
 class PersonProvider extends ChangeNotifier {
   Person? user;
@@ -78,5 +81,38 @@ class PersonProvider extends ChangeNotifier {
     });
 
     notifyListeners();
+  }
+
+  Future<void> changePassword(
+    BuildContext context,
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final MessageService messageService = MessageService();
+
+      //* Re-authenticate the user with their current password
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.email != null) {
+        AuthCredential credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+
+        await user.reauthenticateWithCredential(credential);
+
+        //* Update the password
+        await user.updatePassword(newPassword);
+
+        EasyLoading.showSuccess(messageService.getRandomDoneUpdateMessage());
+
+        //* Close the dialog
+        Navigator.of(context).pop(true);
+      } else {
+        EasyLoading.showError('User not authenticated.');
+      }
+    } catch (e) {
+      EasyLoading.showError('Failed to change password. Error: $e');
+    }
   }
 }

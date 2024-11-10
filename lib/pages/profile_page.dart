@@ -80,7 +80,7 @@ class ProfilePageState extends State<ProfilePage> {
         trailing: title == 'Display Name'
             ? IconButton.filledTonal(
                 onPressed: () async {
-                  await user.showPersonFormDialog(context);
+                  await user.showEditDisplayNameDialog(context);
                 },
                 icon: Icon(
                   Icons.edit,
@@ -311,6 +311,29 @@ class ProfilePageState extends State<ProfilePage> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: const Text(
+                        'Account Management',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Change Password'),
+                        trailing: const Icon(Icons.lock_reset),
+                        onTap: () => user.showChangePasswordDialog(context),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Delete Account'),
+                        trailing: const Icon(Icons.delete_forever),
+                        onTap: () async {},
                       ),
                     ),
                     const SizedBox(height: 30),

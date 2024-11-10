@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/change_password_dialog.dart';
 import '../widgets/person_dialog.dart';
 
 class Person {
@@ -19,7 +20,7 @@ class Person {
     required this.dailyTransactionsMade,
   });
 
-  Future<bool> showPersonFormDialog(
+  Future<bool> showEditDisplayNameDialog(
     BuildContext context,
   ) async {
     return await showDialog(
@@ -28,6 +29,15 @@ class Person {
         return PersonDialog(
           user: this,
         );
+      },
+    );
+  }
+
+  Future<bool> showChangePasswordDialog(BuildContext context) async {
+    return await showDialog(
+      context: context,
+      builder: (context) {
+        return ChangePasswordDialog();
       },
     );
   }

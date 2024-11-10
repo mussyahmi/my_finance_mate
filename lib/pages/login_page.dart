@@ -59,9 +59,8 @@ class _LoginPageState extends State<LoginPage> {
           if (_adMobServiceInit) {
             _loadSavedCredentials();
           }
-        }).catchError((error) {
-          //* Handle initialization error if necessary
-          print('AdMob initialization error: $error');
+        }).catchError((e) {
+          EasyLoading.showError('Failed to initialize AdMob. Error: $e');
         });
       }
     }
@@ -375,10 +374,8 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => DashboardPage(refresh: refresh)),
         );
       }
-    } catch (error) {
-      EasyLoading.showError(error.toString());
-      print('Email/Password Sign-In Error: $error');
-      //todo: Handle sign-in errors as needed, such as displaying an error message
+    } catch (e) {
+      EasyLoading.showError('Failed to login. Error: $e');
     }
   }
 
@@ -474,9 +471,8 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         print('Google Sign-In Cancelled');
       }
-    } catch (error) {
-      EasyLoading.showError(error.toString());
-      print('Google Sign-In Error: $error');
+    } catch (e) {
+      EasyLoading.showError('Failed to login. Error: $e');
     }
   }
 
@@ -611,7 +607,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Function to show the forgot password dialog
+  //* Function to show the forgot password dialog
   void _showForgotPasswordDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -621,7 +617,7 @@ class _LoginPageState extends State<LoginPage> {
           content: TextField(
             controller: _forgotPasswordEmailController,
             decoration: const InputDecoration(
-              labelText: 'Enter your email address',
+              labelText: 'Email',
             ),
             keyboardType: TextInputType.emailAddress,
           ),
@@ -653,10 +649,10 @@ class _LoginPageState extends State<LoginPage> {
                   EasyLoading.showSuccess('Password reset email sent!');
                   Navigator.of(context).pop();
                 } catch (e) {
-                  EasyLoading.showError('Error: $e');
+                  EasyLoading.showError('Failed to send email. Error: $e');
                 }
               },
-              child: const Text('Send Reset Link'),
+              child: const Text('Send Link'),
             ),
           ],
         );
