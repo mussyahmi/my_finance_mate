@@ -253,6 +253,7 @@ class RegisterPageState extends State<RegisterPage> {
           'device_info_json': deviceInfoJson,
           'password': password,
           'daily_transactions_made': 0,
+          'force_refresh': true,
         });
 
         final userDoc = await FirebaseFirestore.instance
