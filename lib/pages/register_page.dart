@@ -270,7 +270,8 @@ class RegisterPageState extends State<RegisterPage> {
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
           forceRefresh: userDoc['force_refresh'] ||
-              prefs.getString('last_login_with') == null,
+              prefs.getString('last_login_with') == null ||
+              userDoc['device_info_json'] != deviceInfoJson,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
