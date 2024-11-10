@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
+import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/profile_image.dart';
 import 'chart_page.dart';
@@ -322,18 +325,98 @@ class ProfilePageState extends State<ProfilePage> {
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                     ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Change Password'),
-                        trailing: const Icon(Icons.lock_reset),
-                        onTap: () => user.showChangePasswordDialog(context),
+                    if (FirebaseAuth
+                            .instance.currentUser!.providerData[0].providerId ==
+                        'password')
+                      Card(
+                        child: ListTile(
+                          title: const Text('Change Password'),
+                          trailing: const Icon(Icons.lock_reset),
+                          onTap: () => user.showChangePasswordDialog(context),
+                        ),
                       ),
-                    ),
                     Card(
                       child: ListTile(
-                        title: const Text('Delete Account'),
-                        trailing: const Icon(Icons.delete_forever),
-                        onTap: () async {},
+                        title: const Text(
+                          'Delete Account',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.delete_forever,
+                          color: Colors.redAccent,
+                        ),
+                        onTap: () async {
+                          bool? confirmDelete = await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Confirm Delete'),
+                              content: const Text(
+                                  'Are you sure you want to delete your account? This action is permanent.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.redAccent,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text(
+                                    'Delete',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmDelete == true) {
+                            try {
+                              final MessageService messageService =
+                                  MessageService();
+
+                              EasyLoading.show(
+                                  status:
+                                      messageService.getRandomDeleteMessage());
+
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .update({'deleted_at': DateTime.now()});
+
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.remove('last_login_with');
+
+                              await FirebaseAuth.instance.currentUser?.delete();
+
+                              EasyLoading.showSuccess(
+                                  'Account deleted successfully');
+
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const LoginPage()),
+                                (route) =>
+                                    false, //* This line removes all previous routes from the stack
+                              );
+                            } catch (e) {
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .update({'deleted_at': null});
+
+                              EasyLoading.showError(
+                                  'Failed to delete account. Error: $e');
+                            }
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(height: 30),

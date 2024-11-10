@@ -55,26 +55,28 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    if (context.read<CycleProvider>().cycle == null) {
+    if (widget.refresh || context.read<CycleProvider>().cycle == null) {
       await context
           .read<CycleProvider>()
           .fetchCycle(context, refresh: widget.refresh);
     }
 
-    if (context.read<CycleProvider>().cycle != null) {
-      if (context.read<CategoriesProvider>().categories == null) {
+    if (widget.refresh || context.read<CycleProvider>().cycle != null) {
+      if (widget.refresh ||
+          context.read<CategoriesProvider>().categories == null) {
         await context.read<CategoriesProvider>().fetchCategories(
             context, context.read<CycleProvider>().cycle!,
             refresh: widget.refresh);
       }
 
-      if (context.read<AccountsProvider>().accounts == null) {
+      if (widget.refresh || context.read<AccountsProvider>().accounts == null) {
         await context.read<AccountsProvider>().fetchAccounts(
             context, context.read<CycleProvider>().cycle!,
             refresh: widget.refresh);
       }
 
-      if (context.read<TransactionsProvider>().transactions == null) {
+      if (widget.refresh ||
+          context.read<TransactionsProvider>().transactions == null) {
         await context.read<TransactionsProvider>().fetchTransactions(
             context, context.read<CycleProvider>().cycle!,
             refresh: widget.refresh);

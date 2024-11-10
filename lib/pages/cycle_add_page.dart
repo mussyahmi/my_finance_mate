@@ -13,7 +13,9 @@ import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 
 class CycleAddPage extends StatefulWidget {
-  const CycleAddPage({super.key});
+  final Cycle? cycle;
+
+  const CycleAddPage({super.key, required this.cycle});
 
   @override
   CycleAddPageState createState() => CycleAddPageState();
@@ -21,7 +23,6 @@ class CycleAddPage extends StatefulWidget {
 
 class CycleAddPageState extends State<CycleAddPage> {
   final MessageService messageService = MessageService();
-  late Cycle? _cycle;
   TextEditingController cycleNameController = TextEditingController();
   TextEditingController openingBalanceController = TextEditingController();
   DateTime? _startDate;
@@ -33,20 +34,20 @@ class CycleAddPageState extends State<CycleAddPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _cycle = context.read<CycleProvider>().cycle;
-
-    if (_cycle != null) {
+    if (widget.cycle != null) {
       //* Set the start date to be 1 day after the end date at 12 AM
-      DateTime startDate = _cycle!.endDate.add(const Duration(days: 1));
+      DateTime startDate = widget.cycle!.endDate.add(const Duration(days: 1));
       startDate =
           DateTime(startDate.year, startDate.month, startDate.day, 0, 0);
 
-      DateTime endDate = _cycle!.endDate.add(
-          Duration(days: _cycle!.endDate.difference(_cycle!.startDate).inDays));
+      DateTime endDate = widget.cycle!.endDate.add(Duration(
+          days: widget.cycle!.endDate
+              .difference(widget.cycle!.startDate)
+              .inDays));
 
       setState(() {
-        cycleNameController.text = _cycle!.cycleName;
-        openingBalanceController.text = _cycle!.amountBalance;
+        cycleNameController.text = widget.cycle!.cycleName;
+        openingBalanceController.text = widget.cycle!.amountBalance;
         _startDate = startDate;
         _endDate = endDate;
       });
@@ -133,7 +134,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                               TextInputType.number, //* Allow only numeric input
                           decoration: InputDecoration(
                             labelText:
-                                '${_cycle == null ? 'Opening' : 'Previous'} Balance',
+                                '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
                             prefixText: 'RM ',
                           ),
                           enabled: false,

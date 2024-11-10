@@ -54,7 +54,7 @@ class CycleProvider extends ChangeNotifier {
         //* Last cycle has ended, redirect to add cycle page
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const CycleAddPage()),
+          MaterialPageRoute(builder: (context) => CycleAddPage(cycle: cycle)),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );
@@ -65,7 +65,8 @@ class CycleProvider extends ChangeNotifier {
       //* No cycles found, redirect to add cycle page
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const CycleAddPage()),
+        MaterialPageRoute(
+            builder: (context) => const CycleAddPage(cycle: null)),
         (route) =>
             false, //* This line removes all previous routes from the stack
       );

@@ -33,6 +33,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           children: [
             TextField(
               controller: _currentPasswordController,
+              obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Current Password',
               ),
@@ -40,6 +41,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             const SizedBox(height: 20),
             TextField(
               controller: _newPasswordController,
+              obscureText: true,
               decoration: InputDecoration(
                 labelText: 'New Password',
               ),
@@ -47,6 +49,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             const SizedBox(height: 20),
             TextField(
               controller: _confirmPasswordController,
+              obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Confirm Password',
               ),

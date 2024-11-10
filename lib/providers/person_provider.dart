@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../models/person.dart';
-import '../services/message_services.dart';
 
 class PersonProvider extends ChangeNotifier {
   Person? user;
@@ -89,8 +88,6 @@ class PersonProvider extends ChangeNotifier {
     String newPassword,
   ) async {
     try {
-      final MessageService messageService = MessageService();
-
       //* Re-authenticate the user with their current password
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null && user.email != null) {
@@ -104,7 +101,12 @@ class PersonProvider extends ChangeNotifier {
         //* Update the password
         await user.updatePassword(newPassword);
 
-        EasyLoading.showSuccess(messageService.getRandomDoneUpdateMessage());
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'password': newPassword});
+
+        EasyLoading.showSuccess('Password changed successfully');
 
         //* Close the dialog
         Navigator.of(context).pop(true);
