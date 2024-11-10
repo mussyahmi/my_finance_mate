@@ -12,11 +12,13 @@ import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
 class CategoryListPage extends StatefulWidget {
+  final Function(String)? changeCategoryType;
   final String? type;
   final bool? isFromTransactionForm;
 
   const CategoryListPage({
     super.key,
+    this.changeCategoryType,
     this.type,
     this.isFromTransactionForm,
   });
@@ -61,6 +63,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
             tabController.addListener(() {
               if (!tabController.indexIsChanging) {
                 selectedType = tabController.index == 0 ? 'spent' : 'received';
+
+                if (widget.changeCategoryType != null) {
+                  widget.changeCategoryType!(selectedType);
+                }
               }
             });
 

@@ -39,6 +39,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
+  String _categoryType = 'spent';
   AdMobService? _adMobService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
@@ -123,6 +124,10 @@ class _DashboardPageState extends State<DashboardPage>
     _rewardedAd?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void changeCategoryType(String type) {
+    _categoryType = type;
   }
 
   @override
@@ -426,7 +431,9 @@ class _DashboardPageState extends State<DashboardPage>
             ),
           ),
           cycle != null ? const AccountListPage() : Container(),
-          cycle != null ? const CategoryListPage() : Container(),
+          cycle != null
+              ? CategoryListPage(changeCategoryType: changeCategoryType)
+              : Container(),
           cycle != null ? const ProfilePage() : Container(),
         ][_selectedIndex],
         floatingActionButton: _selectedIndex != 3 &&
@@ -479,7 +486,8 @@ class _DashboardPageState extends State<DashboardPage>
                   } else if (_selectedIndex == 1) {
                     Account.showAccountFormDialog(context, 'Add');
                   } else if (_selectedIndex == 2) {
-                    Category.showCategoryFormDialog(context, 'spent', 'Add');
+                    Category.showCategoryFormDialog(
+                        context, _categoryType, 'Add');
                   }
                 },
                 child: const Icon(Icons.add),
