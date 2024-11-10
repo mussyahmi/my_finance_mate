@@ -72,8 +72,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            const DashboardPage(refresh: true)),
+                        builder: (context) => const DashboardPage()),
                     (route) =>
                         false, //* This line removes all previous routes from the stack
                   );

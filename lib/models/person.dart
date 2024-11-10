@@ -10,6 +10,7 @@ class Person {
   String imageUrl;
   DateTime lastLogin;
   int dailyTransactionsMade;
+  bool forceRefresh;
 
   Person({
     required this.uid,
@@ -18,6 +19,7 @@ class Person {
     required this.imageUrl,
     required this.lastLogin,
     required this.dailyTransactionsMade,
+    required this.forceRefresh,
   });
 
   Future<bool> showEditDisplayNameDialog(

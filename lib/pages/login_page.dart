@@ -336,6 +336,9 @@ class _LoginPageState extends State<LoginPage> {
           'device_info_json': deviceInfoJson,
         });
 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_login_with', 'email');
+
         Person person = Person(
           uid: userDoc.id,
           displayName: userDoc['display_name'] ?? '',
@@ -343,12 +346,13 @@ class _LoginPageState extends State<LoginPage> {
           imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
+          forceRefresh: userDoc['force_refresh'] ||
+              prefs.getString('last_login_with') == null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('last_login_with', 'email');
+         print('Email/Password Sign-In Successful');
 
         if (!authResult.user!.emailVerified) {
           await authResult.user!.sendEmailVerification();
@@ -362,16 +366,9 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
 
-        bool refresh = false;
-
-        if (prefs.getString('last_login_with') == null) {
-          refresh = true;
-        }
-
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => DashboardPage(refresh: refresh)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
       }
     } catch (e) {
@@ -441,6 +438,9 @@ class _LoginPageState extends State<LoginPage> {
             .getSavy();
         print('_signInWithGoogle - userDoc: 1');
 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_login_with', 'google');
+
         Person person = Person(
           uid: userDoc.id,
           displayName: userDoc['display_name'] ?? '',
@@ -448,25 +448,17 @@ class _LoginPageState extends State<LoginPage> {
           imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
+          forceRefresh: userDoc['force_refresh'] ||
+              prefs.getString('last_login_with') == null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
 
         print('Google Sign-In Successful');
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('last_login_with', 'google');
-
-        bool refresh = false;
-
-        if (prefs.getString('last_login_with') == null) {
-          refresh = true;
-        }
-
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-              builder: (context) => DashboardPage(refresh: refresh)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
         );
       } else {
         print('Google Sign-In Cancelled');

@@ -30,9 +30,7 @@ import 'transaction_list_page.dart';
 import 'cycle_page.dart';
 
 class DashboardPage extends StatefulWidget {
-  final bool refresh;
-
-  const DashboardPage({super.key, required this.refresh});
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -55,31 +53,37 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    if (widget.refresh || context.read<CycleProvider>().cycle == null) {
+    final bool forceRefresh = context.read<PersonProvider>().user!.forceRefresh;
+
+    if (forceRefresh || context.read<CycleProvider>().cycle == null) {
       await context
           .read<CycleProvider>()
-          .fetchCycle(context, refresh: widget.refresh);
+          .fetchCycle(context, refresh: forceRefresh);
     }
 
-    if (widget.refresh || context.read<CycleProvider>().cycle != null) {
-      if (widget.refresh ||
+    if (forceRefresh || context.read<CycleProvider>().cycle != null) {
+      if (forceRefresh ||
           context.read<CategoriesProvider>().categories == null) {
         await context.read<CategoriesProvider>().fetchCategories(
             context, context.read<CycleProvider>().cycle!,
-            refresh: widget.refresh);
+            refresh: forceRefresh);
       }
 
-      if (widget.refresh || context.read<AccountsProvider>().accounts == null) {
+      if (forceRefresh || context.read<AccountsProvider>().accounts == null) {
         await context.read<AccountsProvider>().fetchAccounts(
             context, context.read<CycleProvider>().cycle!,
-            refresh: widget.refresh);
+            refresh: forceRefresh);
       }
 
-      if (widget.refresh ||
+      if (forceRefresh ||
           context.read<TransactionsProvider>().transactions == null) {
         await context.read<TransactionsProvider>().fetchTransactions(
             context, context.read<CycleProvider>().cycle!,
-            refresh: widget.refresh);
+            refresh: forceRefresh);
+      }
+
+      if (forceRefresh) {
+        await context.read<PersonProvider>().resetForceRefresh();
       }
     }
 

@@ -117,4 +117,15 @@ class PersonProvider extends ChangeNotifier {
       EasyLoading.showError('Failed to change password. Error: $e');
     }
   }
+
+  Future<void> resetForceRefresh() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .update({'force_refresh': false});
+
+    user!.forceRefresh = false;
+
+    notifyListeners();
+  }
 }

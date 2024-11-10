@@ -128,12 +128,13 @@ class CycleProvider extends ChangeNotifier {
         .read<TransactionsProvider>()
         .fetchTransactions(context, context.read<CycleProvider>().cycle!);
 
+    user.forceRefresh = true;
+
     notifyListeners();
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-          builder: (context) => const DashboardPage(refresh: true)),
+      MaterialPageRoute(builder: (context) => const DashboardPage()),
       (route) => false, //* This line removes all previous routes from the stack
     );
   }

@@ -268,6 +268,8 @@ class RegisterPageState extends State<RegisterPage> {
           imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
+          forceRefresh: userDoc['force_refresh'] ||
+              prefs.getString('last_login_with') == null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
@@ -287,8 +289,7 @@ class RegisterPageState extends State<RegisterPage> {
         //* Navigate to the dashboard or home page upon successful register
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-              builder: (context) => const DashboardPage(refresh: true)),
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
           (route) =>
               false, //* This line removes all previous routes from the stack
         );
