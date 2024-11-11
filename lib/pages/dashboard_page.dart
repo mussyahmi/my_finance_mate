@@ -92,7 +92,10 @@ class _DashboardPageState extends State<DashboardPage>
 
     if (_adMobService!.status) {
       _createAppOpenAd();
-      _createRewardedAd();
+      
+      if (context.read<PersonProvider>().user!.dailyTransactionsMade >= 5) {
+        _createRewardedAd();
+      }
     }
   }
 
