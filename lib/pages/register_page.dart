@@ -269,9 +269,7 @@ class RegisterPageState extends State<RegisterPage> {
           imageUrl: userDoc['image_url'] ?? '',
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
-          forceRefresh: userDoc['force_refresh'] ||
-              prefs.getString('last_login_with') == null ||
-              userDoc['device_info_json'] != deviceInfoJson,
+          forceRefresh: userDoc['force_refresh'],
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

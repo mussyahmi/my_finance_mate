@@ -403,6 +403,7 @@ class _LoginPageState extends State<LoginPage> {
 
         //* Get device information
         final deviceInfoJson = await _getDeviceInfoJson();
+        bool isDiffDevice = false;
 
         if (!userDoc.exists) {
           //* Add the user to the collection with UID as the document ID
@@ -421,8 +422,9 @@ class _LoginPageState extends State<LoginPage> {
             'device_info_json': deviceInfoJson,
           });
         } else {
-          //* User already exists, update last_login and device_info_json
+          final String prevDeviceInfoJson = userDoc['device_info_json'];
 
+          //* User already exists, update last_login and device_info_json
           await FirebaseFirestore.instance
               .collection('users')
               .doc(authResult.user!.uid)
@@ -431,6 +433,8 @@ class _LoginPageState extends State<LoginPage> {
             'last_login': now,
             'device_info_json': deviceInfoJson,
           });
+
+          isDiffDevice = prevDeviceInfoJson != deviceInfoJson;
         }
 
         userDoc = await FirebaseFirestore.instance
@@ -451,7 +455,7 @@ class _LoginPageState extends State<LoginPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
           forceRefresh: userDoc['force_refresh'] ||
               prefs.getString('last_login_with') == null ||
-              userDoc['device_info_json'] != deviceInfoJson,
+              isDiffDevice,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
