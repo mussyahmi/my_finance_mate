@@ -15,6 +15,7 @@ import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
+import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
@@ -442,7 +443,8 @@ class ProfilePageState extends State<ProfilePage> {
                         child: const Text('Sign Out'),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    PackageInfoSummary(),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
