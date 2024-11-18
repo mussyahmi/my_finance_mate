@@ -139,8 +139,10 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                       children: [
                         Text(
                           'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
-                          style: const TextStyle(
-                            color: Colors.orange,
+                          style: TextStyle(
+                            color: double.parse(amountBalanceAfterBudget) < 0
+                                ? Colors.orange
+                                : Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 10),
