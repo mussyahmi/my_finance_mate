@@ -125,6 +125,32 @@ class Transaction {
           ),
           contents: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Date:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    DateFormat('EE, d MMM yyyy h:mm aa').format(dateTime),
+                    textAlign: TextAlign.right,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Type:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                      '${type.capitalize()}${subType != null ? ' (${subType!.capitalize()})' : ''}'),
+                ],
+              ),
+              const SizedBox(height: 5),
               if (accountName != '')
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -153,20 +179,17 @@ class Transaction {
                     Text(categoryName),
                   ],
                 ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Date:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    DateFormat('EE, d MMM yyyy h:mm aa').format(dateTime),
-                    textAlign: TextAlign.right,
-                  ),
-                ],
-              ),
+              if (type == 'transfer' && accountToName != '')
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Transfer To:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(accountToName),
+                  ],
+                ),
               const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,18 +199,6 @@ class Transaction {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text('RM$amount'),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Type:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                      '${type.capitalize()}${subType != null ? ' (${subType!.capitalize()})' : ''}'),
                 ],
               ),
               if (note.isNotEmpty)

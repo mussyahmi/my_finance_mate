@@ -36,7 +36,7 @@ class Wishlist {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Category Details',
+                'Wishlist Details',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               Row(
