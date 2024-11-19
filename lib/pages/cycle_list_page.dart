@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
@@ -120,9 +121,18 @@ class _CycleListPageState extends State<CycleListPage> {
                               trailing: widget.cycle!.cycleNo != c.cycleNo
                                   ? IconButton.filledTonal(
                                       onPressed: () async {
+                                        EasyLoading.show(
+                                            status:
+                                                'Switching to the selected cycle...');
+
                                         await context
                                             .read<CycleProvider>()
                                             .switchCycle(context, c);
+
+                                        EasyLoading.showInfo(
+                                            'Cycle switched successfully!');
+
+                                        Navigator.of(context).pop();
                                       },
                                       icon: Icon(
                                         Icons.arrow_forward_ios,
