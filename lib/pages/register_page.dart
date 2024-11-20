@@ -254,6 +254,7 @@ class RegisterPageState extends State<RegisterPage> {
           'password': password,
           'daily_transactions_made': 0,
           'force_refresh': true,
+          'is_premium': false,
         });
 
         final userDoc = await FirebaseFirestore.instance
@@ -270,6 +271,7 @@ class RegisterPageState extends State<RegisterPage> {
           lastLogin: (userDoc['last_login'] as Timestamp).toDate(),
           dailyTransactionsMade: userDoc['daily_transactions_made'],
           forceRefresh: userDoc['force_refresh'],
+          isPremium: userDoc['is_premium'],
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

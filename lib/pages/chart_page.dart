@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
@@ -236,7 +237,7 @@ class _ChartPageState extends State<ChartPage> {
                           ),
                         ),
                 ),
-                if (_adMobService.status)
+                if (!context.read<PersonProvider>().user!.isPremium)
                   Column(
                     children: [
                       AdContainer(

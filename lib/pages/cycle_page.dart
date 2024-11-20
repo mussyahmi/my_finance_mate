@@ -112,7 +112,7 @@ class _CyclePageState extends State<CyclePage> {
                       const SizedBox(height: 20),
                       const CycleSummary(),
                       const SizedBox(height: 20),
-                      if (_adMobService.status)
+                      if (!user.isPremium)
                         Column(
                           children: [
                             AdContainer(
@@ -255,7 +255,7 @@ class _CyclePageState extends State<CyclePage> {
                                   ),
                                 ),
                               ),
-                              if (_adMobService.status &&
+                              if (!user.isPremium &&
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
                                   adMobService: _adMobService,

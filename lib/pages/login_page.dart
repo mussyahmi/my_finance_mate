@@ -49,20 +49,18 @@ class _LoginPageState extends State<LoginPage> {
     if (!_adMobServiceInit) {
       _adMobService = context.read<AdMobService>();
 
-      if (_adMobService.status) {
-        _adMobService.initialization.then((value) {
-          setState(() {
-            _adMobServiceInit = true;
-          });
-
-          //* Load saved credentials after AdMobService initialization
-          if (_adMobServiceInit) {
-            _loadSavedCredentials();
-          }
-        }).catchError((e) {
-          EasyLoading.showError('Failed to initialize AdMob. Error: $e');
+      _adMobService.initialization.then((value) {
+        setState(() {
+          _adMobServiceInit = true;
         });
-      }
+
+        //* Load saved credentials after AdMobService initialization
+        if (_adMobServiceInit) {
+          _loadSavedCredentials();
+        }
+      }).catchError((e) {
+        EasyLoading.showError('Failed to initialize AdMob. Error: $e');
+      });
     }
   }
 
@@ -349,6 +347,7 @@ class _LoginPageState extends State<LoginPage> {
           forceRefresh: userDoc['force_refresh'] ||
               prefs.getString('last_login_with') == null ||
               userDoc['device_info_json'] != deviceInfoJson,
+          isPremium: userDoc['is_premium'],
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
@@ -420,6 +419,7 @@ class _LoginPageState extends State<LoginPage> {
             'nickname': authResult.additionalUserInfo!.profile!['given_name'],
             'image_url': authResult.user!.photoURL,
             'device_info_json': deviceInfoJson,
+            'is_premium': false,
           });
         } else {
           final String prevDeviceInfoJson = userDoc['device_info_json'];
@@ -456,6 +456,7 @@ class _LoginPageState extends State<LoginPage> {
           forceRefresh: userDoc['force_refresh'] ||
               prefs.getString('last_login_with') == null ||
               isDiffDevice,
+          isPremium: userDoc['is_premium'],
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

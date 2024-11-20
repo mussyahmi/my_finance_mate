@@ -12,7 +12,6 @@ import '../extensions/firestore_extensions.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
-import '../services/ad_mob_service.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
@@ -356,9 +355,7 @@ class TransactionsProvider extends ChangeNotifier {
         });
 
         //* Update transactions made
-        final adMobService = context.read<AdMobService>();
-
-        if (adMobService.status) {
+        if (!user.isPremium) {
           final int newDailyTransactionsMade = user.dailyTransactionsMade + 1;
 
           await FirebaseFirestore.instance

@@ -6,8 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdMobService {
-  bool status = true;
-
   Future<InitializationStatus> initialization;
 
   AdMobService(this.initialization);

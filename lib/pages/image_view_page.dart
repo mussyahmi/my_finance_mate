@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
@@ -46,7 +47,7 @@ class _ImageViewPageState extends State<ImageViewPage> {
               maxScale: PhotoViewComputedScale.covered * 1.8,
             ),
           ),
-          if (_adMobService.status)
+          if (!context.read<PersonProvider>().user!.isPremium)
             AdContainer(
               adMobService: _adMobService,
               adSize: AdSize.fullBanner,

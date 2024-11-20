@@ -126,7 +126,7 @@ class ProfilePageState extends State<ProfilePage> {
                     card(user, 'Display Name'),
                     card(user, 'Email'),
                     const SizedBox(height: 30),
-                    if (_adMobService.status)
+                    if (!user.isPremium)
                       Column(
                         children: [
                           AdContainer(

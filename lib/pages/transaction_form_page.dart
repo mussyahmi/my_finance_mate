@@ -14,9 +14,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
@@ -67,7 +69,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
 
-    if (_adMobService.status) {
+    if (!context.read<PersonProvider>().user!.isPremium) {
       _createInterstitialAd();
     }
   }
@@ -114,6 +116,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    Person user = context.read<PersonProvider>().user!;
     Cycle cycle = context.watch<CycleProvider>().cycle!;
 
     return PopScope(
@@ -568,7 +571,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       child: const Text('Add Attachment'),
                     ),
                     const SizedBox(height: 30),
-                    if (_adMobService.status)
+                    if (!user.isPremium)
                       Column(
                         children: [
                           AdContainer(
@@ -634,7 +637,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           print(transactionActionCounter);
 
                           if (transactionActionCounter >= 3 &&
-                              _adMobService.status) _showInterstitialAd(prefs);
+                              !user.isPremium) {
+                            _showInterstitialAd(prefs);
+                          }
 
                           await context
                               .read<TransactionsProvider>()

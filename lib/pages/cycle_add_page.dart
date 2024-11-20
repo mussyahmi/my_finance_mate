@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
@@ -181,7 +182,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                   ),
                 ),
               ),
-              if (_adMobService.status)
+              if (!context.read<PersonProvider>().user!.isPremium)
                 AdContainer(
                   adMobService: _adMobService,
                   adSize: AdSize.fullBanner,

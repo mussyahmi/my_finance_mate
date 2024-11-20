@@ -9,6 +9,7 @@ import '../models/cycle.dart';
 import '../models/person.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/cycles_provider.dart';
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
@@ -145,7 +146,7 @@ class _CycleListPageState extends State<CycleListPage> {
                             ),
                           ),
                         ),
-                        if (_adMobService.status &&
+                        if (!context.read<PersonProvider>().user!.isPremium &&
                             (index == 1 || index == 7 || index == 13))
                           AdContainer(
                             adMobService: _adMobService,

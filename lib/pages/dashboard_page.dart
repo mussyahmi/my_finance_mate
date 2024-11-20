@@ -54,7 +54,8 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeDependencies() async {
     super.didChangeDependencies();
 
-    final bool forceRefresh = context.read<PersonProvider>().user!.forceRefresh;
+    final Person user = context.read<PersonProvider>().user!;
+    final bool forceRefresh = user.forceRefresh;
 
     if (forceRefresh || context.read<CycleProvider>().cycle == null) {
       await context
@@ -90,10 +91,10 @@ class _DashboardPageState extends State<DashboardPage>
 
     _adMobService = context.read<AdMobService>();
 
-    if (_adMobService!.status) {
+    if (!user.isPremium) {
       _createAppOpenAd();
-      
-      if (context.read<PersonProvider>().user!.dailyTransactionsMade >= 5) {
+
+      if (user.dailyTransactionsMade >= 5) {
         _createRewardedAd();
       }
     }
@@ -103,6 +104,7 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
 
+    final Person user = context.read<PersonProvider>().user!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? pauseCounter = prefs.getInt('pause_counter');
 
@@ -115,7 +117,9 @@ class _DashboardPageState extends State<DashboardPage>
       await prefs.setInt('pause_counter', pauseCounter + 1);
       print('Paused');
     } else if (state == AppLifecycleState.resumed && pauseCounter >= 3) {
-      if (_adMobService!.status) _showAppOpenAd(prefs);
+      if (!user.isPremium) {
+        _showAppOpenAd(prefs);
+      }
       print('Resumed');
     }
 
@@ -194,7 +198,7 @@ class _DashboardPageState extends State<DashboardPage>
                       child: CycleSummary(),
                     ),
                     const SizedBox(height: 20),
-                    if (_adMobService != null && _adMobService!.status)
+                    if (_adMobService != null && !user.isPremium)
                       Column(
                         children: [
                           AdContainer(
@@ -411,7 +415,7 @@ class _DashboardPageState extends State<DashboardPage>
                                       ],
                                     ),
                                   ),
-                                  if (_adMobService!.status &&
+                                  if (!user.isPremium &&
                                       (index == 1 || index == 7 || index == 13))
                                     AdContainer(
                                       adMobService: _adMobService!,
@@ -466,7 +470,7 @@ class _DashboardPageState extends State<DashboardPage>
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  if (_adMobService!.status) _showRewardedAd();
+                                  if (!user.isPremium) _showRewardedAd();
 
                                   Navigator.of(context)
                                       .pop(); //* Close the dialog

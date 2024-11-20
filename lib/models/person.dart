@@ -11,6 +11,7 @@ class Person {
   DateTime lastLogin;
   int dailyTransactionsMade;
   bool forceRefresh;
+  bool isPremium;
 
   Person({
     required this.uid,
@@ -20,6 +21,7 @@ class Person {
     required this.lastLogin,
     required this.dailyTransactionsMade,
     required this.forceRefresh,
+    required this.isPremium,
   });
 
   Future<bool> showEditDisplayNameDialog(

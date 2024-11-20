@@ -9,6 +9,7 @@ import '../models/account.dart';
 import '../models/cycle.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/account_summary.dart';
@@ -109,7 +110,7 @@ class _AccountListPageState extends State<AccountListPage> {
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: AccountSummary(account: account),
                           ),
-                          if (_adMobService.status &&
+                          if (!context.read<PersonProvider>().user!.isPremium &&
                               (index == 1 || index == 7 || index == 13))
                             AdContainer(
                               adMobService: _adMobService,

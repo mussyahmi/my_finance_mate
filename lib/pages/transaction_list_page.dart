@@ -12,6 +12,7 @@ import '../models/transaction.dart' as t;
 import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
@@ -498,7 +499,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ),
                                 ),
                               ),
-                              if (_adMobService.status &&
+                              if (!context
+                                      .read<PersonProvider>()
+                                      .user!
+                                      .isPremium &&
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
                                   adMobService: _adMobService,

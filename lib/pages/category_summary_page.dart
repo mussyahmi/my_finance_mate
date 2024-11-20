@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../providers/categories_provider.dart';
+import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import 'transaction_list_page.dart';
@@ -25,7 +26,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
 
-    if (_adMobService.status) {
+    if (!context.read<PersonProvider>().user!.isPremium) {
       _createInterstitialAd();
     }
   }
@@ -68,7 +69,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                         _isLoading = true;
                       });
 
-                      if (_adMobService.status) _showInterstitialAd();
+                      if (!context.read<PersonProvider>().user!.isPremium) _showInterstitialAd();
 
                       await context
                           .read<CategoriesProvider>()
@@ -156,7 +157,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                               ),
                             ),
                           ),
-                          if (_adMobService.status &&
+                          if (!context.read<PersonProvider>().user!.isPremium &&
                               (index == 1 || index == 7 || index == 13))
                             AdContainer(
                               adMobService: _adMobService,
