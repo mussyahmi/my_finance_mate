@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'pages/login_page.dart';
+import 'pages/maintenance_page.dart';
 import 'providers/accounts_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/cycle_provider.dart';
@@ -16,6 +17,7 @@ import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'services/ad_mob_service.dart';
 import 'providers/person_provider.dart';
+import 'services/app_settings_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,8 +78,81 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  bool _isUnderMaintenance = false;
+  String _maintenanceTitle = "Maintenance Mode";
+  String _maintenanceSubtitle = "We'll be back soon!";
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkMaintenanceStatus();
+  }
+
+  Future<void> _checkMaintenanceStatus() async {
+    final appSettings = await AppSettingsService().fetchAppSettings();
+    setState(() {
+      _isUnderMaintenance = appSettings['status'];
+      _maintenanceTitle = appSettings['status'] ? appSettings['title'] : '';
+      _maintenanceSubtitle =
+          appSettings['status'] ? appSettings['subtitle'] : '';
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return AdaptiveTheme(
+        light: ThemeData(
+          brightness: Brightness.light,
+          useMaterial3: true,
+          colorSchemeSeed: widget.themeColor,
+        ),
+        dark: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: true,
+          colorSchemeSeed: widget.themeColor,
+        ),
+        initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
+        builder: (theme, darkTheme) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'My Finance Mate',
+          theme: theme,
+          darkTheme: darkTheme,
+          home: const Center(child: CircularProgressIndicator()),
+          builder: EasyLoading.init(),
+        ),
+      );
+    }
+
+    if (_isUnderMaintenance) {
+      return AdaptiveTheme(
+        light: ThemeData(
+          brightness: Brightness.light,
+          useMaterial3: true,
+          colorSchemeSeed: widget.themeColor,
+        ),
+        dark: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: true,
+          colorSchemeSeed: widget.themeColor,
+        ),
+        initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
+        builder: (theme, darkTheme) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'My Finance Mate',
+          theme: theme,
+          darkTheme: darkTheme,
+          home: MaintenancePage(
+            title: _maintenanceTitle,
+            subtitle: _maintenanceSubtitle,
+          ),
+          builder: EasyLoading.init(),
+        ),
+      );
+    }
+
     return AdaptiveTheme(
       light: ThemeData(
         brightness: Brightness.light,
