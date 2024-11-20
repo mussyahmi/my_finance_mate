@@ -474,6 +474,11 @@ class ProfilePageState extends State<ProfilePage> {
   }) {
     return GestureDetector(
       onTap: () async {
+        if (!context.read<PersonProvider>().user!.isPremium) {
+          return EasyLoading.showInfo(
+              'Upgrade to Premium to customize your theme color.');
+        }
+
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(
             useMaterial3: true,

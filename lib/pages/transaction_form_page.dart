@@ -519,6 +519,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () async {
+                        if (files.isNotEmpty && !user.isPremium) {
+                          return EasyLoading.showInfo(
+                              'Upgrade to Premium to unlock additional attachment slots.');
+                        }
+
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {

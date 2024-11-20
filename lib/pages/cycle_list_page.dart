@@ -122,6 +122,14 @@ class _CycleListPageState extends State<CycleListPage> {
                               trailing: widget.cycle!.cycleNo != c.cycleNo
                                   ? IconButton.filledTonal(
                                       onPressed: () async {
+                                        if (!context
+                                            .read<PersonProvider>()
+                                            .user!
+                                            .isPremium) {
+                                          return EasyLoading.showInfo(
+                                              'Upgrade to Premium to switch between cycles.');
+                                        }
+
                                         EasyLoading.show(
                                             status:
                                                 'Switching to the selected cycle...');
