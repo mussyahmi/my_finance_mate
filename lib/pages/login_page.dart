@@ -414,11 +414,12 @@ class _LoginPageState extends State<LoginPage> {
             'updated_at': now,
             'deleted_at': null,
             'email': authResult.user!.email,
-            'full_name': authResult.user!.displayName,
+            'display_name': authResult.user!.displayName,
             'last_login': now,
-            'nickname': authResult.additionalUserInfo!.profile!['given_name'],
             'image_url': authResult.user!.photoURL,
             'device_info_json': deviceInfoJson,
+            'daily_transactions_made': 0,
+            'force_refresh': true,
             'is_premium': false,
           });
         } else {
