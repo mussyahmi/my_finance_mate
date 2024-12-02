@@ -443,7 +443,7 @@ class ProfilePageState extends State<ProfilePage> {
                         child: const Text('Sign Out'),
                       ),
                     ),
-                    PackageInfoSummary(),
+                    PackageInfoSummary(canPress: true),
                     const SizedBox(height: 10),
                   ],
                 ),

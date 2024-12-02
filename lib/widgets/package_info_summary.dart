@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class PackageInfoSummary extends StatefulWidget {
-  const PackageInfoSummary({super.key});
+  final bool canPress;
+
+  const PackageInfoSummary({super.key, required this.canPress});
 
   @override
   State<PackageInfoSummary> createState() => _PackageInfoSummaryState();
@@ -42,6 +44,13 @@ class _PackageInfoSummaryState extends State<PackageInfoSummary> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.canPress) {
+      return Text(
+        'My Finance Mate v ${_packageInfo.version}',
+        style: TextStyle(color: Colors.grey),
+      );
+    }
+
     return Column(
       children: [
         TextButton(

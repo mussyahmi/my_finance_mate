@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
+import '../widgets/package_info_summary.dart';
 import 'dashboard_page.dart';
 import 'email_verification_page.dart';
 import 'register_page.dart';
@@ -270,6 +271,7 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                 ),
+                PackageInfoSummary(canPress: false),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -284,7 +286,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text('Register'))
                   ],
-                )
+                ),
               ],
             ),
           ),
