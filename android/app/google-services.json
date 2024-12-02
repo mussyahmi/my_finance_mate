@@ -58,6 +58,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "301321629117-4balj0l3q2e87lb2q7ucv29rmisj2l6f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mustafasyahmi.myfinancemate",
+            "certificate_hash": "cc6af4ad0ce01b7edd820f11ec58596cc7f7f7f2"
+          }
+        },
+        {
+          "client_id": "301321629117-4gereucr54sj6t40pu7ah67itibg9s6j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mustafasyahmi.myfinancemate",
+            "certificate_hash": "94747fe95386dd98b899b1fc97e331c694088b89"
+          }
+        },
+        {
           "client_id": "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com",
           "client_type": 3
         }
