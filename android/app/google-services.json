@@ -74,6 +74,14 @@
           }
         },
         {
+          "client_id": "301321629117-ukj55gvb625or6vn1fc4gdbfrgke9n42.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mustafasyahmi.myfinancemate",
+            "certificate_hash": "6e666e92396f87814152a6eb34ae986a30439e21"
+          }
+        },
+        {
           "client_id": "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com",
           "client_type": 3
         }
