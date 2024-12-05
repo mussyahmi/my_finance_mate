@@ -26,6 +26,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _displayNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -46,6 +47,14 @@ class RegisterPageState extends State<RegisterPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            TextField(
+              controller: _displayNameController,
+              decoration: const InputDecoration(
+                labelText: 'Display Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(
@@ -110,6 +119,7 @@ class RegisterPageState extends State<RegisterPage> {
 
                 try {
                   await _register(
+                    _displayNameController.text.trim(),
                     _emailController.text.trim(),
                     _passwordController.text.trim(),
                     _confirmPasswordController.text.trim(),
@@ -208,13 +218,14 @@ class RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register(
+    String displayName,
     String email,
     String password,
     String confirmPassword,
   ) async {
     try {
       //* Validate the form data
-      final message = _validate(email, password, confirmPassword);
+      final message = _validate(displayName, email, password, confirmPassword);
 
       if (message.isNotEmpty) {
         EasyLoading.showInfo(message);
@@ -246,8 +257,7 @@ class RegisterPageState extends State<RegisterPage> {
           'updated_at': now,
           'deleted_at': null,
           'email': authResult.user!.email,
-          'display_name': authResult.user!.displayName ??
-              authResult.user!.uid.substring(0, 10),
+          'display_name': displayName,
           'last_login': now,
           'image_url': authResult.user!.photoURL,
           'device_info_json': deviceInfoJson,
@@ -301,7 +311,17 @@ class RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  String _validate(String email, String password, String confirmPassword) {
+  String _validate(
+    String displayName,
+    String email,
+    String password,
+    String confirmPassword,
+  ) {
+    //* Check if displayName is empty
+    if (displayName.isEmpty) {
+      return 'Display name cannot be empty.';
+    }
+
     //* Check if email is empty
     if (email.isEmpty) {
       return 'Email cannot be empty.';
