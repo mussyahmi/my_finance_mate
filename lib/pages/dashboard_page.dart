@@ -419,10 +419,10 @@ class _DashboardPageState extends State<DashboardPage>
                                       (index == 1 || index == 7 || index == 13))
                                     AdContainer(
                                       adMobService: _adMobService!,
-                                      adSize: AdSize.fullBanner,
+                                      adSize: AdSize.banner,
                                       adUnitId: _adMobService!
                                           .bannerTransactionLatestAdUnitId!,
-                                      height: 60.0,
+                                      height: 50.0,
                                     )
                                 ],
                               );
