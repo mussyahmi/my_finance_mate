@@ -158,9 +158,9 @@ class _CycleListPageState extends State<CycleListPage> {
                             (index == 1 || index == 7 || index == 13))
                           AdContainer(
                             adMobService: _adMobService,
-                            adSize: AdSize.fullBanner,
+                            adSize: AdSize.banner,
                             adUnitId: _adMobService.bannerCycleListAdUnitId!,
-                            height: 60.0,
+                            height: 50.0,
                           ),
                         if (index == cycles.length - 1)
                           const SizedBox(height: 20),

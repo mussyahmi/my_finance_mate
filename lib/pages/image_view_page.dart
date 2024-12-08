@@ -50,9 +50,9 @@ class _ImageViewPageState extends State<ImageViewPage> {
           if (!context.read<PersonProvider>().user!.isPremium)
             AdContainer(
               adMobService: _adMobService,
-              adSize: AdSize.fullBanner,
+              adSize: AdSize.banner,
               adUnitId: _adMobService.bannerImageViewAdUnitId!,
-              height: 60.0,
+              height: 50.0,
             ),
         ],
       ),

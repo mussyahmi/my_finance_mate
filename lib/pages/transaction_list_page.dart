@@ -506,10 +506,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
                                   adMobService: _adMobService,
-                                  adSize: AdSize.fullBanner,
+                                  adSize: AdSize.banner,
                                   adUnitId: _adMobService
                                       .bannerTransactionFilteredAdUnitId!,
-                                  height: 60.0,
+                                  height: 50.0,
                                 ),
                               if (index == transactions.length - 1)
                                 const SizedBox(height: 20),
