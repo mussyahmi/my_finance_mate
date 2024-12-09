@@ -36,18 +36,30 @@ class _PackageInfoSummaryState extends State<PackageInfoSummary> {
   }
 
   Widget _infoTile(String title, String subtitle) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(subtitle.isEmpty ? 'Not set' : subtitle),
+    return Card(
+      child: ListTile(
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(
+          subtitle.isEmpty ? 'Not set' : subtitle,
+          style: const TextStyle(fontSize: 14),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (!widget.canPress) {
-      return Text(
-        'My Finance Mate v ${_packageInfo.version}',
-        style: TextStyle(color: Colors.grey),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: Text(
+          'My Finance Mate v ${_packageInfo.version}',
+          style: TextStyle(color: Colors.grey),
+          textAlign: TextAlign.center,
+        ),
       );
     }
 

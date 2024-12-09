@@ -337,6 +337,7 @@ class ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     Card(
+                      surfaceTintColor: Colors.red,
                       child: ListTile(
                         title: const Text(
                           'Delete Account',
@@ -443,7 +444,9 @@ class ProfilePageState extends State<ProfilePage> {
                         child: const Text('Sign Out'),
                       ),
                     ),
-                    PackageInfoSummary(canPress: true),
+                    PackageInfoSummary(
+                      canPress: user.uid == 'nysYsoZpMQXujJmIJRjbkhHo6ft2',
+                    ),
                     const SizedBox(height: 10),
                   ],
                 ),
