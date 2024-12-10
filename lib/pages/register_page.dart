@@ -265,6 +265,8 @@ class RegisterPageState extends State<RegisterPage> {
           'daily_transactions_made': 0,
           'force_refresh': true,
           'is_premium': false,
+          'premium_start_date': null,
+          'premium_end_date': null,
         });
 
         final userDoc = await FirebaseFirestore.instance
