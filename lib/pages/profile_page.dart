@@ -20,6 +20,7 @@ import '../widgets/profile_image.dart';
 import 'chart_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
+import 'premium_subscription_page.dart';
 import 'wishlist_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -138,6 +139,41 @@ class ProfilePageState extends State<ProfilePage> {
                           const SizedBox(height: 30),
                         ],
                       ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: const Text(
+                        'Premium Access',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    Card(
+                      surfaceTintColor: Colors.orange,
+                      child: ListTile(
+                        title: const Text(
+                          'Upgrade to Premium',
+                          style: TextStyle(
+                            color: Colors.orangeAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.star,
+                          color: Colors.orangeAccent,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const PremiumSubscriptionPage()),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: const Text(

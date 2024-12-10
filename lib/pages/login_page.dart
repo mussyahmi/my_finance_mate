@@ -350,6 +350,12 @@ class _LoginPageState extends State<LoginPage> {
               prefs.getString('last_login_with') == null ||
               userDoc['device_info_json'] != deviceInfoJson,
           isPremium: userDoc['is_premium'],
+          premiumStartDate: userDoc['premium_start_date'] != null
+              ? (userDoc['premium_start_date'] as Timestamp).toDate()
+              : null,
+          premiumEndDate: userDoc['premium_end_date'] != null
+              ? (userDoc['premium_end_date'] as Timestamp).toDate()
+              : null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
@@ -460,6 +466,12 @@ class _LoginPageState extends State<LoginPage> {
               prefs.getString('last_login_with') == null ||
               isDiffDevice,
           isPremium: userDoc['is_premium'],
+          premiumStartDate: userDoc['premium_start_date'] != null
+              ? (userDoc['premium_start_date'] as Timestamp).toDate()
+              : null,
+          premiumEndDate: userDoc['premium_end_date'] != null
+              ? (userDoc['premium_end_date'] as Timestamp).toDate()
+              : null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

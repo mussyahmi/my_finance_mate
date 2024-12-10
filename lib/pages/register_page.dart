@@ -282,6 +282,12 @@ class RegisterPageState extends State<RegisterPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
           forceRefresh: userDoc['force_refresh'],
           isPremium: userDoc['is_premium'],
+          premiumStartDate: userDoc['premium_start_date'] != null
+              ? (userDoc['premium_start_date'] as Timestamp).toDate()
+              : null,
+          premiumEndDate: userDoc['premium_end_date'] != null
+              ? (userDoc['premium_end_date'] as Timestamp).toDate()
+              : null,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

@@ -23,6 +23,7 @@ import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
+import 'premium_subscription_page.dart';
 import 'profile_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
@@ -96,6 +97,39 @@ class _DashboardPageState extends State<DashboardPage>
 
       if (user.dailyTransactionsMade >= 5) {
         _createRewardedAd();
+      }
+    } else {
+      if (user.premiumEndDate != null &&
+          user.premiumEndDate!.isBefore(DateTime.now())) {
+        await context.read<PersonProvider>().endPremiumAccess();
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Trial Ended'),
+            content: Text(
+                'Your premium trial has ended. Upgrade to continue enjoying premium features!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); //* Close the dialog for "Later"
+                },
+                child: Text('Later'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); //* Close the dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PremiumSubscriptionPage()),
+                  ); //* Navigate to the premium subscription page
+                },
+                child: Text('Go to Premium'),
+              ),
+            ],
+          ),
+        );
       }
     }
   }
