@@ -44,11 +44,15 @@ class _DashboardPageState extends State<DashboardPage>
   AdMobService? _adMobService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
+  Upgrader upgrader = Upgrader(
+    durationUntilAlertAgain: const Duration(days: 1),
+  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    upgrader.initialize();
   }
 
   @override
@@ -164,6 +168,7 @@ class _DashboardPageState extends State<DashboardPage>
   void dispose() {
     _rewardedAd?.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    upgrader.dispose();
     super.dispose();
   }
 
@@ -179,380 +184,379 @@ class _DashboardPageState extends State<DashboardPage>
     //* Initialize SizeConfig
     SizeConfig().init(context);
 
-    return UpgradeAlert(
-      child: Scaffold(
-        body: [
-          NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              SliverAppBar(
-                title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
-                centerTitle: true,
-                scrolledUnderElevation: 9999,
-                floating: true,
-                snap: true,
-                actions: [
-                  if (cycle != null)
-                    IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CyclePage(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.edit_calendar))
-                ],
-              ),
-            ],
-            body: RefreshIndicator(
-              onRefresh: () async {
-                if (cycle!.isLastCycle) {
-                  context
-                      .read<CycleProvider>()
-                      .fetchCycle(context, refresh: true);
-                  context
-                      .read<CategoriesProvider>()
-                      .fetchCategories(context, cycle, refresh: true);
-                  context
-                      .read<AccountsProvider>()
-                      .fetchAccounts(context, cycle, refresh: true);
-                  context
-                      .read<TransactionsProvider>()
-                      .fetchTransactions(context, cycle, refresh: true);
-                }
-              },
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: CycleSummary(),
-                    ),
-                    const SizedBox(height: 20),
-                    if (_adMobService != null && !user.isPremium)
-                      Column(
-                        children: [
-                          AdContainer(
-                            adMobService: _adMobService!,
-                            adSize: AdSize.mediumRectangle,
-                            adUnitId: _adMobService!.bannerDasboardAdUnitId!,
-                            height: 250.0,
+    return Scaffold(
+      body: [
+        NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
+              centerTitle: true,
+              scrolledUnderElevation: 9999,
+              floating: true,
+              snap: true,
+              actions: [
+                if (cycle != null)
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CyclePage(),
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    const ForecastBudget(),
-                    const SizedBox(height: 30),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Transaction List',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
+                        );
+                      },
+                      icon: const Icon(Icons.edit_calendar))
+              ],
+            ),
+          ],
+          body: RefreshIndicator(
+            onRefresh: () async {
+              if (cycle!.isLastCycle) {
+                context
+                    .read<CycleProvider>()
+                    .fetchCycle(context, refresh: true);
+                context
+                    .read<CategoriesProvider>()
+                    .fetchCategories(context, cycle, refresh: true);
+                context
+                    .read<AccountsProvider>()
+                    .fetchAccounts(context, cycle, refresh: true);
+                context
+                    .read<TransactionsProvider>()
+                    .fetchTransactions(context, cycle, refresh: true);
+              }
+            },
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 20),
+                  if (upgrader.shouldDisplayUpgrade())
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: UpgradeCard(
+                            upgrader: upgrader,
+                            showIgnore: false,
+                            showLater: true,
+                            showReleaseNotes: true,
                           ),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const TransactionListPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('See all'))
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
                     ),
-                    FutureBuilder(
-                      future: context
-                          .watch<TransactionsProvider>()
-                          .getLatestTransactions(context),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            cycle == null) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Column(
-                              children: [
-                                CircularProgressIndicator(),
-                              ],
-                            ),
-                          ); //* Display a loading indicator
-                        } else if (snapshot.hasError) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: SelectableText(
-                              'Error: ${snapshot.error}',
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              'No transactions found.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ); //* Display a message for no transactions
-                        } else {
-                          //* Display the list of transactions
-                          final transactions = snapshot.data!;
-                          return Column(
-                            children: transactions
-                                .asMap()
-                                .entries
-                                .map<Widget>((entry) {
-                              int index = entry.key;
-                              t.Transaction transaction =
-                                  entry.value as t.Transaction;
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: CycleSummary(),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_adMobService != null && !user.isPremium)
+                    Column(
+                      children: [
+                        AdContainer(
+                          adMobService: _adMobService!,
+                          adSize: AdSize.mediumRectangle,
+                          adUnitId: _adMobService!.bannerDasboardAdUnitId!,
+                          height: 250.0,
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  const ForecastBudget(),
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Transaction List',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const TransactionListPage(),
+                                ),
+                              );
+                            },
+                            child: const Text('See all'))
+                      ],
+                    ),
+                  ),
+                  FutureBuilder(
+                    future: context
+                        .watch<TransactionsProvider>()
+                        .getLatestTransactions(context),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting ||
+                          cycle == null) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(),
+                            ],
+                          ),
+                        ); //* Display a loading indicator
+                      } else if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: SelectableText(
+                            'Error: ${snapshot.error}',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            'No transactions found.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ); //* Display a message for no transactions
+                      } else {
+                        //* Display the list of transactions
+                        final transactions = snapshot.data!;
+                        return Column(
+                          children:
+                              transactions.asMap().entries.map<Widget>((entry) {
+                            int index = entry.key;
+                            t.Transaction transaction =
+                                entry.value as t.Transaction;
 
-                              late t.Transaction prevTransaction;
+                            late t.Transaction prevTransaction;
 
-                              if (index > 0) {
-                                if (transactions[index - 1] is t.Transaction) {
-                                  prevTransaction =
-                                      transactions[index - 1] as t.Transaction;
-                                } else {
-                                  prevTransaction =
-                                      transactions[index - 2] as t.Transaction;
-                                }
+                            if (index > 0) {
+                              if (transactions[index - 1] is t.Transaction) {
+                                prevTransaction =
+                                    transactions[index - 1] as t.Transaction;
+                              } else {
+                                prevTransaction =
+                                    transactions[index - 2] as t.Transaction;
                               }
+                            }
 
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Column(
-                                      children: [
-                                        if (index == 0 ||
-                                            DateTime(
-                                                    transaction.dateTime.year,
-                                                    transaction.dateTime.month,
-                                                    transaction.dateTime.day,
-                                                    0,
-                                                    0) !=
-                                                DateTime(
-                                                    prevTransaction
-                                                        .dateTime.year,
-                                                    prevTransaction
-                                                        .dateTime.month,
-                                                    prevTransaction
-                                                        .dateTime.day,
-                                                    0,
-                                                    0))
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              transaction.getDateText(),
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey),
-                                            ),
-                                          ),
-                                        Card(
-                                          child: ListTile(
-                                            title: transaction.type ==
-                                                    'transfer'
-                                                ? Row(
-                                                    children: [
-                                                      Chip(
-                                                        label: Text(
-                                                          transaction
-                                                              .accountName,
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        padding:
-                                                            EdgeInsets.all(0),
-                                                      ),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal:
-                                                                    4.0),
-                                                        child: Icon(
-                                                            Icons.arrow_forward,
-                                                            color: Colors.grey),
-                                                      ),
-                                                      Chip(
-                                                        label: Text(
-                                                          transaction
-                                                              .accountToName,
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        padding:
-                                                            EdgeInsets.all(0),
-                                                      ),
-                                                    ],
-                                                  )
-                                                : Text(
-                                                    transaction.categoryName,
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 16),
-                                                  ),
-                                            subtitle: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  transaction.note
-                                                      .split('\\n')[0],
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                            trailing: Text(
-                                              '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: transaction.type ==
-                                                          'transfer'
-                                                      ? Colors.grey
-                                                      : transaction.type ==
-                                                              'spent'
-                                                          ? Colors.red
-                                                          : Colors.green),
-                                            ),
-                                            onTap: () {
-                                              //* Show the transaction summary dialog when tapped
-                                              transaction
-                                                  .showTransactionDetails(
-                                                      context, cycle);
-                                            },
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Column(
+                                    children: [
+                                      if (index == 0 ||
+                                          DateTime(
+                                                  transaction.dateTime.year,
+                                                  transaction.dateTime.month,
+                                                  transaction.dateTime.day,
+                                                  0,
+                                                  0) !=
+                                              DateTime(
+                                                  prevTransaction.dateTime.year,
+                                                  prevTransaction
+                                                      .dateTime.month,
+                                                  prevTransaction.dateTime.day,
+                                                  0,
+                                                  0))
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            transaction.getDateText(),
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      Card(
+                                        child: ListTile(
+                                          title: transaction.type == 'transfer'
+                                              ? Row(
+                                                  children: [
+                                                    Chip(
+                                                      label: Text(
+                                                        transaction.accountName,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0),
+                                                    ),
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 4.0),
+                                                      child: Icon(
+                                                          Icons.arrow_forward,
+                                                          color: Colors.grey),
+                                                    ),
+                                                    Chip(
+                                                      label: Text(
+                                                        transaction
+                                                            .accountToName,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0),
+                                                    ),
+                                                  ],
+                                                )
+                                              : Text(
+                                                  transaction.categoryName,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 16),
+                                                ),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                transaction.note
+                                                    .split('\\n')[0],
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontStyle: FontStyle.italic,
+                                                    color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
+                                          trailing: Text(
+                                            '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: transaction.type ==
+                                                        'transfer'
+                                                    ? Colors.grey
+                                                    : transaction.type ==
+                                                            'spent'
+                                                        ? Colors.red
+                                                        : Colors.green),
+                                          ),
+                                          onTap: () {
+                                            //* Show the transaction summary dialog when tapped
+                                            transaction.showTransactionDetails(
+                                                context, cycle);
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  if (!user.isPremium &&
-                                      (index == 1 || index == 7 || index == 13))
-                                    AdContainer(
-                                      adMobService: _adMobService!,
-                                      adSize: AdSize.banner,
-                                      adUnitId: _adMobService!
-                                          .bannerTransactionLatestAdUnitId!,
-                                      height: 50.0,
-                                    )
-                                ],
-                              );
-                            }).toList(),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 80),
-                  ],
-                ),
+                                ),
+                                if (!user.isPremium &&
+                                    (index == 1 || index == 7 || index == 13))
+                                  AdContainer(
+                                    adMobService: _adMobService!,
+                                    adSize: AdSize.banner,
+                                    adUnitId: _adMobService!
+                                        .bannerTransactionLatestAdUnitId!,
+                                    height: 50.0,
+                                  )
+                              ],
+                            );
+                          }).toList(),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 80),
+                ],
               ),
             ),
           ),
-          cycle != null ? const AccountListPage() : Container(),
-          cycle != null
-              ? CategoryListPage(changeCategoryType: changeCategoryType)
-              : Container(),
-          cycle != null ? const ProfilePage() : Container(),
-        ][_selectedIndex],
-        floatingActionButton: _selectedIndex != 3 &&
-                cycle != null &&
-                cycle.isLastCycle
-            ? FloatingActionButton(
-                onPressed: () async {
-                  if (_selectedIndex == 0) {
-                    if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                      EasyLoading.showInfo(
-                          'No accounts? Let\'s fix that—add one to begin!');
-                    } else if (user.dailyTransactionsMade >= 5) {
-                      await showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Whoops!'),
-                            content: const Text(
-                                'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context)
-                                      .pop(); //* Close the dialog
-                                },
-                                child: const Text('Close'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (!user.isPremium) _showRewardedAd();
-
-                                  Navigator.of(context)
-                                      .pop(); //* Close the dialog
-                                },
-                                child: const Text('Watch Ads'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const TransactionFormPage(action: 'Add'),
-                        ),
-                      );
-                    }
-                  } else if (_selectedIndex == 1) {
-                    Account.showAccountFormDialog(context, 'Add');
-                  } else if (_selectedIndex == 2) {
-                    Category.showCategoryFormDialog(
-                        context, _categoryType, 'Add');
-                  }
-                },
-                child: const Icon(Icons.add),
-              )
-            : null,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _selectedIndex,
-          destinations: const [
-            NavigationDestination(
-                icon: Icon(Icons.dashboard), label: 'Dashboard'),
-            NavigationDestination(
-                icon: Icon(Icons.wallet), label: 'Account List'),
-            NavigationDestination(
-                icon: Icon(Icons.category), label: 'Category List'),
-            NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-          onDestinationSelected: (value) {
-            setState(() {
-              _selectedIndex = value;
-            });
-          },
-          elevation: 9999,
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         ),
+        cycle != null ? const AccountListPage() : Container(),
+        cycle != null
+            ? CategoryListPage(changeCategoryType: changeCategoryType)
+            : Container(),
+        cycle != null ? const ProfilePage() : Container(),
+      ][_selectedIndex],
+      floatingActionButton:
+          _selectedIndex != 3 && cycle != null && cycle.isLastCycle
+              ? FloatingActionButton(
+                  onPressed: () async {
+                    if (_selectedIndex == 0) {
+                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                        EasyLoading.showInfo(
+                            'No accounts? Let\'s fix that—add one to begin!');
+                      } else if (user.dailyTransactionsMade >= 5) {
+                        await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Whoops!'),
+                              content: const Text(
+                                  'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); //* Close the dialog
+                                  },
+                                  child: const Text('Close'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (!user.isPremium) _showRewardedAd();
+
+                                    Navigator.of(context)
+                                        .pop(); //* Close the dialog
+                                  },
+                                  child: const Text('Watch Ads'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const TransactionFormPage(action: 'Add'),
+                          ),
+                        );
+                      }
+                    } else if (_selectedIndex == 1) {
+                      Account.showAccountFormDialog(context, 'Add');
+                    } else if (_selectedIndex == 2) {
+                      Category.showCategoryFormDialog(
+                          context, _categoryType, 'Add');
+                    }
+                  },
+                  child: const Icon(Icons.add),
+                )
+              : null,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        destinations: const [
+          NavigationDestination(
+              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(
+              icon: Icon(Icons.wallet), label: 'Account List'),
+          NavigationDestination(
+              icon: Icon(Icons.category), label: 'Category List'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+        onDestinationSelected: (value) {
+          setState(() {
+            _selectedIndex = value;
+          });
+        },
+        elevation: 9999,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
       ),
     );
   }
