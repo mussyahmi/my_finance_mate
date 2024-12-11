@@ -154,7 +154,7 @@ class _DashboardPageState extends State<DashboardPage>
     if (state == AppLifecycleState.paused) {
       await prefs.setInt('pause_counter', pauseCounter + 1);
       print('Paused');
-    } else if (state == AppLifecycleState.resumed && pauseCounter >= 3) {
+    } else if (state == AppLifecycleState.resumed && pauseCounter >= 5) {
       if (!user.isPremium) {
         _showAppOpenAd(prefs);
       }
@@ -597,7 +597,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _createRewardedAd() {
     RewardedAd.load(
-      adUnitId: _adMobService!.rewardedAdUnitId!,
+      adUnitId: _adMobService!.rewardedResetTransactionMadeAdUnitId!,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {

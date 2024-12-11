@@ -344,12 +344,12 @@ class AdMobService {
     return null;
   }
 
-  String? get rewardedAdUnitId {
+  String? get rewardedResetTransactionMadeAdUnitId {
     if (kReleaseMode) {
       if (Platform.isAndroid) {
-        return 'ca-app-pub-2773996115717784~4330288324';
+        return 'ca-app-pub-2773996115717784/7588082453';
       } else if (Platform.isIOS) {
-        return 'ca-app-pub-2773996115717784~4499192177';
+        return 'ca-app-pub-2773996115717784/3923297475';
       }
     } else {
       if (Platform.isAndroid) {
