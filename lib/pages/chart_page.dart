@@ -120,11 +120,23 @@ class _ChartPageState extends State<ChartPage> {
                         ),
                         contents: Column(
                           children: [
-                            Text('1. Needs (50%), Wants (30%), Savings (20%)'),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                  '1. Needs (50%), Wants (30%), Savings (20%)'),
+                            ),
                             SizedBox(height: 5),
-                            Text('2. Needs (60%), Wants (30%), Savings (10%)'),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                  '2. Needs (60%), Wants (30%), Savings (10%)'),
+                            ),
                             SizedBox(height: 5),
-                            Text('3. Needs (70%), Wants (20%), Savings (10%)'),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                  '3. Needs (70%), Wants (20%), Savings (10%)'),
+                            ),
                           ],
                         ),
                       );

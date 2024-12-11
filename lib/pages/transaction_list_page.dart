@@ -141,17 +141,26 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             segments: const [
                               ButtonSegment(
                                 value: 'spent',
-                                label: Text('Spent'),
+                                label: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text('Spent'),
+                                ),
                                 icon: Icon(Icons.file_upload_outlined),
                               ),
                               ButtonSegment(
                                 value: 'received',
-                                label: Text('Received'),
+                                label: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text('Received'),
+                                ),
                                 icon: Icon(Icons.file_download_outlined),
                               ),
                               ButtonSegment(
                                 value: 'transfer',
-                                label: Text('Transfer'),
+                                label: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text('Transfer'),
+                                ),
                                 icon: Icon(Icons.swap_horiz),
                               ),
                             ],
@@ -460,11 +469,15 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                               ),
                                             ],
                                           )
-                                        : Text(
-                                            transaction.categoryName,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16),
+                                        : FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              transaction.categoryName,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                            ),
                                           ),
                                     subtitle: Column(
                                       crossAxisAlignment:

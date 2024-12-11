@@ -19,12 +19,15 @@ class PremiumSubscriptionPage extends StatelessWidget {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
-            title: Text(
-              'Premium Subscription',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-                color: Theme.of(context).colorScheme.primary,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Premium Subscription',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
             centerTitle: true,

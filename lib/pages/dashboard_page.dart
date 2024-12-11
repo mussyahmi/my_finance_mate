@@ -410,12 +410,17 @@ class _DashboardPageState extends State<DashboardPage>
                                                     ),
                                                   ],
                                                 )
-                                              : Text(
-                                                  transaction.categoryName,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16),
+                                              : FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    transaction.categoryName,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 16),
+                                                  ),
                                                 ),
                                           subtitle: Column(
                                             crossAxisAlignment:

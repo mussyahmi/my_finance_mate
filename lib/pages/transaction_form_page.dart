@@ -167,8 +167,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           }
                         }
                       },
-                      child: Text(
-                        'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -176,17 +179,26 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       segments: const [
                         ButtonSegment(
                           value: 'spent',
-                          label: Text('Spent'),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Spent'),
+                          ),
                           icon: Icon(Icons.file_upload_outlined),
                         ),
                         ButtonSegment(
                           value: 'received',
-                          label: Text('Received'),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Received'),
+                          ),
                           icon: Icon(Icons.file_download_outlined),
                         ),
                         ButtonSegment(
                           value: 'transfer',
-                          label: Text('Transfer'),
+                          label: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('Transfer'),
+                          ),
                           icon: Icon(Icons.swap_horiz),
                         ),
                       ],

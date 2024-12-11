@@ -69,7 +69,9 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                         _isLoading = true;
                       });
 
-                      if (!context.read<PersonProvider>().user!.isPremium) _showInterstitialAd();
+                      if (!context.read<PersonProvider>().user!.isPremium) {
+                        _showInterstitialAd();
+                      }
 
                       await context
                           .read<CategoriesProvider>()
@@ -130,11 +132,15 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Card(
                               child: ListTile(
-                                title: Text(
-                                  category.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
+                                title: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    category.name,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
                                 ),
                                 trailing: Text(
                                   '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',

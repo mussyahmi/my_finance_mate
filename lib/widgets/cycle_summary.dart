@@ -97,14 +97,17 @@ class _CycleSummaryState extends State<CycleSummary> {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      !_isAmountVisible
-                                          ? 'RM ****'
-                                          : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        !_isAmountVisible
+                                            ? 'RM ****'
+                                            : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -143,14 +146,17 @@ class _CycleSummaryState extends State<CycleSummary> {
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      !_isAmountVisible
-                                          ? 'RM ****'
-                                          : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        !_isAmountVisible
+                                            ? 'RM ****'
+                                            : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ],
