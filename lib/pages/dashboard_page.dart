@@ -19,7 +19,7 @@ import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
-import '../widgets/forecast_budget.dart';
+import '../widgets/monthly_expenses.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
 import 'premium_subscription_page.dart';
@@ -262,7 +262,7 @@ class _DashboardPageState extends State<DashboardPage>
                         const SizedBox(height: 20),
                       ],
                     ),
-                  const ForecastBudget(),
+                  const MonthlyExpenses(),
                   const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),

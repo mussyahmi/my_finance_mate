@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,18 +5,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../extensions/string_extension.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 
-class ForecastBudget extends StatefulWidget {
-  const ForecastBudget({super.key});
+class MonthlyExpenses extends StatefulWidget {
+  const MonthlyExpenses({super.key});
 
   @override
-  State<ForecastBudget> createState() => _ForecastBudgetState();
+  State<MonthlyExpenses> createState() => _MonthlyExpensesState();
 }
 
-class _ForecastBudgetState extends State<ForecastBudget> {
+class _MonthlyExpensesState extends State<MonthlyExpenses> {
   late SharedPreferences prefs;
   BudgetFilter currentFilter = BudgetFilter.all;
 
@@ -48,6 +48,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
   @override
   Widget build(BuildContext context) {
+    Person user = context.watch<PersonProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 
     return Column(
@@ -58,7 +59,7 @@ class _ForecastBudgetState extends State<ForecastBudget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Forecast Budget',
+                'Monthly Expenses',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               TextButton.icon(
@@ -133,27 +134,12 @@ class _ForecastBudgetState extends State<ForecastBudget> {
 
               return Column(
                 children: [
-                  if (currentFilter == BudgetFilter.all ||
-                      currentFilter == BudgetFilter.ongoing)
-                    Column(
-                      children: [
-                        Text(
-                          'After Minus Budget\'s Balance: RM $amountBalanceAfterBudget',
-                          style: TextStyle(
-                            color: double.parse(amountBalanceAfterBudget) < 0
-                                ? Colors.orange
-                                : Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
                   Container(
                     constraints: const BoxConstraints(
-                      maxHeight: 300,
+                      maxHeight: 100,
                     ),
-                    height: min(300, budgets.length * 120),
                     child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.zero,
                       itemCount: budgets.length,
                       itemBuilder: (context, index) {
@@ -166,65 +152,95 @@ class _ForecastBudgetState extends State<ForecastBudget> {
                           thresholdText = 'Exceed';
                         }
 
+                        MaterialColor indicatorColor = Colors.orange;
+                        double progress = budget.progressPercentage();
+
+                        if (progress == 1.0) {
+                          indicatorColor = Colors.green; // Exactly at 1
+                        } else if (progress > 1.0) {
+                          indicatorColor = Colors.red; // Exceeded
+                        }
+
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Card(
-                            child: ListTile(
-                              key: Key(budget.id),
-                              title: Text(
-                                budget.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              subtitle: Column(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Text(
-                                        'Spent: RM ${budget.totalAmount}',
-                                      ),
-                                      Text(
-                                        '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  LinearProgressIndicator(
-                                    value: budget.progressPercentage(),
-                                    backgroundColor: Colors.grey[300],
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      () {
-                                        double progress =
-                                            budget.progressPercentage();
-                                        if (progress == 1.0) {
-                                          return Colors
-                                              .green; //* Change color when budget is exactly 1
-                                        } else if (progress > 1.0) {
-                                          return Colors
-                                              .red; //* Change color when budget is greater than 1
-                                        } else {
-                                          return Colors
-                                              .deepOrange; //* Change color when budget is less than 1
-                                        }
-                                      }(),
+                            surfaceTintColor: indicatorColor,
+                            child: SizedBox(
+                              width: 250,
+                              child: ListTile(
+                                key: Key(budget.id),
+                                title: SizedBox(
+                                  height: 25,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      budget.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
                                     ),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(8.0)),
                                   ),
-                                ],
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(height: 5.0),
+                                    LinearProgressIndicator(
+                                      value: budget.progressPercentage(),
+                                      backgroundColor: Colors.grey[300],
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        indicatorColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    SizedBox(
+                                      height: 20,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'Spent: RM ${budget.totalAmount}',
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () {
+                                  budget.showCategoryDetails(
+                                      context, cycle, budget.type);
+                                },
                               ),
-                              onTap: () {
-                                budget.showCategoryDetails(
-                                    context, cycle, budget.type);
-                              },
                             ),
                           ),
                         );
                       },
                     ),
                   ),
+                  if (user.uid == 'nysYsoZpMQXujJmIJRjbkhHo6ft2' &&
+                      (currentFilter == BudgetFilter.all ||
+                          currentFilter == BudgetFilter.ongoing))
+                    Column(
+                      children: [
+                        const SizedBox(height: 8.0),
+                        Text(
+                          'Net Balance: RM $amountBalanceAfterBudget',
+                          style: TextStyle(
+                            color: double.parse(amountBalanceAfterBudget) < 0
+                                ? Colors.orange
+                                : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
                 ],
               );
             }
