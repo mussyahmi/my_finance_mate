@@ -45,7 +45,12 @@ class _DashboardPageState extends State<DashboardPage>
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
   Upgrader upgrader = Upgrader(
+    countryCode: 'MY',
+    // debugDisplayAlways: true,
+    debugLogging: true,
     durationUntilAlertAgain: const Duration(days: 1),
+    languageCode: 'en',
+    minAppVersion: '1.2.0',
   );
 
   @override
