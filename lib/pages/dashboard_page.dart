@@ -19,7 +19,6 @@ import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
-import '../widgets/cycle_summary.dart';
 import '../widgets/forecast_budget.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
@@ -251,11 +250,6 @@ class _DashboardPageState extends State<DashboardPage>
                         const SizedBox(height: 10),
                       ],
                     ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: CycleSummary(),
-                  ),
-                  const SizedBox(height: 20),
                   if (_adMobService != null && !user.isPremium)
                     Column(
                       children: [
