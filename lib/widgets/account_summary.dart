@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/account.dart';
 import '../models/cycle.dart';
@@ -15,7 +16,27 @@ class AccountSummary extends StatefulWidget {
 }
 
 class _AccountSummaryState extends State<AccountSummary> {
+  late SharedPreferences prefs;
   bool _isAmountVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    SharedPreferences? sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    final savedIsCycleSummaryVisible = sharedPreferences
+        .getBool('is_cycle_summary_visible_${widget.account.name}');
+
+    setState(() {
+      prefs = sharedPreferences;
+      _isAmountVisible = savedIsCycleSummaryVisible ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +202,11 @@ class _AccountSummaryState extends State<AccountSummary> {
             right: 4,
             child: IconButton(
               iconSize: 20,
-              onPressed: () {
+              onPressed: () async {
+                await prefs.setBool(
+                    'is_cycle_summary_visible_${widget.account.name}',
+                    !_isAmountVisible);
+
                 setState(() {
                   _isAmountVisible = !_isAmountVisible;
                 });

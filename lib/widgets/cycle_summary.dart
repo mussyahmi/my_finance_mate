@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cycle.dart';
 import '../pages/transaction_list_page.dart';
@@ -13,7 +14,27 @@ class CycleSummary extends StatefulWidget {
 }
 
 class _CycleSummaryState extends State<CycleSummary> {
+  late SharedPreferences prefs;
   bool _isAmountVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
+  Future<void> initAsync() async {
+    SharedPreferences? sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    final savedIsCycleSummaryVisible =
+        sharedPreferences.getBool('is_cycle_summary_visible');
+
+    setState(() {
+      prefs = sharedPreferences;
+      _isAmountVisible = savedIsCycleSummaryVisible ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +196,10 @@ class _CycleSummaryState extends State<CycleSummary> {
                 right: 4,
                 child: IconButton(
                   iconSize: 20,
-                  onPressed: () {
+                  onPressed: () async {
+                    await prefs.setBool(
+                        'is_cycle_summary_visible', !_isAmountVisible);
+
                     setState(() {
                       _isAmountVisible = !_isAmountVisible;
                     });
