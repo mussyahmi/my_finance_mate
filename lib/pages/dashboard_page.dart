@@ -250,6 +250,8 @@ class _DashboardPageState extends State<DashboardPage>
                         const SizedBox(height: 10),
                       ],
                     ),
+                  const MonthlyExpenses(),
+                  const SizedBox(height: 20),
                   if (_adMobService != null && !user.isPremium)
                     Column(
                       children: [
@@ -262,8 +264,6 @@ class _DashboardPageState extends State<DashboardPage>
                         const SizedBox(height: 20),
                       ],
                     ),
-                  const MonthlyExpenses(),
-                  const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(

@@ -136,7 +136,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                 children: [
                   Container(
                     constraints: const BoxConstraints(
-                      maxHeight: 100,
+                      maxHeight: 110,
                     ),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -162,11 +162,15 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                         }
 
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: EdgeInsets.only(
+                            left: 8.0,
+                            right: index + 1 == budgets.length ? 8.0 : 0,
+                          ),
                           child: Card(
+                            elevation: 3,
                             surfaceTintColor: indicatorColor,
                             child: SizedBox(
-                              width: 250,
+                              width: 180,
                               child: ListTile(
                                 key: Key(budget.id),
                                 title: SizedBox(
@@ -211,6 +215,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                                         ),
                                       ),
                                     ),
+                                    const SizedBox(height: 8.0),
                                   ],
                                 ),
                                 onTap: () {
