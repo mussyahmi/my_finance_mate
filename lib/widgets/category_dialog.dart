@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import '../models/category.dart';
+import '../pages/amount_input_page.dart';
 import '../providers/categories_provider.dart';
 import '../services/message_services.dart';
 
@@ -78,12 +79,30 @@ class CategoryDialogState extends State<CategoryDialog> {
                   Column(
                     children: [
                       const SizedBox(height: 10),
-                      TextField(
-                        controller: _categoryBudgetController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Budget',
-                          prefixText: 'RM ',
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AmountInputPage(
+                                amount: _categoryBudgetController.text,
+                              ),
+                            ),
+                          );
+
+                          if (result != null && result is String) {
+                            _categoryBudgetController.text = result;
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: _categoryBudgetController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Budget',
+                              prefixText: 'RM ',
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -189,8 +208,13 @@ class CategoryDialogState extends State<CategoryDialog> {
       }
 
       //* Check if the value is a positive number
-      if (double.parse(cleanedValue) <= 0) {
+      if (double.parse(cleanedValue) < 0) {
         return 'Please enter a positive value.';
+      }
+
+      //* Check if the value is 0
+      if (double.parse(cleanedValue) == 0) {
+        return 'The amount cannot be zero.';
       }
 
       //* Custom currency validation (you can modify this based on your requirements)

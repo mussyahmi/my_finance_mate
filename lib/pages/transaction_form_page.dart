@@ -23,6 +23,7 @@ import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
+import 'amount_input_page.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
@@ -427,12 +428,30 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           const SizedBox(height: 20),
                         ],
                       ),
-                    TextField(
-                      controller: transactionAmountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount',
-                        prefixText: 'RM ',
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AmountInputPage(
+                              amount: transactionAmountController.text,
+                            ),
+                          ),
+                        );
+
+                        if (result != null && result is String) {
+                          transactionAmountController.text = result;
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: transactionAmountController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Amount',
+                            prefixText: 'RM ',
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -742,8 +761,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     }
 
     //* Check if the value is a positive number
-    if (double.parse(cleanedValue) <= 0) {
+    if (double.parse(cleanedValue) < 0) {
       return 'Please enter a positive value.';
+    }
+
+    //* Check if the value is 0
+    if (double.parse(cleanedValue) == 0) {
+      return 'The amount cannot be zero.';
     }
 
     //* Custom currency validation (you can modify this based on your requirements)

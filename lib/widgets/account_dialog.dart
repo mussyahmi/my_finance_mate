@@ -5,6 +5,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
+import '../pages/amount_input_page.dart';
 import '../providers/accounts_provider.dart';
 import '../services/message_services.dart';
 
@@ -60,12 +61,31 @@ class AccountDialogState extends State<AccountDialog> {
               ),
             ),
             const SizedBox(height: 20),
-            TextField(
-              controller: _openingBalanceController,
-              keyboardType: TextInputType.number, //* Allow only numeric input
-              decoration: InputDecoration(
-                labelText: 'Opening Balance',
-                prefixText: 'RM ',
+            GestureDetector(
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AmountInputPage(
+                      amount: _openingBalanceController.text,
+                    ),
+                  ),
+                );
+
+                if (result != null && result is String) {
+                  _openingBalanceController.text = result;
+                }
+              },
+              child: AbsorbPointer(
+                child: TextField(
+                  controller: _openingBalanceController,
+                  keyboardType:
+                      TextInputType.number, //* Allow only numeric input
+                  decoration: InputDecoration(
+                    labelText: 'Opening Balance',
+                    prefixText: 'RM ',
+                  ),
+                ),
               ),
             ),
           ],
@@ -135,8 +155,13 @@ class AccountDialogState extends State<AccountDialog> {
     }
 
     //* Check if the value is a positive number
-    if (double.parse(cleanedValue) <= 0) {
+    if (double.parse(cleanedValue) < 0) {
       return 'Please enter a positive value.';
+    }
+
+    //* Check if the value is 0
+    if (double.parse(cleanedValue) == 0) {
+      return 'The amount cannot be zero.';
     }
 
     //* Custom currency validation (you can modify this based on your requirements)
