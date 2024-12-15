@@ -393,7 +393,8 @@ class _DashboardPageState extends State<DashboardPage>
                                                           .symmetric(
                                                           horizontal: 8.0),
                                                       child: Icon(
-                                                          CupertinoIcons.arrow_right_arrow_left,
+                                                          CupertinoIcons
+                                                              .arrow_right_arrow_left,
                                                           color: Colors.grey),
                                                     ),
                                                     Chip(
@@ -548,12 +549,25 @@ class _DashboardPageState extends State<DashboardPage>
         selectedIndex: _selectedIndex,
         destinations: const [
           NavigationDestination(
-              icon: Icon(CupertinoIcons.square_grid_2x2_fill), label: 'Dashboard'),
+            icon: Icon(CupertinoIcons.square_grid_2x2),
+            selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+            label: 'Dashboard',
+          ),
           NavigationDestination(
-              icon: Icon(CupertinoIcons.creditcard_fill), label: 'Account List'),
+            icon: Icon(CupertinoIcons.creditcard),
+            selectedIcon: Icon(CupertinoIcons.creditcard_fill),
+            label: 'Account List',
+          ),
           NavigationDestination(
-              icon: Icon(CupertinoIcons.rectangle_grid_1x2_fill), label: 'Category List'),
-          NavigationDestination(icon: Icon(CupertinoIcons.person_fill), label: 'Profile'),
+            icon: Icon(CupertinoIcons.rectangle_grid_1x2),
+            selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
+            label: 'Category List',
+          ),
+          NavigationDestination(
+            icon: Icon(CupertinoIcons.person),
+            selectedIcon: Icon(CupertinoIcons.person_fill),
+            label: 'Profile',
+          ),
         ],
         onDestinationSelected: (value) {
           setState(() {
