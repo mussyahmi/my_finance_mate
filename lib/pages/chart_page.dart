@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -143,7 +144,7 @@ class _ChartPageState extends State<ChartPage> {
                     },
                   );
                 },
-                icon: const Icon(Icons.info),
+                icon: const Icon(CupertinoIcons.info_circle_fill),
               ),
             ],
           ),

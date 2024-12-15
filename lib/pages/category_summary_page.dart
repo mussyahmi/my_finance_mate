@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +62,7 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2.0,
                             ))
-                        : const Icon(Icons.refresh),
+                        : const Icon(CupertinoIcons.refresh),
                     onPressed: () async {
                       if (_isLoading) return;
 

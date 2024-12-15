@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:number_pad_keyboard/number_pad_keyboard.dart';
 
@@ -86,7 +87,7 @@ class _AmountInputPageState extends State<AmountInputPage> {
             NumberPadKeyboard(
               addDigit: _addDigit,
               backspace: _backspace,
-              enterButtonText: 'ENTER',
+              enterButtonText: 'DONE',
               onEnter: () {
                 Navigator.of(context).pop(_amount);
               },
@@ -97,7 +98,7 @@ class _AmountInputPageState extends State<AmountInputPage> {
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
               deleteIcon: Icon(
-                Icons.backspace,
+                CupertinoIcons.delete_left_fill,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
               enterButtonTextStyle: TextStyle(

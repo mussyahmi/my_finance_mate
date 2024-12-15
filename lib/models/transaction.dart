@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -92,7 +93,7 @@ class Transaction {
                         }
                       },
                       icon: const Icon(
-                        Icons.delete,
+                        CupertinoIcons.delete_solid,
                         color: Colors.red,
                       ),
                     ),
@@ -115,7 +116,7 @@ class Transaction {
                         }
                       },
                       icon: Icon(
-                        Icons.edit,
+                        CupertinoIcons.pencil,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),

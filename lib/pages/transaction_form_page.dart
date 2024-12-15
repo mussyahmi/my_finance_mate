@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -184,7 +185,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             fit: BoxFit.scaleDown,
                             child: Text('Spent'),
                           ),
-                          icon: Icon(Icons.file_upload_outlined),
+                          icon: Icon(CupertinoIcons.tray_arrow_up_fill),
                         ),
                         ButtonSegment(
                           value: 'received',
@@ -192,7 +193,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             fit: BoxFit.scaleDown,
                             child: Text('Received'),
                           ),
-                          icon: Icon(Icons.file_download_outlined),
+                          icon: Icon(CupertinoIcons.tray_arrow_down_fill),
                         ),
                         ButtonSegment(
                           value: 'transfer',
@@ -200,7 +201,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             fit: BoxFit.scaleDown,
                             child: Text('Transfer'),
                           ),
-                          icon: Icon(Icons.swap_horiz),
+                          icon: Icon(CupertinoIcons.arrow_right_arrow_left),
                         ),
                       ],
                       selected: {selectedType},
@@ -366,7 +367,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   (context, item, isDisabled, isSelected) {
                                 if (item == 'add_new') {
                                   return ListTile(
-                                    leading: Icon(Icons.add_circle),
+                                    leading: Icon(CupertinoIcons.add_circled_solid),
                                     title: Text('Add New'),
                                   );
                                 } else {
@@ -534,7 +535,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                               },
                                               child: Container(
                                                 color: Colors.red,
-                                                child: const Icon(Icons.close),
+                                                child: const Icon(CupertinoIcons.clear),
                                               ),
                                             ),
                                           ),

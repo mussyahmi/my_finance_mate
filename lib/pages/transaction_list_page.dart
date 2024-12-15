@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 // import 'package:intl/intl.dart';
@@ -145,7 +146,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   fit: BoxFit.scaleDown,
                                   child: Text('Spent'),
                                 ),
-                                icon: Icon(Icons.file_upload_outlined),
+                                icon: Icon(CupertinoIcons.tray_arrow_up_fill),
                               ),
                               ButtonSegment(
                                 value: 'received',
@@ -153,7 +154,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   fit: BoxFit.scaleDown,
                                   child: Text('Received'),
                                 ),
-                                icon: Icon(Icons.file_download_outlined),
+                                icon: Icon(CupertinoIcons.tray_arrow_down_fill),
                               ),
                               ButtonSegment(
                                 value: 'transfer',
@@ -161,7 +162,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   fit: BoxFit.scaleDown,
                                   child: Text('Transfer'),
                                 ),
-                                icon: Icon(Icons.swap_horiz),
+                                icon:
+                                    Icon(CupertinoIcons.arrow_right_arrow_left),
                               ),
                             ],
                             selected: {selectedType},
@@ -454,8 +456,10 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                               Padding(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                        horizontal: 4.0),
-                                                child: Icon(Icons.arrow_forward,
+                                                        horizontal: 8.0),
+                                                child: Icon(
+                                                    CupertinoIcons
+                                                        .arrow_right_arrow_left,
                                                     color: Colors.grey),
                                               ),
                                               Chip(

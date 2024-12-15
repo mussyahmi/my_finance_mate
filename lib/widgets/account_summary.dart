@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -194,7 +195,7 @@ class _AccountSummaryState extends State<AccountSummary> {
               onPressed: () {
                 widget.account.showAccountDetails(context, cycle);
               },
-              icon: Icon(Icons.info),
+              icon: Icon(CupertinoIcons.info_circle_fill),
             ),
           ),
           Positioned(
@@ -212,7 +213,9 @@ class _AccountSummaryState extends State<AccountSummary> {
                 });
               },
               icon: Icon(
-                _isAmountVisible ? Icons.visibility : Icons.visibility_off,
+                _isAmountVisible
+                    ? CupertinoIcons.eye_fill
+                    : CupertinoIcons.eye_slash_fill,
               ),
             ),
           )

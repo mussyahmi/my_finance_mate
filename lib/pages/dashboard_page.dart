@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -209,7 +210,7 @@ class _DashboardPageState extends State<DashboardPage>
                           ),
                         );
                       },
-                      icon: const Icon(Icons.edit_calendar))
+                      icon: const Icon(CupertinoIcons.calendar))
               ],
             ),
           ],
@@ -390,9 +391,9 @@ class _DashboardPageState extends State<DashboardPage>
                                                     Padding(
                                                       padding: const EdgeInsets
                                                           .symmetric(
-                                                          horizontal: 4.0),
+                                                          horizontal: 8.0),
                                                       child: Icon(
-                                                          Icons.arrow_forward,
+                                                          CupertinoIcons.arrow_right_arrow_left,
                                                           color: Colors.grey),
                                                     ),
                                                     Chip(
@@ -540,19 +541,19 @@ class _DashboardPageState extends State<DashboardPage>
                           context, _categoryType, 'Add');
                     }
                   },
-                  child: const Icon(Icons.add),
+                  child: const Icon(CupertinoIcons.add),
                 )
               : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         destinations: const [
           NavigationDestination(
-              icon: Icon(Icons.dashboard), label: 'Dashboard'),
+              icon: Icon(CupertinoIcons.square_grid_2x2_fill), label: 'Dashboard'),
           NavigationDestination(
-              icon: Icon(Icons.wallet), label: 'Account List'),
+              icon: Icon(CupertinoIcons.creditcard_fill), label: 'Account List'),
           NavigationDestination(
-              icon: Icon(Icons.category), label: 'Category List'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+              icon: Icon(CupertinoIcons.rectangle_grid_1x2_fill), label: 'Category List'),
+          NavigationDestination(icon: Icon(CupertinoIcons.person_fill), label: 'Profile'),
         ],
         onDestinationSelected: (value) {
           setState(() {

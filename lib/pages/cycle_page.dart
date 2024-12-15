@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -72,7 +73,7 @@ class _CyclePageState extends State<CyclePage> {
                     );
                   },
                   icon: Icon(
-                    Icons.edit,
+                    CupertinoIcons.pencil,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 )
@@ -250,7 +251,7 @@ class _CyclePageState extends State<CyclePage> {
                                                   'Cycle switched successfully!');
                                             },
                                             icon: Icon(
-                                              Icons.arrow_forward_ios,
+                                              CupertinoIcons.repeat,
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .primary,

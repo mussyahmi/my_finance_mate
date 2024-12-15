@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
@@ -108,7 +109,7 @@ class _ProfileImageState extends State<ProfileImage> {
                 );
               },
               icon: Icon(
-                Icons.edit,
+                CupertinoIcons.pencil,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),

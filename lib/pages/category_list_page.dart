@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -83,11 +84,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     bottom: TabBar(
                       tabs: [
                         Tab(
-                          icon: Icon(Icons.file_upload_outlined),
+                          icon: Icon(CupertinoIcons.tray_arrow_up_fill),
                           text: 'Spent',
                         ),
                         Tab(
-                          icon: Icon(Icons.file_download_outlined),
+                          icon: Icon(CupertinoIcons.tray_arrow_down_fill),
                           text: 'Received',
                         ),
                       ],

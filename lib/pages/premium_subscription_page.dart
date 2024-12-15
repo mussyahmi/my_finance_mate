@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
@@ -53,7 +54,7 @@ class PremiumSubscriptionPage extends StatelessWidget {
                   title: 'Switch Between Financial Cycles',
                   description:
                       'Access past and future financial cycles seamlessly for a comprehensive financial overview.',
-                  icon: Icons.loop,
+                  icon: CupertinoIcons.repeat,
                 ),
                 PremiumFeatureTile(
                   title: 'Enhanced Customization',
@@ -65,7 +66,7 @@ class PremiumSubscriptionPage extends StatelessWidget {
                   title: 'Additional Attachment Slots',
                   description:
                       'Attach more images to transactions for thorough and organized record-keeping.',
-                  icon: Icons.attachment,
+                  icon: CupertinoIcons.paperclip,
                 ),
                 PremiumFeatureTile(
                   title: 'Ad-Free Experience',

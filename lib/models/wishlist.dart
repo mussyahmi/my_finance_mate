@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -51,7 +52,7 @@ class Wishlist {
                         }
                       },
                       icon: const Icon(
-                        Icons.delete,
+                        CupertinoIcons.delete_solid,
                         color: Colors.red,
                       ),
                     ),
@@ -67,7 +68,7 @@ class Wishlist {
                         }
                       },
                       icon: Icon(
-                        Icons.edit,
+                        CupertinoIcons.pencil,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -88,7 +89,7 @@ class ProfilePageState extends State<ProfilePage> {
                   await user.showEditDisplayNameDialog(context);
                 },
                 icon: Icon(
-                  Icons.edit,
+                  CupertinoIcons.pencil,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               )
@@ -160,7 +161,7 @@ class ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         trailing: const Icon(
-                          Icons.star,
+                          CupertinoIcons.star_fill,
                           color: Colors.orangeAccent,
                         ),
                         onTap: () {
@@ -185,7 +186,7 @@ class ProfilePageState extends State<ProfilePage> {
                     Card(
                       child: ListTile(
                         title: const Text('Chart'),
-                        trailing: const Icon(Icons.pie_chart),
+                        trailing: const Icon(CupertinoIcons.chart_pie_fill),
                         onTap: () async {
                           await Navigator.push(
                             context,
@@ -199,7 +200,7 @@ class ProfilePageState extends State<ProfilePage> {
                     Card(
                       child: ListTile(
                         title: const Text('Category Summary'),
-                        trailing: const Icon(Icons.analytics),
+                        trailing: const Icon(CupertinoIcons.chart_bar_fill),
                         onTap: () async {
                           await Navigator.push(
                             context,
@@ -222,7 +223,7 @@ class ProfilePageState extends State<ProfilePage> {
                     Card(
                       child: ListTile(
                         title: const Text('Wishlist'),
-                        trailing: const Icon(Icons.favorite),
+                        trailing: const Icon(CupertinoIcons.heart_fill),
                         onTap: () async {
                           await Navigator.push(
                             context,
@@ -246,8 +247,8 @@ class ProfilePageState extends State<ProfilePage> {
                       child: ListTile(
                         title: const Text('Toggle Theme Mode'),
                         trailing: Icon(savedThemeMode == AdaptiveThemeMode.light
-                            ? Icons.light_mode
-                            : Icons.dark_mode),
+                            ? CupertinoIcons.sun_max_fill
+                            : CupertinoIcons.moon_stars_fill),
                         onTap: () async {
                           print('savedThemeMode $savedThemeMode');
                           if (savedThemeMode == AdaptiveThemeMode.light) {
@@ -368,7 +369,7 @@ class ProfilePageState extends State<ProfilePage> {
                       Card(
                         child: ListTile(
                           title: const Text('Change Password'),
-                          trailing: const Icon(Icons.lock_reset),
+                          trailing: const Icon(CupertinoIcons.lock_rotation),
                           onTap: () => user.showChangePasswordDialog(context),
                         ),
                       ),

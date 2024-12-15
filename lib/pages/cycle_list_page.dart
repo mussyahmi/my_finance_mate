@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -144,7 +145,7 @@ class _CycleListPageState extends State<CycleListPage> {
                                         Navigator.of(context).pop();
                                       },
                                       icon: Icon(
-                                        Icons.arrow_forward_ios,
+                                        CupertinoIcons.repeat,
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
