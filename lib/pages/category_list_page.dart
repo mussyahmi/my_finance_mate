@@ -10,6 +10,7 @@ import '../providers/categories_provider.dart';
 import '../models/category.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/sub_type_tag.dart';
@@ -33,6 +34,7 @@ class CategoryListPage extends StatefulWidget {
 class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void initState() {
@@ -49,6 +51,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   @override
@@ -169,7 +172,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                     if (!context.read<PersonProvider>().user!.isPremium &&
                         (index == 1 || index == 7 || index == 13))
                       AdContainer(
-                        adMobService: _adMobService,
+                        adCacheService: _adCacheService,
+                        number: index,
                         adSize: AdSize.banner,
                         adUnitId: _adMobService.bannerCategoryListAdUnitId!,
                         height: 50.0,

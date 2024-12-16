@@ -17,6 +17,7 @@ import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
@@ -42,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage>
   int _selectedIndex = 0;
   String _categoryType = 'spent';
   AdMobService? _adMobService;
+  late AdCacheService _adCacheService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
   Upgrader upgrader = Upgrader(
@@ -100,6 +102,7 @@ class _DashboardPageState extends State<DashboardPage>
     }
 
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
 
     if (!user.isPremium) {
       _createAppOpenAd();
@@ -257,7 +260,8 @@ class _DashboardPageState extends State<DashboardPage>
                     Column(
                       children: [
                         AdContainer(
-                          adMobService: _adMobService!,
+                          adCacheService: _adCacheService,
+                          number: 1,
                           adSize: AdSize.mediumRectangle,
                           adUnitId: _adMobService!.bannerDasboardAdUnitId!,
                           height: 250.0,
@@ -464,7 +468,8 @@ class _DashboardPageState extends State<DashboardPage>
                                 if (!user.isPremium &&
                                     (index == 1 || index == 7 || index == 13))
                                   AdContainer(
-                                    adMobService: _adMobService!,
+                                    adCacheService: _adCacheService,
+                                    number: index,
                                     adSize: AdSize.banner,
                                     adUnitId: _adMobService!
                                         .bannerTransactionLatestAdUnitId!,

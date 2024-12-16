@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../models/cycle.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
@@ -30,6 +31,7 @@ class CycleAddPageState extends State<CycleAddPage> {
   DateTime? _endDate;
   bool _isLoading = false;
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void didChangeDependencies() {
@@ -70,6 +72,7 @@ class CycleAddPageState extends State<CycleAddPage> {
     }
 
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   @override
@@ -184,7 +187,8 @@ class CycleAddPageState extends State<CycleAddPage> {
               ),
               if (!context.read<PersonProvider>().user!.isPremium)
                 AdContainer(
-                  adMobService: _adMobService,
+                  adCacheService: _adCacheService,
+                  number: 1,
                   adSize: AdSize.banner,
                   adUnitId: _adMobService.bannerCycleAddAdUnitId!,
                   height: 50.0,

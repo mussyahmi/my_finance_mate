@@ -15,6 +15,7 @@ import 'providers/cycle_provider.dart';
 import 'providers/cycles_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
+import 'services/ad_cache_service.dart';
 import 'services/ad_mob_service.dart';
 import 'providers/person_provider.dart';
 import 'services/app_settings_service.dart';
@@ -36,10 +37,12 @@ void main() async {
 
   final initAdFuture = MobileAds.instance.initialize();
   final adMobService = AdMobService(initAdFuture);
+  final adCacheService = AdCacheService();
 
   runApp(MultiProvider(
     providers: [
       Provider.value(value: adMobService),
+      Provider.value(value: adCacheService),
       ChangeNotifierProvider(
         create: (context) => PersonProvider(),
       ),

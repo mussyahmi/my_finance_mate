@@ -10,6 +10,7 @@ import '../models/person.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/cycles_provider.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
@@ -24,6 +25,7 @@ class CyclePage extends StatefulWidget {
 
 class _CyclePageState extends State<CyclePage> {
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void didChangeDependencies() {
@@ -34,6 +36,7 @@ class _CyclePageState extends State<CyclePage> {
     }
 
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   @override
@@ -117,7 +120,8 @@ class _CyclePageState extends State<CyclePage> {
                         Column(
                           children: [
                             AdContainer(
-                              adMobService: _adMobService,
+                              adCacheService: _adCacheService,
+                              number: 1,
                               adSize: AdSize.mediumRectangle,
                               adUnitId: _adMobService.bannerCycleAdUnitId!,
                               height: 250.0,
@@ -264,7 +268,8 @@ class _CyclePageState extends State<CyclePage> {
                               if (!user.isPremium &&
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
-                                  adMobService: _adMobService,
+                                  adCacheService: _adCacheService,
+                                  number: index,
                                   adSize: AdSize.banner,
                                   adUnitId:
                                       _adMobService.bannerCycleLatestAdUnitId!,

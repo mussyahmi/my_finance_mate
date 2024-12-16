@@ -280,16 +280,6 @@ class AdMobService {
     return null;
   }
 
-  final BannerAdListener bannerAdListener = BannerAdListener(
-    onAdLoaded: (ad) => print('Ad loaded'),
-    onAdFailedToLoad: (ad, error) {
-      ad.dispose();
-      print('Ad failed to load: $error');
-    },
-    onAdOpened: (ad) => print('Ad opened'),
-    onAdClosed: (ad) => print('Ad closed'),
-  );
-
   String? get interstitialTransactionFormAdUnitId {
     if (kReleaseMode) {
       if (Platform.isAndroid) {

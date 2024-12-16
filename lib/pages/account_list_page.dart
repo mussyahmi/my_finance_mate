@@ -11,6 +11,7 @@ import '../providers/accounts_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/account_summary.dart';
 import '../widgets/ad_container.dart';
@@ -24,6 +25,7 @@ class AccountListPage extends StatefulWidget {
 
 class _AccountListPageState extends State<AccountListPage> {
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void didChangeDependencies() async {
@@ -40,6 +42,7 @@ class _AccountListPageState extends State<AccountListPage> {
     }
 
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   @override
@@ -113,7 +116,8 @@ class _AccountListPageState extends State<AccountListPage> {
                           if (!context.read<PersonProvider>().user!.isPremium &&
                               (index == 1 || index == 7 || index == 13))
                             AdContainer(
-                              adMobService: _adMobService,
+                              adCacheService: _adCacheService,
+                              number: index,
                               adSize: AdSize.largeBanner,
                               adUnitId:
                                   _adMobService.bannerAccountListAdUnitId!,

@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
@@ -36,6 +37,7 @@ class ProfilePageState extends State<ProfilePage> {
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class ProfilePageState extends State<ProfilePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   Future<void> initAsync() async {
@@ -132,7 +135,8 @@ class ProfilePageState extends State<ProfilePage> {
                       Column(
                         children: [
                           AdContainer(
-                            adMobService: _adMobService,
+                            adCacheService: _adCacheService,
+                            number: 1,
                             adSize: AdSize.largeBanner,
                             adUnitId: _adMobService.bannerProfileAdUnitId!,
                             height: 100.0,

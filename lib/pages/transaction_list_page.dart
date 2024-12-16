@@ -15,6 +15,7 @@ import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
@@ -47,6 +48,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
   List<Category> categories = [];
   bool openFilter = false;
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void initState() {
@@ -58,6 +60,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   Future<void> initAsync() async {
@@ -523,7 +526,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                       .isPremium &&
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
-                                  adMobService: _adMobService,
+                                  adCacheService: _adCacheService,
+                                  number: index,
                                   adSize: AdSize.banner,
                                   adUnitId: _adMobService
                                       .bannerTransactionFilteredAdUnitId!,

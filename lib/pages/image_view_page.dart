@@ -6,6 +6,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/person_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
@@ -22,11 +23,13 @@ class ImageViewPage extends StatefulWidget {
 
 class _ImageViewPageState extends State<ImageViewPage> {
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
   }
 
   @override
@@ -49,7 +52,8 @@ class _ImageViewPageState extends State<ImageViewPage> {
           ),
           if (!context.read<PersonProvider>().user!.isPremium)
             AdContainer(
-              adMobService: _adMobService,
+              adCacheService: _adCacheService,
+              number: 1,
               adSize: AdSize.banner,
               adUnitId: _adMobService.bannerImageViewAdUnitId!,
               height: 50.0,

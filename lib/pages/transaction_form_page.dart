@@ -21,6 +21,7 @@ import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
@@ -58,6 +59,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   List<dynamic> files = [];
   List<dynamic> filesToDelete = [];
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
   InterstitialAd? _interstitialAd;
 
   @override
@@ -70,6 +72,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
 
     if (!context.read<PersonProvider>().user!.isPremium) {
       _createInterstitialAd();
@@ -594,7 +597,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       Column(
                         children: [
                           AdContainer(
-                            adMobService: _adMobService,
+                            adCacheService: _adCacheService,
+                            number: 1,
                             adSize: AdSize.largeBanner,
                             adUnitId:
                                 _adMobService.bannerTransactionFormAdUnitId!,

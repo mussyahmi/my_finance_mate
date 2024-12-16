@@ -1,19 +1,23 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../services/ad_mob_service.dart';
+import '../services/ad_cache_service.dart';
 
 class AdContainer extends StatefulWidget {
-  final AdMobService adMobService;
-  final AdSize adSize;
+  final AdCacheService adCacheService;
+  final int number;
   final String adUnitId;
+  final AdSize adSize;
   final double height;
 
   const AdContainer({
     super.key,
-    required this.adMobService,
-    required this.adSize,
+    required this.adCacheService,
+    required this.number,
     required this.adUnitId,
+    required this.adSize,
     required this.height,
   });
 
@@ -22,26 +26,23 @@ class AdContainer extends StatefulWidget {
 }
 
 class _AdContainerState extends State<AdContainer> {
-  BannerAd? _bannerAd;
+  late BannerAd _bannerAd;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    setState(() {
-      _bannerAd = BannerAd(
-        size: widget.adSize,
-        adUnitId: widget.adUnitId,
-        listener: widget.adMobService.bannerAdListener,
-        request: const AdRequest(),
-      )..load();
-    });
-  }
-
-  @override
-  void dispose() {
-    _bannerAd?.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _bannerAd = widget.adCacheService.getCachedAd(
+      number: widget.number,
+      adUnitId: widget.adUnitId,
+      adSize: widget.adSize,
+      listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() {}),
+        onAdFailedToLoad: (ad, error) {
+          print('Ad failed to load: $error');
+          ad.dispose();
+        },
+      ),
+    );
   }
 
   @override
@@ -49,11 +50,11 @@ class _AdContainerState extends State<AdContainer> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5.0),
       height: widget.height,
-      child: _bannerAd != null
-          ? AdWidget(
-              ad: _bannerAd!,
-            )
-          : Container(),
+      child: AdWidget(
+        key: Key(
+            '${widget.adUnitId}-${widget.adSize.width}x${widget.adSize.height}-${widget.number}'),
+        ad: _bannerAd,
+      ),
     );
   }
 }

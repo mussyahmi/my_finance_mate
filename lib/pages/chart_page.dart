@@ -11,6 +11,7 @@ import '../models/transaction.dart' as t;
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
@@ -37,11 +38,13 @@ class _ChartPageState extends State<ChartPage> {
   double othersPercentage = 0;
   bool _isLoading = false;
   late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
     _calculateTransactions(context);
   }
 
@@ -254,7 +257,8 @@ class _ChartPageState extends State<ChartPage> {
                   Column(
                     children: [
                       AdContainer(
-                        adMobService: _adMobService,
+                        adCacheService: _adCacheService,
+                        number: 1,
                         adSize: AdSize.largeBanner,
                         adUnitId: _adMobService.bannerChartAdUnitId!,
                         height: 100.0,
