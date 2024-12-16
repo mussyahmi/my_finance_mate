@@ -12,6 +12,7 @@ import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
+import '../widgets/sub_type_tag.dart';
 
 class CategoryListPage extends StatefulWidget {
   final Function(String)? changeCategoryType;
@@ -155,6 +156,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       child: Card(
                         child: ListTile(
                           title: Text(category.name),
+                          trailing: selectedType == 'spent'
+                              ? SubTypeTag(subType: category.subType)
+                              : null,
                           onTap: () {
                             category.showCategoryDetails(
                                 context, cycle, selectedType);

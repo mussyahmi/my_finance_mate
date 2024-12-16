@@ -48,7 +48,12 @@ class TransactionsProvider extends ChangeNotifier {
         cycleId: data['cycle_id'],
         dateTime: (data['date_time'] as Timestamp).toDate(),
         type: data['type'] as String,
-        subType: data['subType'],
+        subType: data['category_id'] != null
+            ? context
+                .read<CategoriesProvider>()
+                .getCategoryById(data['category_id'])
+                .subType
+            : null,
         categoryId: data['category_id'] ?? '',
         categoryName: data['category_id'] != null
             ? context
@@ -305,7 +310,6 @@ class TransactionsProvider extends ChangeNotifier {
     String action,
     DateTime dateTime,
     String type,
-    String? subType,
     String? categoryId,
     String accountId,
     String? accountToId,
@@ -335,17 +339,9 @@ class TransactionsProvider extends ChangeNotifier {
           'cycle_id': cycle.id,
           'date_time': dateTime,
           'type': type,
-          'subType': type == 'spent' ? subType : null,
           'account_id': accountId,
           'account_to_id': accountToId,
           'category_id': categoryId,
-          //* Not use anymore
-          // 'category_name': categoryId != null
-          //     ? context
-          //         .read<CategoriesProvider>()
-          //         .getCategoryById(categoryId)
-          //         .name
-          //     : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'created_at': now,
@@ -374,17 +370,9 @@ class TransactionsProvider extends ChangeNotifier {
             .update({
           'date_time': dateTime,
           'type': type,
-          'subType': type == 'spent' ? subType : null,
           'account_id': accountId,
           'account_to_id': accountToId,
           'category_id': categoryId,
-          //* Not use anymore
-          // 'category_name': categoryId != null
-          //     ? context
-          //         .read<CategoriesProvider>()
-          //         .getCategoryById(categoryId)
-          //         .name
-          //     : '',
           'amount': double.parse(amount).toStringAsFixed(2),
           'note': note,
           'updated_at': now,

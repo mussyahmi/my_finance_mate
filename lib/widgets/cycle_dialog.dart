@@ -63,12 +63,6 @@ class _CycleDialogState extends State<CycleDialog> {
                       decoration: InputDecoration(
                         labelText: widget.title,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter cycle\'s name.';
-                        }
-                        return null;
-                      },
                     ),
                   if (widget.title == 'End Date')
                     ElevatedButton(

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import '../extensions/string_extension.dart';
 import '../models/category.dart';
 import '../pages/amount_input_page.dart';
 import '../providers/categories_provider.dart';
@@ -25,21 +26,25 @@ class CategoryDialog extends StatefulWidget {
 }
 
 class CategoryDialogState extends State<CategoryDialog> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _categoryNameController = TextEditingController();
   final TextEditingController _categoryBudgetController =
       TextEditingController();
   final TextEditingController _categoryNoteController = TextEditingController();
+  String _selectedSubType = 'others';
   bool _isBudgetEnabled = false;
-  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
 
     if (widget.category != null) {
-      _categoryNameController.text = widget.category?.name ?? '';
-      _categoryBudgetController.text = widget.category?.budget ?? '';
-      _categoryNoteController.text = widget.category?.note ?? '';
+      _categoryNameController.text = widget.category!.name;
+      _categoryBudgetController.text = widget.category!.budget;
+      _categoryNoteController.text = widget.category!.note;
+      _selectedSubType = widget.category!.subType != null
+          ? widget.category!.subType!
+          : 'others';
       _isBudgetEnabled = _categoryBudgetController.text.isNotEmpty &&
           _categoryBudgetController.text != '0.00';
     }
@@ -68,13 +73,32 @@ class CategoryDialogState extends State<CategoryDialog> {
                   decoration: const InputDecoration(
                     labelText: 'Name',
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter category\'s name.';
-                    }
-                    return null;
-                  },
                 ),
+                if (widget.type == 'spent')
+                  Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField(
+                        dropdownColor:
+                            Theme.of(context).colorScheme.onSecondary,
+                        value: _selectedSubType,
+                        decoration: const InputDecoration(
+                          labelText: 'Sub Type',
+                        ),
+                        items: ['needs', 'wants', 'savings', 'others']
+                            .map((String subType) => DropdownMenuItem(
+                                  value: subType,
+                                  child: Text(subType.capitalize()),
+                                ))
+                            .toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedSubType = newValue!;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
                   Column(
                     children: [
@@ -168,6 +192,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                     context,
                     widget.action,
                     widget.type,
+                    _selectedSubType,
                     categoryName,
                     _isBudgetEnabled,
                     categoryBudget,

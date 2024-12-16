@@ -16,6 +16,7 @@ import '../services/message_services.dart';
 import '../size_config.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
+import '../widgets/sub_type_tag.dart';
 import 'cycle.dart';
 import 'person.dart';
 
@@ -147,10 +148,25 @@ class Transaction {
                     'Type:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(
-                      '${type.capitalize()}${subType != null ? ' (${subType!.capitalize()})' : ''}'),
+                  Text(type.capitalize()),
                 ],
               ),
+              if (type == 'spent')
+                Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sub Type:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        SubTypeTag(subType: subType),
+                      ],
+                    ),
+                  ],
+                ),
               const SizedBox(height: 5),
               if (accountName != '')
                 Column(

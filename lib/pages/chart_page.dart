@@ -177,9 +177,9 @@ class _ChartPageState extends State<ChartPage> {
                             pieTouchData: PieTouchData(
                               touchCallback: (p0, p1) {
                                 if (p1 != null) {
-                                  switch (
-                                      p1.touchedSection!.touchedSectionIndex) {
-                                    case 0:
+                                  switch (p1
+                                      .touchedSection!.touchedSection!.title) {
+                                    case 'Needs':
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -189,7 +189,7 @@ class _ChartPageState extends State<ChartPage> {
                                           ),
                                         ),
                                       );
-                                    case 1:
+                                    case 'Wants':
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -199,7 +199,7 @@ class _ChartPageState extends State<ChartPage> {
                                           ),
                                         ),
                                       );
-                                    case 2:
+                                    case 'Savings':
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -209,7 +209,7 @@ class _ChartPageState extends State<ChartPage> {
                                           ),
                                         ),
                                       );
-                                    case 3:
+                                    case 'Others':
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -225,22 +225,22 @@ class _ChartPageState extends State<ChartPage> {
                             ),
                             sections: [
                               _pieChartSectionData(
-                                Colors.green,
+                                Colors.green[900]!,
                                 needsPercentage,
                                 'Needs',
                               ),
                               _pieChartSectionData(
-                                Colors.blue,
+                                Colors.blue[900]!,
                                 wantsPercentage,
                                 'Wants',
                               ),
                               _pieChartSectionData(
-                                Colors.yellow,
+                                Colors.yellow[900]!,
                                 savingsPercentage,
                                 'Savings',
                               ),
                               _pieChartSectionData(
-                                Colors.grey,
+                                Colors.blueGrey[900]!,
                                 othersPercentage,
                                 'Others',
                               ),

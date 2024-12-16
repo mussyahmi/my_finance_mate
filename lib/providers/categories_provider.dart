@@ -40,6 +40,7 @@ class CategoriesProvider extends ChangeNotifier {
         id: doc.id,
         name: data['name'],
         type: data['type'],
+        subType: data['subType'],
         note: data['note'],
         budget: data['budget'],
         totalAmount: data['total_amount'],
@@ -205,6 +206,7 @@ class CategoriesProvider extends ChangeNotifier {
       BuildContext context,
       String action,
       String type,
+      String subType,
       String categoryName,
       bool isBudgetEnabled,
       String categoryBudget,
@@ -231,6 +233,7 @@ class CategoriesProvider extends ChangeNotifier {
               .toStringAsFixed(2),
           'note': categoryNote,
           'type': type,
+          'subType': subType,
           'total_amount': '0.00',
           'created_at': now,
           'updated_at': now,
@@ -249,38 +252,18 @@ class CategoriesProvider extends ChangeNotifier {
           'budget': double.parse(isBudgetEnabled ? categoryBudget : '0.00')
               .toStringAsFixed(2),
           'note': categoryNote,
+          'subType': subType,
           'updated_at': now,
         });
-
-        //* If the category name is modified, propagate the change to all associated transactions
-        //* Not use anymore
-        // if (category.name != categoryName) {
-        //   final transactionsSnapshot = await FirebaseFirestore.instance
-        //       .collection('users')
-        //       .doc(user.uid)
-        //       .collection('transactions')
-        //       .where('category_id', isEqualTo: category.id)
-        //       .where('deleted_at', isNull: true)
-        //       .getSavy();
-        //   print(
-        //       'updateCategory - transactionsSnapshot: ${transactionsSnapshot.docs.length}');
-
-        //   for (var doc in transactionsSnapshot.docs) {
-        //     await FirebaseFirestore.instance
-        //         .collection('users')
-        //         .doc(user.uid)
-        //         .collection('transactions')
-        //         .doc(doc.id)
-        //         .update({'category_name': categoryName});
-        //   }
-
-        //   await context
-        //       .read<TransactionsProvider>()
-        //       .fetchTransactions(context, cycle);
-        // }
       }
 
       await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+
+      if (!(action == 'Edit' && category!.subType == subType)) {
+        await context
+            .read<TransactionsProvider>()
+            .fetchTransactions(context, cycle);
+      }
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       print('Error $action category: $e');

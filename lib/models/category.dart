@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -15,9 +14,8 @@ import '../services/message_services.dart';
 import '../widgets/category_dialog.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
-import '../extensions/firestore_extensions.dart';
+import '../widgets/sub_type_tag.dart';
 import 'cycle.dart';
-import 'person.dart';
 
 enum BudgetFilter { all, ongoing, exceeded, completed }
 
@@ -25,6 +23,7 @@ class Category {
   String id;
   String name;
   String type;
+  String? subType;
   String note;
   String budget;
   String totalAmount;
@@ -35,6 +34,7 @@ class Category {
     required this.id,
     required this.name,
     required this.type,
+    required this.subType,
     required this.note,
     required this.budget,
     required this.totalAmount,
@@ -130,6 +130,22 @@ class Category {
                   Text(name),
                 ],
               ),
+              if (type == 'spent')
+                Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sub Type:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        SubTypeTag(subType: subType),
+                      ],
+                    ),
+                  ],
+                ),
               if (budget.isNotEmpty && budget != '0.00')
                 Column(
                   children: [
@@ -274,45 +290,6 @@ class Category {
         },
       );
     }
-  }
-
-  //* Not use anymore
-  static Future<void> updateCategoryNameForAllTransactions(Person user) async {
-    final transactionsSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('transactions')
-        .getSavy();
-    print(
-        'updateCategoryNameForAllTransactions: ${transactionsSnapshot.docs.length}');
-
-    print('initiate updateCategoryNameForAllTransactions');
-
-    for (var doc in transactionsSnapshot.docs) {
-      final data = doc.data();
-
-      DocumentSnapshot<Map<String, dynamic>> categoryDoc;
-      categoryDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('cycles')
-          .doc(data['cycle_id'])
-          .collection('categories')
-          .doc(data['category_id'])
-          .getSavy();
-      print('updateCategoryNameForAllTransactions - categoryDoc: 1');
-
-      final categoryName = categoryDoc['name'] as String;
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .collection('transactions')
-          .doc(doc.id)
-          .update({'category_name': categoryName});
-    }
-
-    print('done updateCategoryNameForAllTransactions');
   }
 
   static Future<bool> showCategoryFormDialog(

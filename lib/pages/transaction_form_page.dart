@@ -24,6 +24,7 @@ import '../providers/transactions_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
+import '../widgets/sub_type_tag.dart';
 import 'amount_input_page.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
@@ -46,7 +47,6 @@ class TransactionFormPage extends StatefulWidget {
 class TransactionFormPageState extends State<TransactionFormPage> {
   final MessageService messageService = MessageService();
   String selectedType = 'spent';
-  String? selectedSubType;
   String? selectedCategoryId;
   List<Category> categories = [];
   String? selectedAccountId;
@@ -81,7 +81,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
-      selectedSubType = widget.transaction!.subType;
       transactionAmountController.text = widget.transaction!.amount;
       transactionNoteController.text =
           widget.transaction!.note.replaceAll('\\n', '\n');
@@ -224,40 +223,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       },
                     ),
                     const SizedBox(height: 10),
-                    if (selectedType == 'spent')
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SegmentedButton(
-                            segments: const [
-                              ButtonSegment(
-                                value: 'needs',
-                                label: Text('Needs'),
-                              ),
-                              ButtonSegment(
-                                value: 'wants',
-                                label: Text('Wants'),
-                              ),
-                              ButtonSegment(
-                                value: 'savings',
-                                label: Text('Savings'),
-                              ),
-                            ],
-                            selected: {selectedSubType},
-                            onSelectionChanged: (newSelection) {
-                              print(newSelection);
-                              setState(() {
-                                selectedSubType = newSelection.isNotEmpty
-                                    ? newSelection.first
-                                    : null;
-                              });
-                            },
-                            emptySelectionAllowed: true,
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    const SizedBox(height: 10),
                     DropdownSearch<String>(
                       selectedItem: selectedAccountId != null
                           ? context
@@ -367,11 +332,27 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   (context, item, isDisabled, isSelected) {
                                 if (item == 'add_new') {
                                   return ListTile(
-                                    leading: Icon(CupertinoIcons.add_circled_solid),
+                                    leading:
+                                        Icon(CupertinoIcons.add_circled_solid),
                                     title: Text('Add New'),
                                   );
                                 } else {
-                                  return ListTile(title: Text(item));
+                                  return ListTile(
+                                      title: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(item),
+                                      if (selectedType == 'spent')
+                                        SubTypeTag(
+                                          subType: context
+                                              .read<CategoriesProvider>()
+                                              .getCategoryByName(
+                                                  selectedType, item)
+                                              .subType,
+                                        ),
+                                    ],
+                                  ));
                                 }
                               },
                             ),
@@ -535,7 +516,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                               },
                                               child: Container(
                                                 color: Colors.red,
-                                                child: const Icon(CupertinoIcons.clear),
+                                                child: const Icon(
+                                                    CupertinoIcons.clear),
                                               ),
                                             ),
                                           ),
@@ -639,7 +621,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
                           //* Get the values from the form
                           String type = selectedType;
-                          String? subType = selectedSubType;
                           String? categoryId = selectedCategoryId;
                           String? accountId = selectedAccountId;
                           String? accountToId = selectedAccountToId;
@@ -685,7 +666,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 widget.action,
                                 dateTime,
                                 type,
-                                subType,
                                 categoryId,
                                 accountId!,
                                 accountToId,

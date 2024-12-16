@@ -54,12 +54,6 @@ class _PersonDialogState extends State<PersonDialog> {
                     decoration: InputDecoration(
                       labelText: 'Display Name',
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter display name.';
-                      }
-                      return null;
-                    },
                   ),
                 ],
               )),
@@ -84,7 +78,9 @@ class _PersonDialogState extends State<PersonDialog> {
                 return;
               }
 
-              await context.read<PersonProvider>().updateDisplayName(displayName);
+              await context
+                  .read<PersonProvider>()
+                  .updateDisplayName(displayName);
 
               EasyLoading.showSuccess(
                   messageService.getRandomDoneUpdateMessage());
