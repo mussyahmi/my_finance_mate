@@ -139,7 +139,7 @@ class CycleAddPageState extends State<CycleAddPage> {
                           decoration: InputDecoration(
                             labelText:
                                 '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
-                            prefixText: 'RM ',
+                            prefixText: 'RM',
                           ),
                           enabled: false,
                         ),

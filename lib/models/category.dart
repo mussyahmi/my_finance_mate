@@ -183,12 +183,14 @@ class Category {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Balance:',
+                              Text(
+                                double.parse(amountBalance()) < 0
+                                    ? 'Exceed:'
+                                    : 'Balance:',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                'RM${(double.parse(budget) - double.parse(totalAmount)).toStringAsFixed(2)}',
+                                'RM${double.parse(amountBalance()).abs().toStringAsFixed(2)}',
                               ),
                             ],
                           ),

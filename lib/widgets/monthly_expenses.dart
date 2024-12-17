@@ -202,7 +202,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                                       child: FittedBox(
                                         fit: BoxFit.scaleDown,
                                         child: Text(
-                                          'Spent: RM ${budget.totalAmount}',
+                                          'Spent: RM${budget.totalAmount}',
                                         ),
                                       ),
                                     ),
@@ -211,7 +211,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                                       child: FittedBox(
                                         fit: BoxFit.scaleDown,
                                         child: Text(
-                                          '$thresholdText: RM ${amountBalance.abs().toStringAsFixed(2)}',
+                                          '$thresholdText: RM${amountBalance.abs().toStringAsFixed(2)}',
                                         ),
                                       ),
                                     ),
@@ -236,7 +236,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                       children: [
                         const SizedBox(height: 8.0),
                         Text(
-                          'Net Balance: RM $amountBalanceAfterBudget',
+                          'Net Balance: RM$amountBalanceAfterBudget',
                           style: TextStyle(
                             color: double.parse(amountBalanceAfterBudget) < 0
                                 ? Colors.orange

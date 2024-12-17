@@ -83,7 +83,7 @@ class AccountDialogState extends State<AccountDialog> {
                       TextInputType.number, //* Allow only numeric input
                   decoration: InputDecoration(
                     labelText: 'Opening Balance',
-                    prefixText: 'RM ',
+                    prefixText: 'RM',
                   ),
                 ),
               ),

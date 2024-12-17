@@ -79,15 +79,19 @@ class TransactionsProvider extends ChangeNotifier {
         note: data['note'] as String,
         files: data['files'] != null ? data['files'] as List : [],
         person: user,
+        createdAt: (data['created_at'] as Timestamp).toDate(),
       );
     }).toList();
 
     transactions = await Future.wait(futureTransactions);
 
-    if (transactions!.isNotEmpty) {
+    final List<t.Transaction> sortedTransactions = List<t.Transaction>.from(transactions!)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    if (sortedTransactions.isNotEmpty) {
       context
           .read<PersonProvider>()
-          .checkTransactionMade(transactions![0].dateTime);
+          .checkTransactionMade(sortedTransactions[0].createdAt);
     }
 
     notifyListeners();
@@ -189,6 +193,7 @@ class TransactionsProvider extends ChangeNotifier {
                 note: data['note'] as String,
                 files: data['files'] != null ? data['files'] as List : [],
                 person: user,
+                createdAt: (data['created_at'] as Timestamp).toDate(),
               )
             ];
           }
@@ -226,6 +231,7 @@ class TransactionsProvider extends ChangeNotifier {
               note: data['note'] as String,
               files: data['files'] != null ? data['files'] as List : [],
               person: user,
+              createdAt: (data['created_at'] as Timestamp).toDate(),
             )
           ];
         }

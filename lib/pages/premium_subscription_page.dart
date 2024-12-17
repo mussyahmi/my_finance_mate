@@ -93,22 +93,22 @@ class PremiumSubscriptionPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 SubscriptionOption(
                   plan: '1-Day Access',
-                  price: 'RM 0.90',
+                  price: 'RM0.90',
                   description: 'Perfect for a quick preview.',
                 ),
                 SubscriptionOption(
                   plan: '1-Week Access',
-                  price: 'RM 3.90',
+                  price: 'RM3.90',
                   description: 'One-time access for a week.',
                 ),
                 SubscriptionOption(
                   plan: 'Monthly',
-                  price: 'RM 9.90/month',
+                  price: 'RM9.90/month',
                   description: 'Cancel anytime for flexibility.',
                 ),
                 SubscriptionOption(
                   plan: 'Yearly',
-                  price: 'RM 99.90/year',
+                  price: 'RM99.90/year',
                   description: 'Save 20% compared to monthly.',
                 ),
                 const SizedBox(height: 30),

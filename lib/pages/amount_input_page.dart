@@ -76,7 +76,7 @@ class _AmountInputPageState extends State<AmountInputPage> {
             Expanded(
               child: Center(
                 child: Text(
-                  'RM $_amount',
+                  'RM$_amount',
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,

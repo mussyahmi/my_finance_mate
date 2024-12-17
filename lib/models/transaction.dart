@@ -36,6 +36,7 @@ class Transaction {
   String note;
   List files;
   Person person;
+  DateTime createdAt;
 
   Transaction({
     required this.id,
@@ -53,6 +54,7 @@ class Transaction {
     required this.note,
     required this.files,
     required this.person,
+    required this.createdAt,
   });
 
   String getDateText() {

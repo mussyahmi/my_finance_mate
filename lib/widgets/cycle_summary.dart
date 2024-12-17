@@ -65,8 +65,8 @@ class _CycleSummaryState extends State<CycleSummary> {
                     const SizedBox(height: 8),
                     Text(
                       !_isAmountVisible
-                          ? 'RM ****'
-                          : 'RM ${cycle != null ? cycle.amountBalance : '0.00'}',
+                          ? 'RM****'
+                          : 'RM${cycle != null ? cycle.amountBalance : '0.00'}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -75,7 +75,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                       ),
                     ),
                     Text(
-                      'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${cycle != null ? cycle.openingBalance : '0.00'}'}',
+                      'Opening Balance: ${!_isAmountVisible ? 'RM****' : 'RM${cycle != null ? cycle.openingBalance : '0.00'}'}',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12,
@@ -123,8 +123,8 @@ class _CycleSummaryState extends State<CycleSummary> {
                                       fit: BoxFit.scaleDown,
                                       child: Text(
                                         !_isAmountVisible
-                                            ? 'RM ****'
-                                            : 'RM ${cycle != null ? cycle.amountReceived : '0.00'}',
+                                            ? 'RM****'
+                                            : 'RM${cycle != null ? cycle.amountReceived : '0.00'}',
                                         style: const TextStyle(
                                           fontSize: 18,
                                           color: Colors.green,
@@ -172,8 +172,8 @@ class _CycleSummaryState extends State<CycleSummary> {
                                       fit: BoxFit.scaleDown,
                                       child: Text(
                                         !_isAmountVisible
-                                            ? 'RM ****'
-                                            : 'RM ${cycle != null ? cycle.amountSpent : '0.00'}',
+                                            ? 'RM****'
+                                            : 'RM${cycle != null ? cycle.amountSpent : '0.00'}',
                                         style: const TextStyle(
                                           fontSize: 18,
                                           color: Colors.red,

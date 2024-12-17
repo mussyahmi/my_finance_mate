@@ -654,6 +654,8 @@ class _DashboardPageState extends State<DashboardPage>
       _rewardedAd!.show(
         onUserEarnedReward: (ad, reward) async {
           await context.read<PersonProvider>().resetTransactionMade();
+          EasyLoading.showInfo(
+              'You\'re good to go! Daily transactions reset. 🚀');
         },
       );
     }

@@ -64,8 +64,8 @@ class _AccountSummaryState extends State<AccountSummary> {
                 const SizedBox(height: 8),
                 Text(
                   !_isAmountVisible
-                      ? 'RM ****'
-                      : 'RM ${widget.account.amountBalance}',
+                      ? 'RM****'
+                      : 'RM${widget.account.amountBalance}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -74,7 +74,7 @@ class _AccountSummaryState extends State<AccountSummary> {
                   ),
                 ),
                 Text(
-                  'Opening Balance: ${!_isAmountVisible ? 'RM ****' : 'RM ${widget.account.openingBalance}'}',
+                  'Opening Balance: ${!_isAmountVisible ? 'RM****' : 'RM${widget.account.openingBalance}'}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 12,
@@ -120,8 +120,8 @@ class _AccountSummaryState extends State<AccountSummary> {
                                   fit: BoxFit.scaleDown,
                                   child: Text(
                                     !_isAmountVisible
-                                        ? 'RM ****'
-                                        : 'RM ${widget.account.amountReceived}',
+                                        ? 'RM****'
+                                        : 'RM${widget.account.amountReceived}',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       color: Colors.green,
@@ -167,8 +167,8 @@ class _AccountSummaryState extends State<AccountSummary> {
                                   fit: BoxFit.scaleDown,
                                   child: Text(
                                     !_isAmountVisible
-                                        ? 'RM ****'
-                                        : 'RM ${widget.account.amountSpent}',
+                                        ? 'RM****'
+                                        : 'RM${widget.account.amountSpent}',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       color: Colors.red,

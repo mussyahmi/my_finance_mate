@@ -124,7 +124,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Budget',
-                              prefixText: 'RM ',
+                              prefixText: 'RM',
                             ),
                           ),
                         ),

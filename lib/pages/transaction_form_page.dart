@@ -434,7 +434,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Amount',
-                            prefixText: 'RM ',
+                            prefixText: 'RM',
                           ),
                         ),
                       ),
