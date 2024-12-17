@@ -51,6 +51,18 @@ class PremiumSubscriptionPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 PremiumFeatureTile(
+                  title: 'Unlimited Daily Transactions',
+                  description:
+                      'Perform unlimited daily transactions, breaking the limit of 5 transactions in the free version.',
+                  icon: CupertinoIcons.infinite,
+                ),
+                PremiumFeatureTile(
+                  title: 'Ad-Free Experience',
+                  description:
+                      'Enjoy an uninterrupted experience with no ads while using the app.',
+                  icon: Icons.block,
+                ),
+                PremiumFeatureTile(
                   title: 'Switch Between Financial Cycles',
                   description:
                       'Access past and future financial cycles seamlessly for a comprehensive financial overview.',
@@ -67,12 +79,6 @@ class PremiumSubscriptionPage extends StatelessWidget {
                   description:
                       'Attach more images to transactions for thorough and organized record-keeping.',
                   icon: CupertinoIcons.paperclip,
-                ),
-                PremiumFeatureTile(
-                  title: 'Ad-Free Experience',
-                  description:
-                      'Enjoy an uninterrupted experience with no ads while using the app.',
-                  icon: Icons.block,
                 ),
                 const SizedBox(height: 30),
                 Text(
