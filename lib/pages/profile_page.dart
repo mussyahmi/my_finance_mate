@@ -36,6 +36,7 @@ class ProfilePageState extends State<ProfilePage> {
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
+  bool showNetBalance = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
 
@@ -57,12 +58,14 @@ class ProfilePageState extends State<ProfilePage> {
         await SharedPreferences.getInstance();
     AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
     final savedThemeColor = sharedPreferences.getInt('theme_color');
+    final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
 
     setState(() {
       prefs = sharedPreferences;
       savedThemeMode = adaptiveThemeMode;
       themeColor =
           savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
+      showNetBalance = savedShowNetBalance ?? false;
     });
   }
 
@@ -249,27 +252,50 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
+                        title: const Text('Show Net Balance'),
+                        subtitle: const Text(
+                          'On Monthly Expenses',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: showNetBalance,
+                          onChanged: (bool value) async {
+                            await prefs.setBool(
+                                'show_net_balance', !showNetBalance);
+
+                            setState(() {
+                              showNetBalance = !showNetBalance;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
                         title: const Text('Toggle Theme Mode'),
-                        trailing: Icon(savedThemeMode == AdaptiveThemeMode.light
-                            ? CupertinoIcons.sun_max_fill
-                            : CupertinoIcons.moon_stars_fill),
-                        onTap: () async {
-                          print('savedThemeMode $savedThemeMode');
-                          if (savedThemeMode == AdaptiveThemeMode.light) {
-                            //* sets theme mode to dark
-                            AdaptiveTheme.of(context).setDark();
-                          } else {
-                            //* sets theme mode to dark
-                            AdaptiveTheme.of(context).setLight();
-                          }
+                        trailing: Switch(
+                          value: savedThemeMode == AdaptiveThemeMode.dark,
+                          onChanged: (bool value) async {
+                            if (value) {
+                              //* sets theme mode to dark
+                              AdaptiveTheme.of(context).setDark();
+                            } else {
+                              //* sets theme mode to light
+                              AdaptiveTheme.of(context).setLight();
+                            }
 
-                          AdaptiveThemeMode? result =
-                              await AdaptiveTheme.getThemeMode();
+                            AdaptiveThemeMode? result =
+                                await AdaptiveTheme.getThemeMode();
 
-                          setState(() {
-                            savedThemeMode = result;
-                          });
-                        },
+                            setState(() {
+                              savedThemeMode = result;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     Card(
@@ -281,9 +307,10 @@ class ProfilePageState extends State<ProfilePage> {
                             const Text(
                               '(Slide left for more options)',
                               style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                  fontStyle: FontStyle.italic),
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
@@ -433,8 +460,6 @@ class ProfilePageState extends State<ProfilePage> {
                                   .doc(user.uid)
                                   .update({'deleted_at': DateTime.now()});
 
-                              SharedPreferences prefs =
-                                  await SharedPreferences.getInstance();
                               await prefs.remove('last_login_with');
 
                               await FirebaseAuth.instance.currentUser?.delete();
@@ -501,7 +526,6 @@ class ProfilePageState extends State<ProfilePage> {
 
   Future<void> _signOut() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.remove('last_login_with');
 
       await GoogleSignIn().signOut();

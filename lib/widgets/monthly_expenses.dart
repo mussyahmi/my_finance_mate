@@ -5,10 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/category.dart';
 import '../extensions/string_extension.dart';
 import '../models/cycle.dart';
-import '../models/person.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
-import '../providers/person_provider.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 
 class MonthlyExpenses extends StatefulWidget {
@@ -21,6 +19,7 @@ class MonthlyExpenses extends StatefulWidget {
 class _MonthlyExpensesState extends State<MonthlyExpenses> {
   late SharedPreferences prefs;
   BudgetFilter currentFilter = BudgetFilter.all;
+  bool showNetBalance = false;
 
   @override
   void initState() {
@@ -32,6 +31,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
     SharedPreferences? sharedPreferences =
         await SharedPreferences.getInstance();
     final savedFilter = sharedPreferences.getString('forecast_filter');
+    final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
 
     setState(() {
       prefs = sharedPreferences;
@@ -43,12 +43,12 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
             )
           : BudgetFilter
               .all; //* Set a default filter if 'forecast_filter' is not saved
+      showNetBalance = savedShowNetBalance ?? false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Person user = context.watch<PersonProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 
     return Column(
@@ -229,7 +229,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                       },
                     ),
                   ),
-                  if (user.uid == 'nysYsoZpMQXujJmIJRjbkhHo6ft2' &&
+                  if (showNetBalance &&
                       (currentFilter == BudgetFilter.all ||
                           currentFilter == BudgetFilter.ongoing))
                     Column(
@@ -243,7 +243,6 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                                 : Colors.grey,
                           ),
                         ),
-                        const SizedBox(height: 10),
                       ],
                     ),
                 ],

@@ -31,7 +31,7 @@ class _AccountSummaryState extends State<AccountSummary> {
         await SharedPreferences.getInstance();
 
     final savedIsCycleSummaryVisible = sharedPreferences
-        .getBool('is_cycle_summary_visible_${widget.account.name}');
+        .getBool('is_account_summary_visible_${widget.account.name}');
 
     setState(() {
       prefs = sharedPreferences;
@@ -205,7 +205,7 @@ class _AccountSummaryState extends State<AccountSummary> {
               iconSize: 20,
               onPressed: () async {
                 await prefs.setBool(
-                    'is_cycle_summary_visible_${widget.account.name}',
+                    'is_account_summary_visible_${widget.account.name}',
                     !_isAmountVisible);
 
                 setState(() {
