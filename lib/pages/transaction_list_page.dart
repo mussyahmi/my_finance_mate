@@ -323,6 +323,12 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
                                   onPressed: () {
                                     setState(() {
                                       selectedType = null;

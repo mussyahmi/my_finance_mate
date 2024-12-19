@@ -124,20 +124,24 @@ class _DashboardPageState extends State<DashboardPage>
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); //* Close the dialog for "Later"
+                  Navigator.of(context).pop();
                 },
                 child: Text('Later'),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
                 onPressed: () {
-                  Navigator.of(context).pop(); //* Close the dialog
+                  Navigator.of(context).pop();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const PremiumSubscriptionPage()),
-                  ); //* Navigate to the premium subscription page
+                  );
                 },
-                child: Text('Go to Premium'),
+                child: Text('Upgrade to Premium'),
               ),
             ],
           ),
@@ -494,62 +498,86 @@ class _DashboardPageState extends State<DashboardPage>
             : Container(),
         cycle != null ? const ProfilePage() : Container(),
       ][_selectedIndex],
-      floatingActionButton:
-          _selectedIndex != 3 && cycle != null && cycle.isLastCycle
-              ? FloatingActionButton(
-                  onPressed: () async {
-                    if (_selectedIndex == 0) {
-                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                        EasyLoading.showInfo(
-                            'No accounts? Let\'s fix that—add one to begin!');
-                      } else if (user.dailyTransactionsMade >= 5) {
-                        await showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Whoops!'),
-                              content: const Text(
-                                  'You hit the daily transaction cap. Wanna reset it by checking out some ads?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context)
-                                        .pop(); //* Close the dialog
-                                  },
-                                  child: const Text('Close'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (!user.isPremium) _showRewardedAd();
-
-                                    Navigator.of(context)
-                                        .pop(); //* Close the dialog
-                                  },
-                                  child: const Text('Watch Ads'),
-                                ),
-                              ],
-                            );
-                          },
+      floatingActionButton: _selectedIndex != 3 &&
+              cycle != null &&
+              cycle.isLastCycle
+          ? FloatingActionButton(
+              onPressed: () async {
+                if (_selectedIndex == 0) {
+                  if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                    EasyLoading.showInfo(
+                        'No accounts? Let\'s fix that—add one to begin!');
+                  } else if (user.dailyTransactionsMade >= 5) {
+                    await showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Daily Transaction Cap Reached!'),
+                          content: const Text(
+                              'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+                          actions: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              onPressed: () {
+                                if (!user.isPremium) {
+                                  _showRewardedAd();
+                                }
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Watch Ad'),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                surfaceTintColor: Colors.orange,
+                                foregroundColor: Colors.orangeAccent,
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PremiumSubscriptionPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text('Upgrade to Premium'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Later'),
+                            ),
+                          ],
                         );
-                      } else {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const TransactionFormPage(action: 'Add'),
-                          ),
-                        );
-                      }
-                    } else if (_selectedIndex == 1) {
-                      Account.showAccountFormDialog(context, 'Add');
-                    } else if (_selectedIndex == 2) {
-                      Category.showCategoryFormDialog(
-                          context, _categoryType, 'Add');
-                    }
-                  },
-                  child: const Icon(CupertinoIcons.add),
-                )
-              : null,
+                      },
+                    );
+                  } else {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const TransactionFormPage(action: 'Add'),
+                      ),
+                    );
+                  }
+                } else if (_selectedIndex == 1) {
+                  Account.showAccountFormDialog(context, 'Add');
+                } else if (_selectedIndex == 2) {
+                  Category.showCategoryFormDialog(
+                      context, _categoryType, 'Add');
+                }
+              },
+              child: const Icon(CupertinoIcons.add),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         destinations: const [

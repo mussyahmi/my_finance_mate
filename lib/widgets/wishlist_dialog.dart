@@ -72,11 +72,15 @@ class WishlistDialogState extends State<WishlistDialog> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(false); //* Close the dialog
+              Navigator.of(context).pop(false);
             },
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
@@ -107,7 +111,6 @@ class WishlistDialogState extends State<WishlistDialog> {
                   ? messageService.getRandomDoneUpdateMessage()
                   : messageService.getRandomDoneAddMessage());
 
-              //* Close the dialog
               Navigator.of(context).pop(true);
             },
             child: Text(widget.action == 'Edit' ? 'Save' : widget.action),

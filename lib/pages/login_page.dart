@@ -646,6 +646,10 @@ class _LoginPageState extends State<LoginPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
               onPressed: () async {
                 String email = _forgotPasswordEmailController.text.trim();
 

@@ -73,6 +73,12 @@ class _ProfileImageState extends State<ProfileImage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
                             onPressed: () async {
                               Navigator.of(context).pop();
                               final result =
@@ -89,6 +95,12 @@ class _ProfileImageState extends State<ProfileImage> {
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
                             onPressed: () async {
                               Navigator.of(context).pop();
                               final file = await ImagePicker().pickImage(

@@ -4,6 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cycle.dart';
 import '../models/person.dart';
@@ -15,6 +16,7 @@ import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
 import 'cycle_list_page.dart';
+import 'premium_subscription_page.dart';
 
 class CyclePage extends StatefulWidget {
   const CyclePage({super.key});
@@ -24,8 +26,17 @@ class CyclePage extends StatefulWidget {
 }
 
 class _CyclePageState extends State<CyclePage> {
+  late SharedPreferences prefs;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  RewardedAd? _rewardedAd;
+  int switchBetweenCycles = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
 
   @override
   void didChangeDependencies() {
@@ -37,6 +48,30 @@ class _CyclePageState extends State<CyclePage> {
 
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
+
+    final Person user = context.read<PersonProvider>().user!;
+
+    if (!user.isPremium) {
+      _createRewardedAd();
+    }
+  }
+
+  Future<void> initAsync() async {
+    SharedPreferences? sharedPreferences =
+        await SharedPreferences.getInstance();
+    final savedCSiwtchBetweenCycles =
+        sharedPreferences.getInt('switch_between_cycles');
+
+    setState(() {
+      prefs = sharedPreferences;
+      switchBetweenCycles = savedCSiwtchBetweenCycles ?? 0;
+    });
+  }
+
+  @override
+  void dispose() {
+    _rewardedAd?.dispose();
+    super.dispose();
   }
 
   @override
@@ -145,8 +180,9 @@ class _CyclePageState extends State<CyclePage> {
                             ),
                             if (context.watch<CyclesProvider>().cycles != null)
                               TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
+                                  onPressed: () async {
+                                    final bool refreshSwitchBetweenCycles =
+                                        await Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => CycleListPage(
@@ -155,11 +191,33 @@ class _CyclePageState extends State<CyclePage> {
                                         ),
                                       ),
                                     );
+
+                                    if (refreshSwitchBetweenCycles) {
+                                      final savedCSiwtchBetweenCycles =
+                                          prefs.getInt('switch_between_cycles');
+
+                                      setState(() {
+                                        switchBetweenCycles =
+                                            savedCSiwtchBetweenCycles ?? 0;
+                                      });
+                                    }
                                   },
                                   child: const Text('See all'))
                           ],
                         ),
                       ),
+                      if (switchBetweenCycles > 0)
+                        Column(
+                          children: [
+                            Text(
+                              'You have $switchBetweenCycles switch${switchBetweenCycles > 1 ? 'es' : ''} remaining',
+                              style: TextStyle(
+                                color: Colors.orangeAccent,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        )
                     ],
                   ),
                 ),
@@ -238,9 +296,86 @@ class _CyclePageState extends State<CyclePage> {
                                     trailing: cycle.cycleNo != c.cycleNo
                                         ? IconButton.filledTonal(
                                             onPressed: () async {
-                                              if (!user.isPremium) {
-                                                return EasyLoading.showInfo(
-                                                    'Upgrade to Premium to switch between cycles.');
+                                              if (!user.isPremium &&
+                                                  switchBetweenCycles == 0 &&
+                                                  c.id !=
+                                                      (cycles.first as Cycle)
+                                                          .id) {
+                                                return showDialog(
+                                                  context: context,
+                                                  barrierDismissible: false,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                      title: const Text(
+                                                          'Explore Cycle Switching!'),
+                                                      content: const Text(
+                                                          'Want to switch between cycles? You can try it up to 3 times by watching a quick ad, or unlock unlimited access by upgrading to Premium!'),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            backgroundColor:
+                                                                Theme.of(
+                                                                        context)
+                                                                    .colorScheme
+                                                                    .primary,
+                                                            foregroundColor:
+                                                                Theme.of(
+                                                                        context)
+                                                                    .colorScheme
+                                                                    .onPrimary,
+                                                          ),
+                                                          onPressed: () {
+                                                            if (!user
+                                                                .isPremium) {
+                                                              _showRewardedAd();
+                                                            }
+
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: const Text(
+                                                              'Watch Ad'),
+                                                        ),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            surfaceTintColor:
+                                                                Colors.orange,
+                                                            foregroundColor:
+                                                                Colors
+                                                                    .orangeAccent,
+                                                          ),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        const PremiumSubscriptionPage(),
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: const Text(
+                                                              'Upgrade to Premium'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child: const Text(
+                                                              'Later'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                );
                                               }
 
                                               EasyLoading.show(
@@ -250,6 +385,25 @@ class _CyclePageState extends State<CyclePage> {
                                               await context
                                                   .read<CycleProvider>()
                                                   .switchCycle(context, c);
+
+                                              final bool
+                                                  updateSwitchBetweenCycles =
+                                                  switchBetweenCycles != 0 &&
+                                                      c.id !=
+                                                          (cycles.first
+                                                                  as Cycle)
+                                                              .id;
+
+                                              if (updateSwitchBetweenCycles) {
+                                                await prefs.setInt(
+                                                    'switch_between_cycles',
+                                                    switchBetweenCycles - 1);
+
+                                                setState(() {
+                                                  switchBetweenCycles =
+                                                      switchBetweenCycles - 1;
+                                                });
+                                              }
 
                                               EasyLoading.showInfo(
                                                   'Cycle switched successfully!');
@@ -291,5 +445,54 @@ class _CyclePageState extends State<CyclePage> {
         ),
       ),
     );
+  }
+
+  void _createRewardedAd() {
+    RewardedAd.load(
+      adUnitId: _adMobService.rewardedSwitchBetweenCyclesAdUnitId!,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          setState(() {
+            _rewardedAd = null;
+          });
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null) {
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+      );
+
+      _rewardedAd!.show(
+        onUserEarnedReward: (ad, reward) async {
+          await prefs.setInt('switch_between_cycles', 3);
+
+          setState(() {
+            switchBetweenCycles = 3;
+          });
+
+          EasyLoading.showInfo(
+            'You\'re good to go! Choose any cycle you like to switch and take charge of your expenses! 🚀',
+            duration: Duration(seconds: 3),
+          );
+        },
+      );
+    }
   }
 }

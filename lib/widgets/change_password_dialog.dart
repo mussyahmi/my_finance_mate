@@ -64,6 +64,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 

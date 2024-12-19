@@ -351,4 +351,58 @@ class AdMobService {
 
     return null;
   }
+
+  String? get rewardedCustomizeThemeColorAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/7584386710';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/1126526242';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/5224354917';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/1712485313';
+      }
+    }
+
+    return null;
+  }
+
+  String? get rewardedSwitchBetweenCyclesAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/1462966962';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/8746560617';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/5224354917';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/1712485313';
+      }
+    }
+
+    return null;
+  }
+
+  String? get rewardedFreemiumAttachmentSlotsAdUnitId {
+    if (kReleaseMode) {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-2773996115717784/8906047568';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-2773996115717784/1047738843';
+      }
+    } else {
+      if (Platform.isAndroid) {
+        return 'ca-app-pub-3940256099942544/5224354917';
+      } else if (Platform.isIOS) {
+        return 'ca-app-pub-3940256099942544/1712485313';
+      }
+    }
+
+    return null;
+  }
 }

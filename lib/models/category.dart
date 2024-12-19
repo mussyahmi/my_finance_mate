@@ -242,7 +242,7 @@ class Category {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(false); //* Close the dialog
+                  Navigator.of(context).pop(false);
                 },
                 child: const Text('OK'),
               ),
@@ -262,11 +262,15 @@ class Category {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(false); //* Close the dialog
+                  Navigator.of(context).pop(false);
                 },
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  surfaceTintColor: Colors.red,
+                  foregroundColor: Colors.redAccent,
+                ),
                 onPressed: () async {
                   final MessageService messageService = MessageService();
 
@@ -283,7 +287,7 @@ class Category {
                   EasyLoading.showSuccess(
                       messageService.getRandomDoneDeleteMessage());
 
-                  Navigator.of(context).pop(true); //* Close the dialog
+                  Navigator.of(context).pop(true);
                 },
                 child: const Text('Delete'),
               ),

@@ -94,11 +94,15 @@ class _CycleDialogState extends State<CycleDialog> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(false); //* Close the dialog
+              Navigator.of(context).pop(false);
             },
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
@@ -124,7 +128,6 @@ class _CycleDialogState extends State<CycleDialog> {
               EasyLoading.showSuccess(
                   messageService.getRandomDoneUpdateMessage());
 
-              //* Close the dialog
               Navigator.of(context).pop(true);
             },
             child: const Text('Save'),

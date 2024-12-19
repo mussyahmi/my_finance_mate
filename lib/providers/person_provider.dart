@@ -134,7 +134,6 @@ class PersonProvider extends ChangeNotifier {
 
         EasyLoading.showSuccess('Password changed successfully');
 
-        //* Close the dialog
         Navigator.of(context).pop(true);
       } else {
         EasyLoading.showError('User not authenticated.');

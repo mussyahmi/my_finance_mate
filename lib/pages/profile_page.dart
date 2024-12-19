@@ -33,12 +33,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class ProfilePageState extends State<ProfilePage> {
+  final MessageService messageService = MessageService();
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
   bool showNetBalance = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  RewardedAd? _rewardedAd;
+  int customizeThemeColor = 0;
 
   @override
   void initState() {
@@ -51,6 +54,12 @@ class ProfilePageState extends State<ProfilePage> {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
+
+    final Person user = context.read<PersonProvider>().user!;
+
+    if (!user.isPremium) {
+      _createRewardedAd();
+    }
   }
 
   Future<void> initAsync() async {
@@ -59,6 +68,8 @@ class ProfilePageState extends State<ProfilePage> {
     AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
     final savedThemeColor = sharedPreferences.getInt('theme_color');
     final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
+    final savedCustomizeThemeColor =
+        sharedPreferences.getInt('customize_theme_color');
 
     setState(() {
       prefs = sharedPreferences;
@@ -66,6 +77,7 @@ class ProfilePageState extends State<ProfilePage> {
       themeColor =
           savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
       showNetBalance = savedShowNetBalance ?? false;
+      customizeThemeColor = savedCustomizeThemeColor ?? 0;
     });
   }
 
@@ -102,6 +114,12 @@ class ProfilePageState extends State<ProfilePage> {
             : null,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _rewardedAd?.dispose();
+    super.dispose();
   }
 
   @override
@@ -300,7 +318,25 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('Theme Colors'),
+                        title: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            children: [
+                              TextSpan(text: 'Theme Colors'),
+                              if (customizeThemeColor > 0)
+                                TextSpan(
+                                  text:
+                                      ' - $customizeThemeColor customization${customizeThemeColor > 1 ? 's' : ''} remaining',
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -320,63 +356,112 @@ class ProfilePageState extends State<ProfilePage> {
                                 child: Row(
                                   children: [
                                     themeColorSelector(
-                                        context: context, color: Colors.amber),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.amber,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.blue),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.blue,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context,
-                                        color: Colors.blueGrey),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.blueGrey,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.brown),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.brown,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.cyan),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.cyan,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context,
-                                        color: Colors.deepOrange),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.deepOrange,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context,
-                                        color: Colors.deepPurple),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.deepPurple,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.green),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.green,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.indigo),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.indigo,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context,
-                                        color: Colors.lightBlue),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.lightBlue,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context,
-                                        color: Colors.lightGreen),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.lightGreen,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.lime),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.lime,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.orange),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.orange,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.pink),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.pink,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.purple),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.purple,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.red),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.red,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.teal),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.teal,
+                                    ),
                                     const SizedBox(width: 8),
                                     themeColorSelector(
-                                        context: context, color: Colors.yellow),
+                                      user: user,
+                                      context: context,
+                                      color: Colors.yellow,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -435,8 +520,8 @@ class ProfilePageState extends State<ProfilePage> {
                                   onPressed: () =>
                                       Navigator.of(context).pop(true),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.redAccent,
-                                    foregroundColor: Colors.white,
+                                    surfaceTintColor: Colors.red,
+                                    foregroundColor: Colors.redAccent,
                                   ),
                                   child: const Text(
                                     'Delete',
@@ -448,9 +533,6 @@ class ProfilePageState extends State<ProfilePage> {
 
                           if (confirmDelete == true) {
                             try {
-                              final MessageService messageService =
-                                  MessageService();
-
                               EasyLoading.show(
                                   status:
                                       messageService.getRandomDeleteMessage());
@@ -537,15 +619,64 @@ class ProfilePageState extends State<ProfilePage> {
   }
 
   Widget themeColorSelector({
+    required Person user,
     required BuildContext context,
     required MaterialColor color,
   }) {
     return GestureDetector(
       onTap: () async {
-        if (!context.read<PersonProvider>().user!.isPremium) {
-          return EasyLoading.showInfo(
-              'Upgrade to Premium to customize your theme color.');
+        if (!context.read<PersonProvider>().user!.isPremium &&
+            customizeThemeColor == 0) {
+          return showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Change Your Look!'),
+                content: const Text(
+                    'Want to customize your theme color? You can try it up to 3 times by watching a quick ad, or unlock unlimited access by upgrading to Premium!'),
+                actions: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    onPressed: () {
+                      if (!user.isPremium) _showRewardedAd();
+
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Watch Ad'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      surfaceTintColor: Colors.orange,
+                      foregroundColor: Colors.orangeAccent,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PremiumSubscriptionPage(),
+                        ),
+                      );
+                    },
+                    child: const Text('Upgrade to Premium'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Later'),
+                  ),
+                ],
+              );
+            },
+          );
         }
+
+        await EasyLoading.show(status: messageService.getRandomUpdateMessage());
 
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(
@@ -562,9 +693,17 @@ class ProfilePageState extends State<ProfilePage> {
 
         await prefs.setInt('theme_color', color.value);
 
+        if (customizeThemeColor != 0) {
+          await prefs.setInt('customize_theme_color', customizeThemeColor - 1);
+        }
+
         setState(() {
           themeColor = color;
+          customizeThemeColor =
+              customizeThemeColor != 0 ? customizeThemeColor - 1 : 0;
         });
+
+        EasyLoading.showInfo('Your theme color have been changed.');
       },
       child: Container(
         width: themeColor.value == color.value ? 26 : 20,
@@ -581,5 +720,54 @@ class ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  void _createRewardedAd() {
+    RewardedAd.load(
+      adUnitId: _adMobService.rewardedCustomizeThemeColorAdUnitId!,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          setState(() {
+            _rewardedAd = null;
+          });
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null) {
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+      );
+
+      _rewardedAd!.show(
+        onUserEarnedReward: (ad, reward) async {
+          await prefs.setInt('customize_theme_color', 3);
+
+          setState(() {
+            customizeThemeColor = 3;
+          });
+
+          EasyLoading.showInfo(
+            'You\'re good to go! Choose any color you like and give your look a fresh update! 🚀',
+            duration: Duration(seconds: 3),
+          );
+        },
+      );
+    }
   }
 }

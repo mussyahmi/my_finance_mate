@@ -49,7 +49,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             ),
             RichText(
               text: TextSpan(
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.black),
                 children: [
                   TextSpan(
                       text: widget.user.email,

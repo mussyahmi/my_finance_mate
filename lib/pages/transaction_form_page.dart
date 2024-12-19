@@ -30,6 +30,7 @@ import 'amount_input_page.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
+import 'premium_subscription_page.dart';
 
 class TransactionFormPage extends StatefulWidget {
   final String action;
@@ -61,6 +62,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
   InterstitialAd? _interstitialAd;
+  RewardedAd? _rewardedAd;
+  int freemiumAttachmentSlots = 1;
 
   @override
   void initState() {
@@ -76,6 +79,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     if (!context.read<PersonProvider>().user!.isPremium) {
       _createInterstitialAd();
+      _createRewardedAd();
     }
   }
 
@@ -115,6 +119,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   @override
   void dispose() {
     _interstitialAd?.dispose();
+    _rewardedAd?.dispose();
     super.dispose();
   }
 
@@ -450,7 +455,24 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 20),
-                    const Text('Attachment:'),
+                    RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        children: [
+                          TextSpan(text: 'Attachment:'),
+                          if (!user.isPremium && freemiumAttachmentSlots > 1)
+                            TextSpan(
+                              text:
+                                  ' (${files.length}/$freemiumAttachmentSlots) in use',
+                              style: TextStyle(
+                                color: Colors.orangeAccent,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                     if (files.isNotEmpty)
                       Column(
                         children: [
@@ -536,9 +558,101 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () async {
-                        if (files.isNotEmpty && !user.isPremium) {
-                          return EasyLoading.showInfo(
-                              'Upgrade to Premium to unlock additional attachment slots.');
+                        if (!user.isPremium) {
+                          if (files.isNotEmpty &&
+                              freemiumAttachmentSlots == 1) {
+                            return showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                      'Unlock More Attachment Slots!'),
+                                  content: const Text(
+                                      'Want to add more attachments? You can upload up to 3 attachments for this transaction by watching a quick ad, or unlock unlimited additional attahcment slots by upgrading to Premium!'),
+                                  actions: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                      onPressed: () {
+                                        if (!user.isPremium) _showRewardedAd();
+
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Watch Ad'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        surfaceTintColor: Colors.orange,
+                                        foregroundColor: Colors.orangeAccent,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const PremiumSubscriptionPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text('Upgrade to Premium'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Later'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          } else if (files.length == freemiumAttachmentSlots) {
+                            return showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                      'Maximum Attachments Reached!'),
+                                  content: const Text(
+                                      'You have reached the maximum number of attachments for this transaction. Please upgrade to Premium to unlock unlimited additional attachment slots.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Later'),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        surfaceTintColor: Colors.orange,
+                                        foregroundColor: Colors.orangeAccent,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const PremiumSubscriptionPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text('Upgrade to Premium'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         }
 
                         showDialog(
@@ -553,6 +667,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      foregroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ),
                                     onPressed: () async {
                                       Navigator.of(context).pop();
                                       final result =
@@ -569,6 +690,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   ),
                                   const SizedBox(height: 10),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      foregroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ),
                                     onPressed: () async {
                                       Navigator.of(context).pop();
                                       final file =
@@ -825,6 +953,53 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       await _interstitialAd!.show();
       await prefs.setInt('transaction_action_counter', 0);
       _interstitialAd = null;
+    }
+  }
+
+  void _createRewardedAd() {
+    RewardedAd.load(
+      adUnitId: _adMobService.rewardedFreemiumAttachmentSlotsAdUnitId!,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          setState(() {
+            _rewardedAd = null;
+          });
+        },
+      ),
+    );
+  }
+
+  void _showRewardedAd() {
+    if (_rewardedAd != null) {
+      _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          _createRewardedAd();
+        },
+      );
+
+      _rewardedAd!.show(
+        onUserEarnedReward: (ad, reward) async {
+          setState(() {
+            freemiumAttachmentSlots = 3;
+          });
+
+          EasyLoading.showInfo(
+            'You\'re good to go! You can upload up to 3 attachments for this transaction. Keep everything in one place! 🚀',
+            duration: Duration(seconds: 3),
+          );
+        },
+      );
     }
   }
 }
