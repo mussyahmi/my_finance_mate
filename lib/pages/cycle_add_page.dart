@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -119,6 +119,8 @@ class CycleAddPageState extends State<CycleAddPage> {
                                     .subtract(const Duration(minutes: 1));
                               });
                             }
+
+                            _showEndDateRecommendationDialog(context);
                           },
                           child: Text(
                             'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
@@ -129,6 +131,12 @@ class CycleAddPageState extends State<CycleAddPage> {
                           controller: cycleNameController,
                           decoration: const InputDecoration(
                             labelText: 'Name',
+                            helperText: 'Example: Nov 2024 Salary',
+                            helperStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -197,6 +205,30 @@ class CycleAddPageState extends State<CycleAddPage> {
           ),
         ),
       ),
+    );
+  }
+
+  //* Show alert box with recommendation for End Date
+  void _showEndDateRecommendationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('End Date Recommendation'),
+          content: const Text(
+            'We recommend selecting the end date as 1 day before your next salary.',
+            style: TextStyle(fontSize: 14),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Got it'),
+            ),
+          ],
+        );
+      },
     );
   }
 
