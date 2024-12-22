@@ -177,15 +177,49 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                         ),
                       ),
                       onTap: () async {
-                        EasyLoading.show(
-                            status: 'Activating your free trial...');
+                        final bool? confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Confirm Activation'),
+                              content: Text(
+                                  'Are you sure you want to start your free trial?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text('Activate'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-                        await context
-                            .read<PersonProvider>()
-                            .activateFreeTrial();
+                        //* Proceed only if the user confirmed
+                        if (confirm == true) {
+                          EasyLoading.show(
+                              status: 'Activating your free trial...');
 
-                        EasyLoading.showSuccess(
-                            "Trial activated! Enjoy Premium features.");
+                          await context
+                              .read<PersonProvider>()
+                              .activateFreeTrial();
+
+                          EasyLoading.showSuccess(
+                              "Trial activated! Enjoy Premium features.");
+                        }
                       },
                     ),
                   ),
