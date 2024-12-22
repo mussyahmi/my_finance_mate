@@ -22,35 +22,57 @@ class PersonProvider extends ChangeNotifier {
   }
 
   Future<void> activateFreeTrial() async {
-    DateTime now = DateTime.now();
+    final DateTime now = DateTime.now();
+    final Duration subscriptionDuration = Duration(days: 7);
 
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
       'is_premium': true,
       'premium_start_date': now,
-      'premium_end_date': now.add(Duration(days: 7)),
+      'premium_end_date': now.add(subscriptionDuration),
     });
 
     user!.isPremium = true;
     user!.premiumStartDate = now;
-    user!.premiumEndDate = now.add(Duration(days: 7));
+    user!.premiumEndDate = now.add(subscriptionDuration);
 
     notifyListeners();
   }
 
-  Future<void> activatePremium() async {
-    // DateTime now = DateTime.now();
+  Future<void> activatePremium(String productId, String transactionDate) async {
+    final DateTime transactionDateTime =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(transactionDate));
+    Duration subscriptionDuration;
 
-    // await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
-    //   'is_premium': true,
-    //   'premium_start_date': now,
-    //   'premium_end_date': now.add(Duration(days: 7)),
-    // });
+    //* Set subscription duration based on the product ID
+    switch (productId) {
+      case 'one_day_access':
+        subscriptionDuration = Duration(days: 1);
+        break;
+      case 'one_week_access':
+        subscriptionDuration = Duration(days: 7);
+        break;
+      case 'monthly_access':
+        subscriptionDuration = Duration(days: 30);
+        break;
+      case 'yearly_access':
+        subscriptionDuration = Duration(days: 365);
+        break;
+      default:
+        print("Unknown product ID: $productId");
+        return;
+    }
 
-    // user!.isPremium = true;
-    // user!.premiumStartDate = now;
-    // user!.premiumEndDate = now.add(Duration(days: 7));
+    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+      'is_premium': true,
+      'premium_start_date': transactionDateTime,
+      'premium_end_date': transactionDateTime.add(subscriptionDuration),
+    });
 
-    // notifyListeners();
+    user!.isPremium = true;
+    user!.premiumStartDate = transactionDateTime;
+    user!.premiumEndDate = transactionDateTime.add(subscriptionDuration);
+
+    notifyListeners();
   }
 
   Future<void> endPremiumAccess() async {

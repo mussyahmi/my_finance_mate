@@ -31,7 +31,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
   }
 
   Future<void> _initializePurchaseService() async {
-    await _purchaseService.initialize();
+    await _purchaseService.initialize(context);
 
     setState(() {
       products = _purchaseService.products;

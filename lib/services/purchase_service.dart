@@ -1,7 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/person_provider.dart';
 
 class PurchaseService {
   PurchaseService._privateConstructor();
@@ -21,11 +25,13 @@ class PurchaseService {
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
+  BuildContext? _context;
   bool _isAvailable = false;
   List<ProductDetails> _products = [];
   // List<PurchaseDetails> _purchases = [];
 
-  Future<void> initialize() async {
+  Future<void> initialize(BuildContext context) async {
+    _context = context;
     _isAvailable = await _iap.isAvailable();
     if (_isAvailable) {
       await _fetchProducts();
@@ -78,7 +84,9 @@ class PurchaseService {
 
   void _deliverProduct(PurchaseDetails purchase) {
     print("Delivering product: ${purchase.productID}");
-    // TODO: Update user account or app state based on the purchase.
+    _context!
+        .read<PersonProvider>()
+        .activatePremium(purchase.productID, purchase.transactionDate!);
   }
 
   void _handleInvalidPurchase(PurchaseDetails purchase) {
