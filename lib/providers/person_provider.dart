@@ -37,6 +37,22 @@ class PersonProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> activatePremium() async {
+    // DateTime now = DateTime.now();
+
+    // await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+    //   'is_premium': true,
+    //   'premium_start_date': now,
+    //   'premium_end_date': now.add(Duration(days: 7)),
+    // });
+
+    // user!.isPremium = true;
+    // user!.premiumStartDate = now;
+    // user!.premiumEndDate = now.add(Duration(days: 7));
+
+    // notifyListeners();
+  }
+
   Future<void> endPremiumAccess() async {
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
       'is_premium': false,

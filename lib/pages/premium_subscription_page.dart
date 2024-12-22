@@ -8,9 +8,41 @@ import 'package:provider/provider.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
+import '../services/purchase_service.dart';
+import '../widgets/premium_feature_tile.dart';
+import '../widgets/subscription_option.dart';
 
-class PremiumSubscriptionPage extends StatelessWidget {
+class PremiumSubscriptionPage extends StatefulWidget {
   const PremiumSubscriptionPage({super.key});
+
+  @override
+  State<PremiumSubscriptionPage> createState() =>
+      _PremiumSubscriptionPageState();
+}
+
+class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
+  final PurchaseService _purchaseService = PurchaseService();
+  List products = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePurchaseService();
+  }
+
+  Future<void> _initializePurchaseService() async {
+    await _purchaseService.initialize();
+
+    setState(() {
+      products = _purchaseService.products;
+    });
+  }
+
+  @override
+  void dispose() {
+    _purchaseService.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,26 +129,17 @@ class PremiumSubscriptionPage extends StatelessWidget {
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 20),
-                SubscriptionOption(
-                  plan: '1-Day Access',
-                  price: 'RM0.90',
-                  description: 'Perfect for a quick preview.',
-                ),
-                SubscriptionOption(
-                  plan: '1-Week Access',
-                  price: 'RM3.90',
-                  description: 'One-time access for a week.',
-                ),
-                SubscriptionOption(
-                  plan: 'Monthly',
-                  price: 'RM9.90/month',
-                  description: 'Cancel anytime for flexibility.',
-                ),
-                SubscriptionOption(
-                  plan: 'Yearly',
-                  price: 'RM99.90/year',
-                  description: 'Save 20% compared to monthly.',
-                ),
+                products.isEmpty
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : Column(
+                        children: products
+                            .map((product) => SubscriptionOption(
+                                  product: product,
+                                ))
+                            .toList(),
+                      ),
                 const SizedBox(height: 30),
                 if (user.isPremium &&
                     user.premiumEndDate != null &&
@@ -145,7 +168,7 @@ class PremiumSubscriptionPage extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     child: ListTile(
                       title: Text(
-                        'Start Free 1-Week Trial',
+                        'Start Free 1 Week Trial',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -171,93 +194,6 @@ class PremiumSubscriptionPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class PremiumFeatureTile extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const PremiumFeatureTile({
-    required this.title,
-    required this.description,
-    required this.icon,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Text(
-          description,
-          style: const TextStyle(fontSize: 14),
-        ),
-      ),
-    );
-  }
-}
-
-class SubscriptionOption extends StatelessWidget {
-  final String plan;
-  final String price;
-  final String description;
-
-  const SubscriptionOption({
-    required this.plan,
-    required this.price,
-    required this.description,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Person user = context.read<PersonProvider>().user!;
-
-    return Card(
-      surfaceTintColor: Colors.orange,
-      child: ListTile(
-        title: Text(
-          plan,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.orangeAccent,
-          ),
-        ),
-        subtitle: Text(
-          description,
-          style: const TextStyle(
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-        trailing: Text(
-          price,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.orangeAccent,
-          ),
-        ),
-        onTap: () {
-          if (user.isPremium) {
-            EasyLoading.showInfo('Your Premium access is still active.');
-          } else {
-            EasyLoading.showInfo('Coming Soon!');
-          }
-        },
       ),
     );
   }

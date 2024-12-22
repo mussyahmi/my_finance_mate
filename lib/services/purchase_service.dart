@@ -1,0 +1,95 @@
+// ignore_for_file: avoid_print
+
+import 'dart:async';
+import 'package:in_app_purchase/in_app_purchase.dart';
+
+class PurchaseService {
+  PurchaseService._privateConstructor();
+
+  static final PurchaseService _instance =
+      PurchaseService._privateConstructor();
+
+  factory PurchaseService() => _instance;
+
+  final InAppPurchase _iap = InAppPurchase.instance;
+  final Set<String> _productIds = {
+    'one_day_access',
+    'one_week_access',
+    'monthly_access',
+    'yearly_access'
+  };
+
+  StreamSubscription<List<PurchaseDetails>>? _subscription;
+
+  bool _isAvailable = false;
+  List<ProductDetails> _products = [];
+  // List<PurchaseDetails> _purchases = [];
+
+  Future<void> initialize() async {
+    _isAvailable = await _iap.isAvailable();
+    if (_isAvailable) {
+      await _fetchProducts();
+      _subscription = _iap.purchaseStream.listen(
+        _onPurchaseUpdate,
+        onDone: () {
+          _subscription?.cancel();
+        },
+        onError: (error) {
+          print("Purchase Error: $error");
+        },
+      );
+    }
+  }
+
+  Future<void> _fetchProducts() async {
+    final ProductDetailsResponse response =
+        await _iap.queryProductDetails(_productIds.toSet());
+    if (response.error == null) {
+      _products = response.productDetails;
+    } else {
+      print("Error fetching products: ${response.error}");
+    }
+  }
+
+  List<ProductDetails> get products => _products;
+
+  void _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
+    for (var purchase in purchaseDetailsList) {
+      if (purchase.status == PurchaseStatus.purchased) {
+        final bool valid = await _verifyPurchase(purchase);
+        if (valid) {
+          _deliverProduct(purchase);
+        } else {
+          _handleInvalidPurchase(purchase);
+        }
+      } else if (purchase.status == PurchaseStatus.error) {
+        _handlePurchaseError(purchase.error);
+      }
+      if (purchase.pendingCompletePurchase) {
+        await _iap.completePurchase(purchase);
+      }
+    }
+  }
+
+  Future<bool> _verifyPurchase(PurchaseDetails purchase) async {
+    // TODO: Implement your own purchase verification here.
+    return true;
+  }
+
+  void _deliverProduct(PurchaseDetails purchase) {
+    print("Delivering product: ${purchase.productID}");
+    // TODO: Update user account or app state based on the purchase.
+  }
+
+  void _handleInvalidPurchase(PurchaseDetails purchase) {
+    print("Invalid purchase: ${purchase.productID}");
+  }
+
+  void _handlePurchaseError(IAPError? error) {
+    print("Purchase error: ${error?.message}");
+  }
+
+  void dispose() {
+    _subscription?.cancel();
+  }
+}
