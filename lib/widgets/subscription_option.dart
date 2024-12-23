@@ -65,8 +65,15 @@ class SubscriptionOption extends StatelessWidget {
             final PurchaseParam purchaseParam =
                 PurchaseParam(productDetails: product);
 
-            await InAppPurchase.instance
-                .buyNonConsumable(purchaseParam: purchaseParam);
+            if (product.id == 'one_day_access' ||
+                product.id == 'one_week_access') {
+              await InAppPurchase.instance
+                  .buyConsumable(purchaseParam: purchaseParam);
+            } else if (product.id == 'monthly_access' ||
+                product.id == 'yearly_access') {
+              await InAppPurchase.instance
+                  .buyNonConsumable(purchaseParam: purchaseParam);
+            }
           }
         },
       ),
