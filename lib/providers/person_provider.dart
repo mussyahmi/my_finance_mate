@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
 
@@ -71,6 +72,9 @@ class PersonProvider extends ChangeNotifier {
     user!.isPremium = true;
     user!.premiumStartDate = transactionDateTime;
     user!.premiumEndDate = transactionDateTime.add(subscriptionDuration);
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('show_premium_ended', false);
 
     notifyListeners();
   }
