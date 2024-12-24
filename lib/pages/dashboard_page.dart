@@ -52,8 +52,9 @@ class _DashboardPageState extends State<DashboardPage>
     debugLogging: true,
     durationUntilAlertAgain: const Duration(days: 1),
     languageCode: 'en',
-    minAppVersion: '1.2.0',
+    minAppVersion: '1.6.2',
   );
+  bool _showPremiumEnded = false;
 
   @override
   void initState() {
@@ -104,6 +105,8 @@ class _DashboardPageState extends State<DashboardPage>
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (!user.isPremium) {
       _createAppOpenAd();
 
@@ -114,40 +117,11 @@ class _DashboardPageState extends State<DashboardPage>
       if (user.premiumEndDate != null &&
           user.premiumEndDate!.isBefore(DateTime.now())) {
         await context.read<PersonProvider>().endPremiumAccess();
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Trial Ended'),
-            content: Text(
-                'Your premium trial has ended. Upgrade to continue enjoying premium features!'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('Later'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const PremiumSubscriptionPage()),
-                  );
-                },
-                child: Text('Upgrade to Premium'),
-              ),
-            ],
-          ),
-        );
+        await prefs.setBool('show_premium_ended', true);
       }
     }
+
+    _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;
   }
 
   @override
@@ -253,6 +227,77 @@ class _DashboardPageState extends State<DashboardPage>
                             showIgnore: false,
                             showLater: true,
                             showReleaseNotes: true,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  if (_showPremiumEnded)
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Card(
+                            child: AlertStyleWidget(
+                              title: const Text('Premium Access Ended'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      'Your premium access has ended. Upgrade to continue enjoying premium features!'),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 15.0),
+                                    child: Text(
+                                        'Would you like to upgrade to Premium now?'),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 20, bottom: 10),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () async {
+                                          SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+
+                                          prefs.setBool(
+                                              'show_premium_ended', false);
+
+                                          setState(() {
+                                            _showPremiumEnded = false;
+                                          });
+                                        },
+                                        child: const Text('Later'),
+                                      ),
+                                      SizedBox(width: 10),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          surfaceTintColor: Colors.orange,
+                                          foregroundColor: Colors.orangeAccent,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const PremiumSubscriptionPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text('Upgrade to Premium'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
