@@ -55,7 +55,7 @@ class _DashboardPageState extends State<DashboardPage>
     debugLogging: true,
     durationUntilAlertAgain: const Duration(days: 1),
     languageCode: 'en',
-    minAppVersion: '1.6.3',
+    minAppVersion: '1.7.0',
   );
   bool _showPremiumEnded = false;
 
