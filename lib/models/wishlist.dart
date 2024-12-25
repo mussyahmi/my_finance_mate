@@ -18,12 +18,14 @@ class Wishlist {
   String id;
   String name;
   String note;
+  bool isPinned;
   DateTime createdAt;
 
   Wishlist({
     required this.id,
     required this.name,
     required this.note,
+    required this.isPinned,
     required this.createdAt,
   });
 

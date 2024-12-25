@@ -107,6 +107,14 @@ class _WishlistPageState extends State<WishlistPage> {
                             child: Card(
                               child: ListTile(
                                 title: Text(wish.name),
+                                trailing: wish.isPinned
+                                    ? Icon(
+                                        CupertinoIcons.pin_fill,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      )
+                                    : null,
                                 onTap: () =>
                                     wish.showWishlistDetails(context, cycle),
                               ),

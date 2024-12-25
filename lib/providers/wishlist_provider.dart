@@ -31,9 +31,16 @@ class WishlistProvider extends ChangeNotifier {
         id: doc.id,
         name: doc['name'],
         note: doc['note'],
+        isPinned: doc['is_pinned'],
         createdAt: (doc['created_at'] as Timestamp).toDate(),
       );
     }).toList();
+
+    wishlist!.sort((a, b) {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return 0;
+    });
 
     notifyListeners();
   }
@@ -44,8 +51,14 @@ class WishlistProvider extends ChangeNotifier {
     return wishlist!;
   }
 
+  Future<List<Object>> getPinnedWishlist(BuildContext context) async {
+    if (wishlist == null) return [];
+
+    return wishlist!.where((wish) => (wish.isPinned)).toList();
+  }
+
   Future<void> updateWishlist(BuildContext context, String action,
-      String wishlistName, String wishlistNote,
+      String wishlistName, String wishlistNote, bool isPinned,
       {Wishlist? wish}) async {
     try {
       final Person user = context.read<PersonProvider>().user!;
@@ -62,6 +75,7 @@ class WishlistProvider extends ChangeNotifier {
             .add({
           'name': wishlistName,
           'note': wishlistNote,
+          'is_pinned': isPinned,
           'created_at': now,
           'updated_at': now,
           'deleted_at': null,
@@ -75,6 +89,7 @@ class WishlistProvider extends ChangeNotifier {
             .update({
           'name': wishlistName,
           'note': wishlistNote,
+          'is_pinned': isPinned,
           'updated_at': now,
         });
       }

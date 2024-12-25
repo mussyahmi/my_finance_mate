@@ -26,6 +26,7 @@ class WishlistDialogState extends State<WishlistDialog> {
   final MessageService messageService = MessageService();
   final TextEditingController _wishlistNameController = TextEditingController();
   final TextEditingController _wishlistNoteController = TextEditingController();
+  bool _isPinned = false;
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class WishlistDialogState extends State<WishlistDialog> {
     if (widget.wish != null) {
       _wishlistNameController.text = widget.wish!.name;
       _wishlistNoteController.text = widget.wish!.note;
+      _isPinned = widget.wish!.isPinned;
     }
   }
 
@@ -49,25 +51,41 @@ class WishlistDialogState extends State<WishlistDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text('${widget.action} Wishlist'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _wishlistNameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _wishlistNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _wishlistNoteController,
-              maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Note',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _wishlistNoteController,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  labelText: 'Note',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-          ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text('Pin Wish'),
+                  Checkbox(
+                    value: _isPinned,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _isPinned = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -104,6 +122,7 @@ class WishlistDialogState extends State<WishlistDialog> {
                     widget.action,
                     wishlistName,
                     wishlistNote,
+                    _isPinned,
                     wish: widget.wish,
                   );
 
