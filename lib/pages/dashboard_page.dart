@@ -333,7 +333,7 @@ class _DashboardPageState extends State<DashboardPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Wishlist',
+                          'Pinned Wishlist',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
@@ -412,7 +412,7 @@ class _DashboardPageState extends State<DashboardPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Transaction List',
+                          'Latest Transactions',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
