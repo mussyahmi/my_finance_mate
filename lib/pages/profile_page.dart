@@ -749,6 +749,7 @@ class ProfilePageState extends State<ProfilePage> {
           _createRewardedAd();
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
+          EasyLoading.showInfo('Failed to show ad. Please try again later.');
           ad.dispose();
           _createRewardedAd();
         },

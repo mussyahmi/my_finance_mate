@@ -474,6 +474,7 @@ class _CyclePageState extends State<CyclePage> {
           _createRewardedAd();
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
+          EasyLoading.showInfo('Failed to show ad. Please try again later.');
           ad.dispose();
           _createRewardedAd();
         },

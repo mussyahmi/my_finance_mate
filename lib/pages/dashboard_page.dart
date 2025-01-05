@@ -807,6 +807,7 @@ class _DashboardPageState extends State<DashboardPage>
           _createRewardedAd();
         },
         onAdFailedToShowFullScreenContent: (ad, error) {
+          EasyLoading.showInfo('Failed to show ad. Please try again later.');
           ad.dispose();
           _createRewardedAd();
         },
