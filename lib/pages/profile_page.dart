@@ -38,6 +38,7 @@ class ProfilePageState extends State<ProfilePage> {
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
   bool showNetBalance = false;
+  bool showPinnedWishlist = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
   RewardedAd? _rewardedAd;
@@ -68,6 +69,8 @@ class ProfilePageState extends State<ProfilePage> {
     AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
     final savedThemeColor = sharedPreferences.getInt('theme_color');
     final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
+    final savedShowPinnedWishlist =
+        sharedPreferences.getBool('show_pinned_wishlist');
     final savedCustomizeThemeColor =
         sharedPreferences.getInt('customize_theme_color');
 
@@ -77,6 +80,7 @@ class ProfilePageState extends State<ProfilePage> {
       themeColor =
           savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
       showNetBalance = savedShowNetBalance ?? false;
+      showPinnedWishlist = savedShowPinnedWishlist ?? false;
       customizeThemeColor = savedCustomizeThemeColor ?? 0;
     });
   }
@@ -287,6 +291,30 @@ class ProfilePageState extends State<ProfilePage> {
 
                             setState(() {
                               showNetBalance = !showNetBalance;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Show Pinned Wishlist'),
+                        subtitle: const Text(
+                          'On Dashboard',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: showPinnedWishlist,
+                          onChanged: (bool value) async {
+                            await prefs.setBool(
+                                'show_pinned_wishlist', !showPinnedWishlist);
+
+                            setState(() {
+                              showPinnedWishlist = !showPinnedWishlist;
                             });
                           },
                         ),

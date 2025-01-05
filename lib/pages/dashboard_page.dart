@@ -12,7 +12,6 @@ import '../models/account.dart';
 import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
-import '../models/wishlist.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
@@ -24,6 +23,7 @@ import '../services/ad_mob_service.dart';
 import '../size_config.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/monthly_expenses.dart';
+import '../widgets/pinned_wishlist.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
 import 'premium_subscription_page.dart';
@@ -32,7 +32,6 @@ import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
 import 'cycle_page.dart';
-import 'wishlist_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -327,85 +326,7 @@ class _DashboardPageState extends State<DashboardPage>
                         const SizedBox(height: 20),
                       ],
                     ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Pinned Wishlist',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const WishlistPage(),
-                                ),
-                              );
-                            },
-                            child: const Text('See all'))
-                      ],
-                    ),
-                  ),
-                  FutureBuilder(
-                    future: context
-                        .watch<WishlistProvider>()
-                        .getPinnedWishlist(context),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting ||
-                          cycle == null) {
-                        return const Padding(
-                          padding: EdgeInsets.only(bottom: 16.0),
-                          child: Column(
-                            children: [
-                              CircularProgressIndicator(),
-                            ],
-                          ),
-                        ); //* Display a loading indicator
-                      } else if (snapshot.hasError) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: SelectableText(
-                            'Error: ${snapshot.error}',
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.only(bottom: 16.0),
-                          child: Text(
-                            'No pinned wishlist found.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ); //* Display a message for no wishlist
-                      } else {
-                        //* Display the list of wishlist
-                        final wishlist = snapshot.data!;
-                        return Column(
-                          children:
-                              wishlist.asMap().entries.map<Widget>((entry) {
-                            Wishlist wish = entry.value as Wishlist;
-
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Card(
-                                child: ListTile(
-                                  title: Text(wish.name),
-                                  onTap: () =>
-                                      wish.showWishlistDetails(context, cycle),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 20),
+                  PinnedWishlist(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
