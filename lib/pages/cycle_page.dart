@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -488,9 +490,23 @@ class _CyclePageState extends State<CyclePage> {
             switchBetweenCycles = 3;
           });
 
-          EasyLoading.showInfo(
-            'You\'re good to go! Choose any cycle you like to switch and take charge of your expenses! 🚀',
-            duration: Duration(seconds: 3),
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Reward Granted!'),
+                content: const Text(
+                    'You\'re good to go! Choose any cycle you like to switch and take charge of your expenses! 🚀'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
           );
         },
       );

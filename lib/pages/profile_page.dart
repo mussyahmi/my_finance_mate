@@ -791,9 +791,23 @@ class ProfilePageState extends State<ProfilePage> {
             customizeThemeColor = 3;
           });
 
-          EasyLoading.showInfo(
-            'You\'re good to go! Choose any color you like and give your look a fresh update! 🚀',
-            duration: Duration(seconds: 3),
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Reward Granted!'),
+                content: const Text(
+                    'You\'re good to go! Choose any color you like and give your look a fresh update! 🚀'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
           );
         },
       );

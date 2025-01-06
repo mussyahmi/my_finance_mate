@@ -995,9 +995,23 @@ class TransactionFormPageState extends State<TransactionFormPage> {
             freemiumAttachmentSlots = 3;
           });
 
-          EasyLoading.showInfo(
-            'You\'re good to go! You can upload up to 3 attachments for this transaction. Keep everything in one place! 🚀',
-            duration: Duration(seconds: 3),
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Reward Granted!'),
+                content: const Text(
+                    'You\'re good to go! You can upload up to 3 attachments for this transaction. Keep everything in one place! 🚀'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
           );
         },
       );
