@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -278,10 +279,11 @@ class Transaction {
                                         ),
                                       );
                                     },
-                                    child: Image.network(
-                                      files[index],
-                                      height:
-                                          100, //* Adjust the height as needed
+                                    child: CachedNetworkImage(
+                                      imageUrl: files[index],
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                      height: 100,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
