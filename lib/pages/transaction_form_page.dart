@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -508,10 +509,12 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                       child: Stack(
                                         children: [
                                           if (files[index] is String)
-                                            Image.network(
-                                              files[index],
-                                              height:
-                                                  100, //* Adjust the height as needed
+                                            CachedNetworkImage(
+                                              imageUrl: files[index],
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Icon(Icons.error),
+                                              height: 100,
                                               fit: BoxFit.contain,
                                             )
                                           else
