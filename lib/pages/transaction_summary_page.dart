@@ -18,14 +18,14 @@ import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 
-class ChartPage extends StatefulWidget {
-  const ChartPage({super.key});
+class TransactionSummaryPage extends StatefulWidget {
+  const TransactionSummaryPage({super.key});
 
   @override
-  State<ChartPage> createState() => _ChartPageState();
+  State<TransactionSummaryPage> createState() => _TransactionSummaryPageState();
 }
 
-class _ChartPageState extends State<ChartPage> {
+class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
   int totalTransaction = 0;
   double needsTotal = 0;
   double wantsTotal = 0;
@@ -98,7 +98,7 @@ class _ChartPageState extends State<ChartPage> {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
-            title: const Text('Chart'),
+            title: const Text('Transaction Summary'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
             floating: true,

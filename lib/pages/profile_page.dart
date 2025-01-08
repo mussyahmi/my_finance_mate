@@ -19,7 +19,7 @@ import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
-import 'chart_page.dart';
+import 'transaction_summary_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
 import 'premium_subscription_page.dart';
@@ -214,13 +214,13 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('Chart'),
+                        title: const Text('Transaction Summary'),
                         trailing: const Icon(CupertinoIcons.chart_pie_fill),
                         onTap: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ChartPage(),
+                              builder: (context) => const TransactionSummaryPage(),
                             ),
                           );
                         },
