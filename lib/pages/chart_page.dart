@@ -13,7 +13,6 @@ import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
-import '../size_config.dart';
 import '../widgets/ad_container.dart';
 import 'transaction_list_page.dart';
 import '../extensions/string_extension.dart';

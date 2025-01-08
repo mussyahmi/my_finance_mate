@@ -354,7 +354,7 @@ class ProfilePageState extends State<ProfilePage> {
                             ),
                             children: [
                               TextSpan(text: 'Theme Colors'),
-                              if (customizeThemeColor > 0)
+                              if (!user.isPremium && customizeThemeColor > 0)
                                 TextSpan(
                                   text:
                                       ' - $customizeThemeColor customization${customizeThemeColor > 1 ? 's' : ''} remaining',
@@ -653,8 +653,7 @@ class ProfilePageState extends State<ProfilePage> {
   }) {
     return GestureDetector(
       onTap: () async {
-        if (!context.read<PersonProvider>().user!.isPremium &&
-            customizeThemeColor == 0) {
+        if (!user.isPremium && customizeThemeColor == 0) {
           return showDialog(
             context: context,
             barrierDismissible: false,
@@ -721,14 +720,15 @@ class ProfilePageState extends State<ProfilePage> {
 
         await prefs.setInt('theme_color', color.value);
 
-        if (customizeThemeColor != 0) {
+        if (!user.isPremium && customizeThemeColor != 0) {
           await prefs.setInt('customize_theme_color', customizeThemeColor - 1);
+          customizeThemeColor =
+              customizeThemeColor != 0 ? customizeThemeColor - 1 : 0;
         }
 
         setState(() {
           themeColor = color;
-          customizeThemeColor =
-              customizeThemeColor != 0 ? customizeThemeColor - 1 : 0;
+          customizeThemeColor = customizeThemeColor;
         });
 
         EasyLoading.showInfo('Your theme color have been changed.');

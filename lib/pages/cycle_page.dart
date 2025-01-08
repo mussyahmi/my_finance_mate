@@ -208,7 +208,7 @@ class _CyclePageState extends State<CyclePage> {
                           ],
                         ),
                       ),
-                      if (switchBetweenCycles > 0)
+                      if (!user.isPremium && switchBetweenCycles > 0)
                         Column(
                           children: [
                             Text(
@@ -390,7 +390,9 @@ class _CyclePageState extends State<CyclePage> {
 
                                               final bool
                                                   updateSwitchBetweenCycles =
-                                                  switchBetweenCycles != 0 &&
+                                                  !user.isPremium &&
+                                                      switchBetweenCycles !=
+                                                          0 &&
                                                       c.id !=
                                                           (cycles.first
                                                                   as Cycle)

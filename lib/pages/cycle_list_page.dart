@@ -125,7 +125,7 @@ class _CycleListPageState extends State<CycleListPage> {
                 final cycles = snapshot.data!;
                 return Column(
                   children: [
-                    if (switchBetweenCycles > 0)
+                    if (!user.isPremium && switchBetweenCycles > 0)
                       SafeArea(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -274,7 +274,9 @@ class _CycleListPageState extends State<CycleListPage> {
 
                                               final bool
                                                   updateSwitchBetweenCycles =
-                                                  switchBetweenCycles != 0 &&
+                                                  !user.isPremium &&
+                                                      switchBetweenCycles !=
+                                                          0 &&
                                                       c.id !=
                                                           (cycles.first
                                                                   as Cycle)
