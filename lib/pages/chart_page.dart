@@ -172,7 +172,7 @@ class _ChartPageState extends State<ChartPage> {
                   ),
                 ),
                 SizedBox(
-                  height: SizeConfig.screenHeight! * 1 / 2,
+                  height: 350,
                   child: _isLoading
                       ? const Center(child: Text('Loading...'))
                       : PieChart(
