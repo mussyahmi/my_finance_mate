@@ -637,14 +637,14 @@ class _DashboardPageState extends State<DashboardPage>
         selectedIndex: _selectedIndex,
         destinations: const [
           NavigationDestination(
-            icon: Icon(CupertinoIcons.square_grid_2x2),
-            selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
             icon: Icon(CupertinoIcons.creditcard),
             selectedIcon: Icon(CupertinoIcons.creditcard_fill),
             label: 'Account List',
+          ),
+          NavigationDestination(
+            icon: Icon(CupertinoIcons.square_grid_2x2),
+            selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+            label: 'Dashboard',
           ),
           NavigationDestination(
             icon: Icon(CupertinoIcons.rectangle_grid_1x2),
