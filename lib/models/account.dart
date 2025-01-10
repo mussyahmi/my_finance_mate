@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
+import '../pages/transaction_list_page.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/message_services.dart';
@@ -76,6 +77,20 @@ class Account {
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              TransactionListPage(accountId: id),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      CupertinoIcons.list_bullet,
+                    ),
+                  ),
                 ],
               ),
             ],
