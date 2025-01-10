@@ -561,7 +561,8 @@ class _DashboardPageState extends State<DashboardPage>
                   if (context.read<AccountsProvider>().accounts!.isEmpty) {
                     EasyLoading.showInfo(
                         'No accounts? Let\'s fix that—add one to begin!');
-                  } else if (user.dailyTransactionsMade >= 5) {
+                  } else if (!user.isPremium &&
+                      user.dailyTransactionsMade >= 5) {
                     await showDialog(
                       context: context,
                       barrierDismissible: false,
