@@ -61,7 +61,7 @@ class CategoryDialogState extends State<CategoryDialog> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
-        title: Text('${widget.action} Category'),
+        title: Text('${widget.action} Category (${widget.type.capitalize()})'),
         content: SingleChildScrollView(
           child: Form(
             key: _formKey,

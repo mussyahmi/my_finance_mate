@@ -604,6 +604,8 @@ class _DashboardPageState extends State<DashboardPage>
           ? FloatingActionButton(
               onPressed: () async {
                 if (_selectedIndex == 0) {
+                  Account.showAccountFormDialog(context, 'Add');
+                } else if (_selectedIndex == 1) {
                   if (context.read<AccountsProvider>().accounts!.isEmpty) {
                     EasyLoading.showInfo(
                         'No accounts? Let\'s fix that—add one to begin!');
@@ -669,8 +671,6 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                     );
                   }
-                } else if (_selectedIndex == 1) {
-                  Account.showAccountFormDialog(context, 'Add');
                 } else if (_selectedIndex == 2) {
                   Category.showCategoryFormDialog(
                       context, _categoryType, 'Add');
