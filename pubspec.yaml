@@ -57,7 +57,6 @@ dependencies:
   dropdown_search: ^6.0.1
   flutter_launcher_icons: ^0.14.1
   email_validator: ^3.0.0
-  upgrader: ^11.3.0
   change_app_package_name: ^1.4.0
   package_info_plus: ^8.1.1
   number_pad_keyboard: ^0.0.6

@@ -6,7 +6,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:upgrader/upgrader.dart';
 
 import '../models/account.dart';
 import '../models/category.dart';
@@ -48,14 +47,6 @@ class _DashboardPageState extends State<DashboardPage>
   late AdCacheService _adCacheService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
-  Upgrader upgrader = Upgrader(
-    countryCode: 'MY',
-    // debugDisplayAlways: true,
-    debugLogging: true,
-    durationUntilAlertAgain: const Duration(days: 1),
-    languageCode: 'en',
-    minAppVersion: '1.9.0',
-  );
   bool _showPremiumEnded = false;
   bool _loading = true;
 
@@ -63,7 +54,6 @@ class _DashboardPageState extends State<DashboardPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    upgrader.initialize();
   }
 
   @override
@@ -167,7 +157,6 @@ class _DashboardPageState extends State<DashboardPage>
   void dispose() {
     _rewardedAd?.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    upgrader.dispose();
     super.dispose();
   }
 
@@ -235,54 +224,43 @@ class _DashboardPageState extends State<DashboardPage>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SizedBox(height: 20),
-                        if (upgrader.shouldDisplayUpgrade())
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0),
-                                child: UpgradeCard(
-                                  upgrader: upgrader,
-                                  showIgnore: false,
-                                  showLater: true,
-                                  showReleaseNotes: true,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                          ),
-                        if (_showPremiumEnded)
+                        if (_showPremiumEnded || true)
                           Column(
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10.0),
                                 child: Card(
-                                  child: AlertStyleWidget(
-                                    title: const Text('Premium Access Ended'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            'Your premium access has ended. Upgrade to continue enjoying premium features!'),
-                                        const Padding(
-                                          padding: EdgeInsets.only(top: 15.0),
-                                          child: Text(
-                                              'Would you like to upgrade to Premium now?'),
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        title: Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: const Text(
+                                            'Premium Access Ended',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20),
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                    actions: [
+                                        subtitle: Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: const Text(
+                                              'Your premium access has ended. Upgrade to continue enjoying premium features!'),
+                                        ),
+                                      ),
+                                      const Divider(),
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                            right: 20, bottom: 10),
+                                          left: 16.0,
+                                          right: 16.0,
+                                          bottom: 8.0,
+                                        ),
                                         child: Row(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.end,
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             TextButton(
                                               onPressed: () async {
@@ -300,7 +278,6 @@ class _DashboardPageState extends State<DashboardPage>
                                               },
                                               child: const Text('Later'),
                                             ),
-                                            SizedBox(width: 10),
                                             ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 surfaceTintColor: Colors.orange,
