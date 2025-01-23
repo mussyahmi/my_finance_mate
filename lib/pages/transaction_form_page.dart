@@ -152,6 +152,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+
                         final selectedDate = await showDatePicker(
                           context: context,
                           initialDate: selectedDateTime,
@@ -214,6 +216,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ],
                       selected: {selectedType},
                       onSelectionChanged: (newSelection) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+
                         if (newSelection.first == 'transfer' &&
                             context.read<AccountsProvider>().accounts!.length <
                                 2) {
@@ -240,6 +244,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               .name
                           : null,
                       onChanged: (newValue) async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+
                         final selectedAccount = context
                             .read<AccountsProvider>()
                             .getAccountByName(newValue);
@@ -285,6 +291,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                     .name
                                 : null,
                             onChanged: (newValue) async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+
                               if (newValue == 'add_new') {
                                 await Navigator.push(
                                   context,
@@ -380,6 +388,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                     .name
                                 : null,
                             onChanged: (newValue) async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+
                               final selectedAccount = context
                                   .read<AccountsProvider>()
                                   .getAccountByName(newValue);
@@ -421,6 +431,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ),
                     GestureDetector(
                       onTap: () async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -490,6 +502,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                         horizontal: 8.0),
                                     child: GestureDetector(
                                       onTap: () {
+                                        FocusManager.instance.primaryFocus
+                                            ?.unfocus();
+
                                         //* Open a new screen with the larger image
                                         Navigator.push(
                                           context,
@@ -529,6 +544,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                             right: 0,
                                             child: GestureDetector(
                                               onTap: () {
+                                                FocusManager
+                                                    .instance.primaryFocus
+                                                    ?.unfocus();
+
                                                 if (files[index] is String) {
                                                   setState(() {
                                                     filesToDelete = [
@@ -561,6 +580,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () async {
+                        FocusManager.instance.primaryFocus?.unfocus();
+
                         if (!user.isPremium) {
                           if (files.isNotEmpty &&
                               freemiumAttachmentSlots == 1) {
