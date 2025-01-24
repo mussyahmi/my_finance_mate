@@ -591,33 +591,43 @@ class _LoginPageState extends State<LoginPage> {
     _autoLogin();
   }
 
+  int _getExtendedVersionNumber(String version) {
+    List versionCells = version.split('.');
+    versionCells = versionCells.map((i) => int.parse(i)).toList();
+    return versionCells[0] * 100000 + versionCells[1] * 1000 + versionCells[2];
+  }
+
   Future<void> _checkCurrentVersion() async {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final String currentVersion = packageInfo.version;
 
-    final DocumentSnapshot versionDoc = await FirebaseFirestore.instance
+    final DocumentSnapshot versionsDoc = await FirebaseFirestore.instance
         .collection('app_settings')
-        .doc('latest_version')
+        .doc('versions')
         .get();
 
-    if (versionDoc.exists) {
-      final String latestVersion = versionDoc['version'];
+    if (versionsDoc.exists) {
+      final String latestVersion = versionsDoc['latest'];
+      final String minimumVersion = versionsDoc['minimum'];
 
       if (currentVersion != latestVersion) {
         await showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
             return AlertDialog(
               title: const Text('Update Available'),
               content: const Text(
                   'A new version is available. Please update the app.'),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Later'),
-                ),
+                if (_getExtendedVersionNumber(currentVersion) >=
+                    _getExtendedVersionNumber(minimumVersion))
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Later'),
+                  ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
