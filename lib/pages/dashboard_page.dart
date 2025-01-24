@@ -121,6 +121,7 @@ class _DashboardPageState extends State<DashboardPage>
     }
 
     _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;
+    _selectedIndex = prefs.getInt('saved_nav_bar_index') ?? 0;
 
     setState(() {
       _loading = false;
@@ -680,7 +681,10 @@ class _DashboardPageState extends State<DashboardPage>
             label: 'Profile',
           ),
         ],
-        onDestinationSelected: (value) {
+        onDestinationSelected: (value) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setInt('saved_nav_bar_index', value);
+
           setState(() {
             _selectedIndex = value;
           });
