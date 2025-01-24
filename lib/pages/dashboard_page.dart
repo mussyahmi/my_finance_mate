@@ -224,7 +224,7 @@ class _DashboardPageState extends State<DashboardPage>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SizedBox(height: 20),
-                        if (_showPremiumEnded || true)
+                        if (_showPremiumEnded)
                           Column(
                             children: [
                               Padding(
