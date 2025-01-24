@@ -173,7 +173,7 @@ class Account {
           return AlertDialog(
             title: const Text('Cannot Delete Account'),
             content: const Text(
-                'There are transactions associated with this account. You cannot delete it.'),
+              'There are transactions associated with this account in the current cycle. You cannot delete it.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

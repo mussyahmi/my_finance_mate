@@ -238,7 +238,7 @@ class Category {
           return AlertDialog(
             title: const Text('Cannot Delete Category'),
             content: const Text(
-                'There are transactions associated with this category. You cannot delete it.'),
+                'There are transactions associated with this category in the current cycle. You cannot delete it.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
