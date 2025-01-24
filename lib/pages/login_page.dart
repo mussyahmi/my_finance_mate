@@ -11,8 +11,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
@@ -584,7 +586,59 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
 
+    await _checkCurrentVersion();
+
     _autoLogin();
+  }
+
+  Future<void> _checkCurrentVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final String currentVersion = packageInfo.version;
+
+    final DocumentSnapshot versionDoc = await FirebaseFirestore.instance
+        .collection('app_settings')
+        .doc('latest_version')
+        .get();
+
+    if (versionDoc.exists) {
+      final String latestVersion = versionDoc['version'];
+
+      if (currentVersion != latestVersion) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Update Available'),
+              content: const Text(
+                  'A new version is available. Please update the app.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Later'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: () {
+                    if (Platform.isAndroid) {
+                      launchUrl(Uri.parse(
+                          'https://play.google.com/store/apps/details?id=com.mustafasyahmi.myfinancemate'));
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Update Now'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
   void _autoLogin() async {
