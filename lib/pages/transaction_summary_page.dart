@@ -1,5 +1,6 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,22 +39,26 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
   bool _isLoading = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  AdaptiveThemeMode? _savedThemeMode;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
-    _calculateTransactions(context);
+    _initAsync(context);
   }
 
-  Future<void> _calculateTransactions(BuildContext context) async {
+  Future<void> _initAsync(BuildContext context) async {
+    AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
+
     Cycle cycle = context.read<CycleProvider>().cycle!;
     List<t.Transaction> transactions =
         context.read<TransactionsProvider>().transactions!;
 
     setState(() {
       _isLoading = true;
+      _savedThemeMode = adaptiveThemeMode;
     });
 
     double spentTotal = double.parse(cycle.amountSpent);
@@ -227,22 +232,30 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                             ),
                             sections: [
                               _pieChartSectionData(
-                                Colors.green[900]!,
+                                _savedThemeMode == AdaptiveThemeMode.dark
+                                    ? Colors.green[900]!
+                                    : Colors.green[600]!,
                                 needsPercentage,
                                 'Needs',
                               ),
                               _pieChartSectionData(
-                                Colors.blue[900]!,
+                                _savedThemeMode == AdaptiveThemeMode.dark
+                                    ? Colors.blue[900]!
+                                    : Colors.blue[600]!,
                                 wantsPercentage,
                                 'Wants',
                               ),
                               _pieChartSectionData(
-                                Colors.yellow[900]!,
+                                _savedThemeMode == AdaptiveThemeMode.dark
+                                    ? Colors.yellow[900]!
+                                    : Colors.yellow[600]!,
                                 savingsPercentage,
                                 'Savings',
                               ),
                               _pieChartSectionData(
-                                Colors.blueGrey[900]!,
+                                _savedThemeMode == AdaptiveThemeMode.dark
+                                    ? Colors.blueGrey[900]!
+                                    : Colors.blueGrey[600]!,
                                 othersPercentage,
                                 'Others',
                               ),
