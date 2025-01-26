@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:photo_view/photo_view.dart';
@@ -43,11 +44,21 @@ class _ImageViewPageState extends State<ImageViewPage> {
       body: Column(
         children: [
           Expanded(
-            child: PhotoView(
-              imageProvider: _getImageProvider(),
+            child: PhotoView.customChild(
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained * 0.8,
               maxScale: PhotoViewComputedScale.covered * 1.8,
+              child: widget.type == 'url'
+                  ? CachedNetworkImage(
+                      imageUrl: widget.imageSource,
+                      placeholder: (context, url) => Center(
+                        child:
+                            CircularProgressIndicator(), // Placeholder while loading
+                      ),
+                      errorWidget: (context, url, error) =>
+                          Icon(Icons.error), // Error widget
+                    )
+                  : Image.file(File(widget.imageSource)),
             ),
           ),
           if (!context.read<PersonProvider>().user!.isPremium)
@@ -61,17 +72,5 @@ class _ImageViewPageState extends State<ImageViewPage> {
         ],
       ),
     );
-  }
-
-  ImageProvider _getImageProvider() {
-    if (widget.type == 'url') {
-      //* If imageSource is a String, treat it as a URL
-      return NetworkImage(widget.imageSource);
-    } else if (widget.type == 'local') {
-      //* If imageSource is a File, treat it as a local file path
-      return FileImage(File(widget.imageSource));
-    }
-
-    throw ArgumentError('Invalid image source type');
   }
 }
