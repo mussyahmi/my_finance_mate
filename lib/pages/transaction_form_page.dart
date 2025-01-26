@@ -836,7 +836,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               ? messageService.getRandomDoneUpdateMessage()
                               : messageService.getRandomDoneAddMessage());
 
-                          Navigator.of(context).pop(true);
+                          bool needRefresh = user.isPremium &&
+                              context
+                                      .read<PersonProvider>()
+                                      .user!
+                                      .dailyTransactionsMade >=
+                                  5;
+
+                          Navigator.of(context).pop(needRefresh);
                         } finally {
                           setState(() {
                             _isLoading = false;

@@ -641,13 +641,17 @@ class _DashboardPageState extends State<DashboardPage>
                       },
                     );
                   } else {
-                    await Navigator.push(
+                    final bool needRefresh = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
                             const TransactionFormPage(action: 'Add'),
                       ),
                     );
+
+                    if (needRefresh) {
+                      setState(() {});
+                    }
                   }
                 } else if (_selectedIndex == 2) {
                   Category.showCategoryFormDialog(
