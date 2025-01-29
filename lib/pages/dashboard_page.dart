@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'dart:convert';
+
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -510,8 +513,15 @@ class _DashboardPageState extends State<DashboardPage>
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      transaction.note
-                                                          .split('\\n')[0],
+                                                      transaction.note.contains(
+                                                              'insert')
+                                                          ? ParchmentDocument.fromJson(
+                                                                  jsonDecode(
+                                                                      transaction
+                                                                          .note))
+                                                              .toPlainText()
+                                                          : transaction.note
+                                                              .split('\\n')[0],
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       maxLines: 1,
@@ -641,7 +651,7 @@ class _DashboardPageState extends State<DashboardPage>
                       },
                     );
                   } else {
-                    final bool needRefresh = await Navigator.push(
+                    final bool result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
@@ -649,7 +659,9 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                     );
 
-                    if (needRefresh) {
+                    if (result &&
+                        !user.isPremium &&
+                        user.dailyTransactionsMade >= 5) {
                       setState(() {});
                     }
                   }

@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -31,6 +33,7 @@ import 'amount_input_page.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
+import 'note_input_page.dart';
 import 'premium_subscription_page.dart';
 
 class TransactionFormPage extends StatefulWidget {
@@ -90,8 +93,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
       transactionAmountController.text = widget.transaction!.amount;
-      transactionNoteController.text =
-          widget.transaction!.note.replaceAll('\\n', '\n');
+      transactionNoteController.text = widget.transaction!.note;
       selectedDateTime = widget.transaction!.dateTime;
       files = widget.transaction!.files;
 
@@ -458,14 +460,39 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    TextField(
-                      controller: transactionNoteController,
-                      maxLines: 5,
-                      decoration: const InputDecoration(
-                        labelText: 'Note',
-                        border: OutlineInputBorder(),
+                    Card(
+                      child: ListTile(
+                        onTap: () async {
+                          String note = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NoteInputPage(
+                                note: transactionNoteController.text,
+                              ),
+                            ),
+                          );
+
+                          if (note.isNotEmpty) {
+                            setState(() {
+                              transactionNoteController.text = note;
+                            });
+                          }
+                        },
+                        leading: Icon(Icons.notes),
+                        title: Text(
+                          transactionNoteController.text.isEmpty
+                              ? 'Note'
+                              : transactionNoteController.text
+                                      .contains('insert')
+                                  ? ParchmentDocument.fromJson(jsonDecode(
+                                          transactionNoteController.text))
+                                      .toPlainText()
+                                  : transactionNoteController.text
+                                      .split('\\n')[0],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 20),
                     RichText(
@@ -488,6 +515,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     ),
                     if (files.isNotEmpty)
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10),
                           SingleChildScrollView(
@@ -781,8 +809,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           String? accountId = selectedAccountId;
                           String? accountToId = selectedAccountToId;
                           String amount = transactionAmountController.text;
-                          String note = transactionNoteController.text
-                              .replaceAll('\n', '\\n');
+                          String note = transactionNoteController.text;
                           DateTime dateTime = selectedDateTime;
 
                           //* Validate the form data
@@ -836,14 +863,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               ? messageService.getRandomDoneUpdateMessage()
                               : messageService.getRandomDoneAddMessage());
 
-                          bool needRefresh = user.isPremium &&
-                              context
-                                      .read<PersonProvider>()
-                                      .user!
-                                      .dailyTransactionsMade >=
-                                  5;
-
-                          Navigator.of(context).pop(needRefresh);
+                          Navigator.of(context).pop(true);
                         } finally {
                           setState(() {
                             _isLoading = false;

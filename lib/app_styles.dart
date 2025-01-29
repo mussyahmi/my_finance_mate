@@ -30,8 +30,8 @@ Gradient kLinearGradientBlack = LinearGradient(
   begin: Alignment.bottomCenter,
   end: Alignment.topCenter,
   colors: <Color>[
-    kBlack.withOpacity(0.8),
-    kBlack0D.withOpacity(0),
+    kBlack.withAlpha(204),
+    kBlack0D.withAlpha(0),
   ],
   tileMode: TileMode.clamp,
 );
@@ -50,7 +50,7 @@ Gradient kLinearGradientWhite = LinearGradient(
   begin: Alignment.topCenter,
   end: Alignment.bottomCenter,
   colors: <Color>[
-    kWhite.withOpacity(0),
+    kWhite.withAlpha(0),
     kWhite,
   ],
   tileMode: TileMode.clamp,

@@ -1,10 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
+import 'package:fleather/fleather.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/wishlist.dart';
+import '../pages/note_input_page.dart';
 import '../providers/wishlist_provider.dart';
 import '../services/message_services.dart';
 
@@ -62,12 +66,36 @@ class WishlistDialogState extends State<WishlistDialog> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
-                controller: _wishlistNoteController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Note',
-                  border: OutlineInputBorder(),
+              Card(
+                child: ListTile(
+                  onTap: () async {
+                    String note = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NoteInputPage(
+                          note: _wishlistNoteController.text,
+                        ),
+                      ),
+                    );
+
+                    if (note.isNotEmpty) {
+                      setState(() {
+                        _wishlistNoteController.text = note;
+                      });
+                    }
+                  },
+                  leading: Icon(Icons.notes),
+                  title: Text(
+                    _wishlistNoteController.text.isEmpty
+                        ? 'Note'
+                        : _wishlistNoteController.text.contains('insert')
+                            ? ParchmentDocument.fromJson(
+                                    jsonDecode(_wishlistNoteController.text))
+                                .toPlainText()
+                            : _wishlistNoteController.text.split('\\n')[0],
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
               ),
               Row(

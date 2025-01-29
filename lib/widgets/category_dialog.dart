@@ -1,11 +1,15 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
+
+import 'package:fleather/fleather.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import '../extensions/string_extension.dart';
 import '../models/category.dart';
 import '../pages/amount_input_page.dart';
+import '../pages/note_input_page.dart';
 import '../providers/categories_provider.dart';
 import '../services/message_services.dart';
 
@@ -147,12 +151,36 @@ class CategoryDialogState extends State<CategoryDialog> {
                   ),
                 if (widget.type == 'spent') const SizedBox(height: 10),
                 if (widget.type == 'received') const SizedBox(height: 20),
-                TextField(
-                  controller: _categoryNoteController,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Note',
-                    border: OutlineInputBorder(),
+                Card(
+                  child: ListTile(
+                    onTap: () async {
+                      String note = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NoteInputPage(
+                            note: _categoryNoteController.text,
+                          ),
+                        ),
+                      );
+
+                      if (note.isNotEmpty) {
+                        setState(() {
+                          _categoryNoteController.text = note;
+                        });
+                      }
+                    },
+                    leading: Icon(Icons.notes),
+                    title: Text(
+                      _categoryNoteController.text.isEmpty
+                          ? 'Note'
+                          : _categoryNoteController.text.contains('insert')
+                              ? ParchmentDocument.fromJson(
+                                      jsonDecode(_categoryNoteController.text))
+                                  .toPlainText()
+                              : _categoryNoteController.text.split('\\n')[0],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ),
               ],

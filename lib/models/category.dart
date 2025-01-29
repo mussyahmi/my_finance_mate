@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
+
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/transaction_list_page.dart';
 import '../providers/categories_provider.dart';
@@ -207,12 +208,18 @@ class Category {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    MarkdownBody(
-                      data: note.replaceAll('\n', '  \n'),
-                      selectable: true,
-                      onTapLink: (text, url, title) {
-                        launchUrl(Uri.parse(url!));
-                      },
+                    FleatherEditor(
+                      controller: FleatherController(
+                        document: ParchmentDocument.fromJson(
+                          note.contains('insert')
+                              ? jsonDecode(note)
+                              : [
+                                  {"insert": "$note\n"}
+                                ],
+                        ),
+                      ),
+                      showCursor: false,
+                      readOnly: true,
                     ),
                   ],
                 ),

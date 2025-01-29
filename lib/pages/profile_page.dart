@@ -220,7 +220,8 @@ class ProfilePageState extends State<ProfilePage> {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const TransactionSummaryPage(),
+                              builder: (context) =>
+                                  const TransactionSummaryPage(),
                             ),
                           );
                         },
@@ -718,7 +719,7 @@ class ProfilePageState extends State<ProfilePage> {
           ),
         );
 
-        await prefs.setInt('theme_color', color.value);
+        await prefs.setInt('theme_color', color.hashCode);
 
         if (!user.isPremium && customizeThemeColor != 0) {
           await prefs.setInt('customize_theme_color', customizeThemeColor - 1);
@@ -734,16 +735,16 @@ class ProfilePageState extends State<ProfilePage> {
         EasyLoading.showInfo('Your theme color have been changed.');
       },
       child: Container(
-        width: themeColor.value == color.value ? 26 : 20,
-        height: themeColor.value == color.value ? 26 : 20,
+        width: themeColor.hashCode == color.hashCode ? 26 : 20,
+        height: themeColor.hashCode == color.hashCode ? 26 : 20,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
           border: Border.all(
-            color: themeColor.value == color.value
+            color: themeColor.hashCode == color.hashCode
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent,
-            width: themeColor.value == color.value ? 5.0 : 2.0,
+            width: themeColor.hashCode == color.hashCode ? 5.0 : 2.0,
           ),
         ),
       ),

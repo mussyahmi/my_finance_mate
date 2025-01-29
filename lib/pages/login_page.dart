@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
       ..indicatorColor = Theme.of(context).colorScheme.onSecondary
       ..textColor = Theme.of(context).colorScheme.onSecondary
       ..progressColor = Colors.blue
-      ..maskColor = Colors.green.withOpacity(0.5)
+      ..maskColor = Colors.green.withAlpha(128)
       ..userInteractions = false
       ..dismissOnTap = false;
 

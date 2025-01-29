@@ -1,20 +1,20 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
 import '../pages/transaction_form_page.dart';
 import '../providers/transactions_provider.dart';
 import '../services/message_services.dart';
-import '../size_config.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/sub_type_tag.dart';
@@ -105,7 +105,7 @@ class Transaction {
                     IconButton.filledTonal(
                       onPressed: () async {
                         //* Edit action
-                        final result = await Navigator.push(
+                        final bool result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TransactionFormPage(
@@ -115,7 +115,7 @@ class Transaction {
                           ),
                         );
 
-                        if (result != null && result) {
+                        if (result) {
                           Navigator.of(context).pop();
                         }
                       },
@@ -221,31 +221,6 @@ class Transaction {
                   Text('RM$amount'),
                 ],
               ),
-              if (note.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Note:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: SizeConfig.screenHeight! * 0.2,
-                      ),
-                      child: SingleChildScrollView(
-                        child: MarkdownBody(
-                          selectable: true,
-                          data: note.replaceAll('\n', '  \n'),
-                          onTapLink: (text, url, title) {
-                            launchUrl(Uri.parse(url!));
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               if (files.isNotEmpty)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -256,6 +231,7 @@ class Transaction {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
                         SingleChildScrollView(
@@ -292,6 +268,30 @@ class Transaction {
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                ),
+              if (note.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Note:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    FleatherEditor(
+                      controller: FleatherController(
+                        document: ParchmentDocument.fromJson(
+                          note.contains('insert')
+                              ? jsonDecode(note)
+                              : [
+                                  {"insert": "$note\n"}
+                                ],
+                        ),
+                      ),
+                      showCursor: false,
+                      readOnly: true,
                     ),
                   ],
                 ),

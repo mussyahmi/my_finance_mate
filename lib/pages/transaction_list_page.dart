@@ -1,6 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -498,7 +501,13 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          transaction.note.split('\\n')[0],
+                                          transaction.note.contains('insert')
+                                              ? ParchmentDocument.fromJson(
+                                                      jsonDecode(
+                                                          transaction.note))
+                                                  .toPlainText()
+                                              : transaction.note
+                                                  .split('\\n')[0],
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                           style: const TextStyle(

@@ -1,15 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
+import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/wishlist_provider.dart';
 import '../services/message_services.dart';
-import '../size_config.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/wishlist_dialog.dart';
 import 'cycle.dart';
@@ -99,19 +99,18 @@ class Wishlist {
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: SizeConfig.screenHeight! * 0.32,
-                      ),
-                      child: SingleChildScrollView(
-                        child: MarkdownBody(
-                          selectable: true,
-                          data: note.replaceAll('\n', '  \n'),
-                          onTapLink: (text, url, title) {
-                            launchUrl(Uri.parse(url!));
-                          },
+                    FleatherEditor(
+                      controller: FleatherController(
+                        document: ParchmentDocument.fromJson(
+                          note.contains('insert')
+                              ? jsonDecode(note)
+                              : [
+                                  {"insert": "$note\n"}
+                                ],
                         ),
                       ),
+                      showCursor: false,
+                      readOnly: true,
                     ),
                   ],
                 ),
