@@ -481,7 +481,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         leading: Icon(Icons.notes),
                         title: Text(
                           transactionNoteController.text.isEmpty
-                              ? 'Note'
+                              ? 'Add Note'
                               : transactionNoteController.text
                                       .contains('insert')
                                   ? ParchmentDocument.fromJson(jsonDecode(
@@ -491,6 +491,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                       .split('\\n')[0],
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),

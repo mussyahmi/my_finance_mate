@@ -172,7 +172,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                     leading: Icon(Icons.notes),
                     title: Text(
                       _categoryNoteController.text.isEmpty
-                          ? 'Note'
+                          ? 'Add Note'
                           : _categoryNoteController.text.contains('insert')
                               ? ParchmentDocument.fromJson(
                                       jsonDecode(_categoryNoteController.text))
@@ -180,6 +180,10 @@ class CategoryDialogState extends State<CategoryDialog> {
                               : _categoryNoteController.text.split('\\n')[0],
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),

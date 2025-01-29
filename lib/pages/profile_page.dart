@@ -649,6 +649,19 @@ class ProfilePageState extends State<ProfilePage> {
           ),
         );
 
+        await Future.delayed(const Duration(milliseconds: 250));
+
+        EasyLoading.instance
+          ..loadingStyle = EasyLoadingStyle.custom
+          ..backgroundColor = Theme.of(context).colorScheme.secondary
+          ..indicatorType = EasyLoadingIndicatorType.ripple
+          ..indicatorColor = Theme.of(context).colorScheme.onSecondary
+          ..textColor = Theme.of(context).colorScheme.onSecondary
+          ..progressColor = Colors.blue
+          ..maskColor = Colors.green.withAlpha(128)
+          ..userInteractions = false
+          ..dismissOnTap = false;
+
         await prefs.setInt('theme_color_index', index);
 
         if (!user.isPremium && customizeThemeColor != 0) {

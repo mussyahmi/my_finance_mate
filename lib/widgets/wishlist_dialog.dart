@@ -87,7 +87,7 @@ class WishlistDialogState extends State<WishlistDialog> {
                   leading: Icon(Icons.notes),
                   title: Text(
                     _wishlistNoteController.text.isEmpty
-                        ? 'Note'
+                        ? 'Add Note'
                         : _wishlistNoteController.text.contains('insert')
                             ? ParchmentDocument.fromJson(
                                     jsonDecode(_wishlistNoteController.text))
@@ -95,6 +95,10 @@ class WishlistDialogState extends State<WishlistDialog> {
                             : _wishlistNoteController.text.split('\\n')[0],
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ),
