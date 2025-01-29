@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/wishlist_provider.dart';
 import '../services/message_services.dart';
@@ -111,6 +112,9 @@ class Wishlist {
                       ),
                       showCursor: false,
                       readOnly: true,
+                      onLaunchUrl: (url) {
+                        launchUrl(Uri.parse(url!));
+                      },
                     ),
                   ],
                 ),

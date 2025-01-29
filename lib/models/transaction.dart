@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
 import '../pages/transaction_form_page.dart';
@@ -292,6 +293,9 @@ class Transaction {
                       ),
                       showCursor: false,
                       readOnly: true,
+                      onLaunchUrl: (url) {
+                        launchUrl(Uri.parse(url!));
+                      },
                     ),
                   ],
                 ),
