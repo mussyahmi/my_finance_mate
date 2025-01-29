@@ -33,6 +33,26 @@ class ProfilePage extends StatefulWidget {
 }
 
 class ProfilePageState extends State<ProfilePage> {
+  final List<Color> _themeColors = [
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.brown,
+    Colors.cyan,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.green,
+    Colors.indigo,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.orange,
+    Colors.pink,
+    Colors.purple,
+    Colors.red,
+    Colors.teal,
+    Colors.yellow,
+  ];
   final MessageService messageService = MessageService();
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
@@ -67,7 +87,7 @@ class ProfilePageState extends State<ProfilePage> {
     SharedPreferences? sharedPreferences =
         await SharedPreferences.getInstance();
     AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
-    final savedThemeColor = sharedPreferences.getInt('theme_color');
+    final savedThemeColorIndex = sharedPreferences.getInt('theme_color_index');
     final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
     final savedShowPinnedWishlist =
         sharedPreferences.getBool('show_pinned_wishlist');
@@ -77,8 +97,9 @@ class ProfilePageState extends State<ProfilePage> {
     setState(() {
       prefs = sharedPreferences;
       savedThemeMode = adaptiveThemeMode;
-      themeColor =
-          savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
+      themeColor = savedThemeColorIndex != null
+          ? _themeColors[savedThemeColorIndex]
+          : Colors.teal;
       showNetBalance = savedShowNetBalance ?? false;
       showPinnedWishlist = savedShowPinnedWishlist ?? false;
       customizeThemeColor = savedCustomizeThemeColor ?? 0;
@@ -383,115 +404,23 @@ class ProfilePageState extends State<ProfilePage> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8.0),
                                 child: Row(
-                                  children: [
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.amber,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.blue,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.blueGrey,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.brown,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.cyan,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.deepOrange,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.deepPurple,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.green,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.indigo,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.lightBlue,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.lightGreen,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.lime,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.orange,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.pink,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.purple,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.red,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.teal,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    themeColorSelector(
-                                      user: user,
-                                      context: context,
-                                      color: Colors.yellow,
-                                    ),
-                                  ],
+                                  children:
+                                      _themeColors.asMap().entries.map((entry) {
+                                    int index = entry.key;
+                                    Color color = entry.value;
+
+                                    return Row(
+                                      children: [
+                                        themeColorSelector(
+                                          user: user,
+                                          context: context,
+                                          color: color,
+                                          index: index,
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                    );
+                                  }).toList(),
                                 ),
                               ),
                             ),
@@ -650,7 +579,8 @@ class ProfilePageState extends State<ProfilePage> {
   Widget themeColorSelector({
     required Person user,
     required BuildContext context,
-    required MaterialColor color,
+    required Color color,
+    required int index,
   }) {
     return GestureDetector(
       onTap: () async {
@@ -719,7 +649,7 @@ class ProfilePageState extends State<ProfilePage> {
           ),
         );
 
-        await prefs.setInt('theme_color', color.hashCode);
+        await prefs.setInt('theme_color_index', index);
 
         if (!user.isPremium && customizeThemeColor != 0) {
           await prefs.setInt('customize_theme_color', customizeThemeColor - 1);
@@ -735,16 +665,16 @@ class ProfilePageState extends State<ProfilePage> {
         EasyLoading.showInfo('Your theme color have been changed.');
       },
       child: Container(
-        width: themeColor.hashCode == color.hashCode ? 26 : 20,
-        height: themeColor.hashCode == color.hashCode ? 26 : 20,
+        width: themeColor.withValues() == color.withValues() ? 26 : 20,
+        height: themeColor.withValues() == color.withValues() ? 26 : 20,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: color,
           border: Border.all(
-            color: themeColor.hashCode == color.hashCode
+            color: themeColor.withValues() == color.withValues()
                 ? Theme.of(context).colorScheme.primary
                 : Colors.transparent,
-            width: themeColor.hashCode == color.hashCode ? 5.0 : 2.0,
+            width: themeColor.withValues() == color.withValues() ? 5.0 : 2.0,
           ),
         ),
       ),

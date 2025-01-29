@@ -21,15 +21,37 @@ import 'providers/person_provider.dart';
 import 'services/app_settings_service.dart';
 
 void main() async {
+  final List<Color> themeColors = [
+    Colors.amber,
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.brown,
+    Colors.cyan,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.green,
+    Colors.indigo,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.orange,
+    Colors.pink,
+    Colors.purple,
+    Colors.red,
+    Colors.teal,
+    Colors.yellow,
+  ];
+
   WidgetsFlutterBinding.ensureInitialized();
 
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  final savedThemeColor = prefs.getInt('theme_color');
-  final themeColor =
-      savedThemeColor != null ? Color(savedThemeColor) : Colors.teal;
+  final savedThemeColorIndex = prefs.getInt('theme_color_index');
+  final themeColor = savedThemeColorIndex != null
+      ? themeColors[savedThemeColorIndex]
+      : Colors.teal;
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
