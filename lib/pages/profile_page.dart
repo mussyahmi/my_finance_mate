@@ -19,6 +19,7 @@ import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
+import 'cumulative_trends_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
@@ -235,6 +236,35 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
+                        title: const Text('Category Summary'),
+                        trailing: const Icon(CupertinoIcons.chart_bar_fill),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CategorySummaryPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Cumulative Trends'),
+                        trailing: const Icon(Icons.area_chart),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CumulativeTrendsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
                         title: const Text('Transaction Summary'),
                         trailing: const Icon(CupertinoIcons.chart_pie_fill),
                         onTap: () async {
@@ -243,20 +273,6 @@ class ProfilePageState extends State<ProfilePage> {
                             MaterialPageRoute(
                               builder: (context) =>
                                   const TransactionSummaryPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Category Summary'),
-                        trailing: const Icon(CupertinoIcons.chart_bar_fill),
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CategorySummaryPage(),
                             ),
                           );
                         },
