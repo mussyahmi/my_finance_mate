@@ -269,17 +269,6 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
                                       TextStyle(
                                           color: touchedSpot.bar.color,
                                           fontWeight: FontWeight.bold),
-                                      children: [
-                                        if (touchedSpot.barIndex == 0)
-                                          TextSpan(
-                                            text:
-                                                '\n${DateFormat('EEEE, d MMMM yyyy').format(_startDate.add(Duration(days: touchedSpot.x.toInt())))}',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                      ],
                                     );
                                   }).toList();
                                 },
