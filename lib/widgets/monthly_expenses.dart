@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/account.dart';
 import '../models/category.dart';
 import '../extensions/string_extension.dart';
 import '../models/cycle.dart';
+import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
@@ -130,7 +132,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
               //* Display the list of budgets
               final budgets = snapshot.data!;
               final amountBalanceAfterBudget =
-                  _getAmountBalanceAfterBudget(cycle, budgets);
+                  _getAmountBalanceAfterBudget(context, budgets);
 
               return Column(
                 children: [
@@ -265,8 +267,12 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
     });
   }
 
-  String _getAmountBalanceAfterBudget(Cycle cycle, List<Category> budgets) {
-    double budgetBalance = double.parse(cycle.amountBalance);
+  String _getAmountBalanceAfterBudget(
+      BuildContext context, List<Category> budgets) {
+    final List<Account> accounts = context.read<AccountsProvider>().accounts!;
+    double budgetBalance = accounts
+        .where((account) => !account.isExcluded)
+        .fold(0.0, (sum, account) => sum + double.parse(account.amountBalance));
 
     for (var budget in budgets) {
       if (budget.budget != '0.00') {

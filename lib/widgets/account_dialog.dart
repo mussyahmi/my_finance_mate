@@ -28,6 +28,7 @@ class AccountDialogState extends State<AccountDialog> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _openingBalanceController =
       TextEditingController();
+  bool _isExcluded = false;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class AccountDialogState extends State<AccountDialog> {
     if (widget.account != null) {
       _nameController.text = widget.account!.name;
       _openingBalanceController.text = widget.account!.openingBalance;
+      _isExcluded = widget.account!.isExcluded;
     }
   }
 
@@ -88,6 +90,20 @@ class AccountDialogState extends State<AccountDialog> {
                 ),
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('Exclude from net balance'),
+                Checkbox(
+                  value: _isExcluded,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isExcluded = value ?? false;
+                    });
+                  },
+                ),
+              ],
+            ),
           ],
         ),
         actions: [
@@ -124,6 +140,7 @@ class AccountDialogState extends State<AccountDialog> {
                     _nameController.text,
                     double.parse(_openingBalanceController.text)
                         .toStringAsFixed(2),
+                    _isExcluded,
                     account: widget.account,
                   );
 

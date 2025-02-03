@@ -84,7 +84,9 @@ class _CyclePageState extends State<CyclePage> {
     Card card(String title) {
       var data = '';
 
-      if (title == 'Cycle Name') {
+      if (title == 'Cycle ID') {
+        data = cycle.id;
+      } else if (title == 'Cycle Name') {
         data = cycle.cycleName;
       } else if (title == 'Start Date') {
         data = DateFormat('EE, d MMM yyyy h:mm aa').format(cycle.startDate);
@@ -103,21 +105,22 @@ class _CyclePageState extends State<CyclePage> {
             data,
             style: const TextStyle(fontSize: 14),
           ),
-          trailing: title != 'Start Date' && cycle.isLastCycle
-              ? IconButton.filledTonal(
-                  onPressed: () async {
-                    await cycle.showCycleFormDialog(
-                      context,
-                      user,
-                      title,
-                    );
-                  },
-                  icon: Icon(
-                    CupertinoIcons.pencil,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                )
-              : null,
+          trailing:
+              title != 'Cycle ID' && title != 'Start Date' && cycle.isLastCycle
+                  ? IconButton.filledTonal(
+                      onPressed: () async {
+                        await cycle.showCycleFormDialog(
+                          context,
+                          user,
+                          title,
+                        );
+                      },
+                      icon: Icon(
+                        CupertinoIcons.pencil,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                  : null,
         ),
       );
     }
@@ -166,6 +169,7 @@ class _CyclePageState extends State<CyclePage> {
                             const SizedBox(height: 20),
                           ],
                         ),
+                      card('Cycle ID'),
                       card('Cycle Name'),
                       card('Start Date'),
                       card('End Date'),

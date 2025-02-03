@@ -42,6 +42,8 @@ class AccountsProvider extends ChangeNotifier {
         amountReceived: doc['amount_received'],
         amountSpent: doc['amount_spent'],
         cycleId: cycle.id,
+        isExcluded:
+            doc.data().containsKey('is_excluded') ? doc['is_excluded'] : false,
       );
     }).toList();
 
@@ -72,8 +74,8 @@ class AccountsProvider extends ChangeNotifier {
     return accounts!.firstWhere((account) => account.name == accountName);
   }
 
-  Future<void> updateAccount(
-      BuildContext context, String action, String name, String openingBalance,
+  Future<void> updateAccount(BuildContext context, String action, String name,
+      String openingBalance, bool isExcluded,
       {Account? account}) async {
     try {
       final Person user = context.read<PersonProvider>().user!;
@@ -99,6 +101,7 @@ class AccountsProvider extends ChangeNotifier {
           'amount_balance': openingBalance,
           'amount_received': '0.00',
           'amount_spent': '0.00',
+          'is_excluded': isExcluded,
         });
       } else if (action == 'Edit') {
         await FirebaseFirestore.instance
@@ -116,6 +119,7 @@ class AccountsProvider extends ChangeNotifier {
                   double.parse(openingBalance))
               .toStringAsFixed(2),
           'updated_at': now,
+          'is_excluded': isExcluded,
         });
       }
 

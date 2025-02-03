@@ -21,6 +21,7 @@ class Account {
   String amountReceived;
   String amountSpent;
   String cycleId;
+  bool isExcluded;
 
   Account({
     required this.id,
@@ -30,6 +31,7 @@ class Account {
     required this.amountReceived,
     required this.amountSpent,
     required this.cycleId,
+    required this.isExcluded,
   });
 
   void showAccountDetails(BuildContext context, Cycle cycle) {
@@ -173,7 +175,7 @@ class Account {
           return AlertDialog(
             title: const Text('Cannot Delete Account'),
             content: const Text(
-              'There are transactions associated with this account in the current cycle. You cannot delete it.'),
+                'There are transactions associated with this account in the current cycle. You cannot delete it.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
