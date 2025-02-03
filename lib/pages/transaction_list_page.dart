@@ -455,36 +455,44 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                 child: Card(
                                   child: ListTile(
                                     title: transaction.type == 'transfer'
-                                        ? Row(
-                                            children: [
-                                              Chip(
-                                                label: Text(
-                                                  transaction.accountName,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
+                                        ? FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Row(
+                                              children: [
+                                                Chip(
+                                                  label: Text(
+                                                    transaction.accountName,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
                                                   ),
+                                                  padding: EdgeInsets.all(0),
                                                 ),
-                                                padding: EdgeInsets.all(0),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8.0),
-                                                child: Icon(
-                                                    CupertinoIcons
-                                                        .arrow_right_arrow_left,
-                                                    color: Colors.grey),
-                                              ),
-                                              Chip(
-                                                label: Text(
-                                                  transaction.accountToName,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 8.0),
+                                                  child: Icon(
+                                                      CupertinoIcons
+                                                          .arrow_right_arrow_left,
+                                                      color: Colors.grey),
+                                                ),
+                                                Chip(
+                                                  label: Text(
+                                                    transaction.accountToName,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
                                                   ),
+                                                  padding: EdgeInsets.all(0),
                                                 ),
-                                                padding: EdgeInsets.all(0),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           )
                                         : FittedBox(
                                             fit: BoxFit.scaleDown,
@@ -492,8 +500,9 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                             child: Text(
                                               transaction.categoryName,
                                               style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
                                             ),
                                           ),
                                     subtitle: Column(
