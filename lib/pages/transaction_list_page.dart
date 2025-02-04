@@ -460,8 +460,21 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                             alignment: Alignment.centerLeft,
                                             child: Row(
                                               children: [
-                                                Chip(
-                                                  label: Text(
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                      color: Colors.grey,
+                                                      width: 1.0,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
+                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 4.0,
+                                                      vertical: 2.0),
+                                                  child: Text(
                                                     transaction.accountName,
                                                     style: TextStyle(
                                                       fontWeight:
@@ -469,19 +482,33 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                                       fontSize: 14,
                                                     ),
                                                   ),
-                                                  padding: EdgeInsets.all(0),
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets
                                                       .symmetric(
-                                                      horizontal: 8.0),
+                                                      horizontal: 4.0),
                                                   child: Icon(
-                                                      CupertinoIcons
-                                                          .arrow_right_arrow_left,
-                                                      color: Colors.grey),
+                                                    CupertinoIcons
+                                                        .arrow_right_arrow_left,
+                                                    color: Colors.grey,
+                                                    size: 16,
+                                                  ),
                                                 ),
-                                                Chip(
-                                                  label: Text(
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                      color: Colors.grey,
+                                                      width: 1.0,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
+                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 4.0,
+                                                      vertical: 2.0),
+                                                  child: Text(
                                                     transaction.accountToName,
                                                     style: TextStyle(
                                                       fontWeight:
@@ -489,7 +516,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                                       fontSize: 14,
                                                     ),
                                                   ),
-                                                  padding: EdgeInsets.all(0),
                                                 ),
                                               ],
                                             ),

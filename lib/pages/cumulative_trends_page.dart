@@ -327,41 +327,81 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
                                       Card(
                                         child: ListTile(
                                           title: transaction.type == 'transfer'
-                                              ? Row(
-                                                  children: [
-                                                    Chip(
-                                                      label: Text(
-                                                        transaction.accountName,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                              ? FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          border: Border.all(
+                                                            color: Colors.grey,
+                                                            width: 1.0,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0),
+                                                        ),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 4.0,
+                                                                vertical: 2.0),
+                                                        child: Text(
+                                                          transaction
+                                                              .accountName,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
                                                         ),
                                                       ),
-                                                      padding:
-                                                          EdgeInsets.all(0),
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 8.0),
-                                                      child: Icon(
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal:
+                                                                    4.0),
+                                                        child: Icon(
                                                           CupertinoIcons
                                                               .arrow_right_arrow_left,
-                                                          color: Colors.grey),
-                                                    ),
-                                                    Chip(
-                                                      label: Text(
-                                                        transaction
-                                                            .accountToName,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          color: Colors.grey,
+                                                          size: 16,
                                                         ),
                                                       ),
-                                                      padding:
-                                                          EdgeInsets.all(0),
-                                                    ),
-                                                  ],
+                                                      Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          border: Border.all(
+                                                            color: Colors.grey,
+                                                            width: 1.0,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      8.0),
+                                                        ),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 4.0,
+                                                                vertical: 2.0),
+                                                        child: Text(
+                                                          transaction
+                                                              .accountToName,
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 )
                                               : FittedBox(
                                                   fit: BoxFit.scaleDown,
