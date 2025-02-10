@@ -384,24 +384,18 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            children: [
-                              TextSpan(text: 'Theme Colors'),
-                              if (!user.isPremium && customizeThemeColor > 0)
-                                TextSpan(
-                                  text:
-                                      ' - $customizeThemeColor customization${customizeThemeColor > 1 ? 's' : ''} remaining',
-                                  style: TextStyle(
-                                    color: Colors.orangeAccent,
-                                  ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Theme Colors'),
+                            if (!user.isPremium && customizeThemeColor > 0)
+                              Text(
+                                '$customizeThemeColor customization${customizeThemeColor > 1 ? 's' : ''} remaining',
+                                style: TextStyle(
+                                  color: Colors.orangeAccent,
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

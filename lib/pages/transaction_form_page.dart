@@ -499,23 +499,17 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        children: [
-                          TextSpan(text: 'Attachment:'),
-                          if (!user.isPremium && freemiumAttachmentSlots > 1)
-                            TextSpan(
-                              text:
-                                  ' (${files.length}/$freemiumAttachmentSlots) in use',
-                              style: TextStyle(
-                                color: Colors.orangeAccent,
-                              ),
+                    Row(
+                      children: [
+                        Text('Attachment:'),
+                        if (!user.isPremium && freemiumAttachmentSlots > 1)
+                          Text(
+                            ' (${files.length}/$freemiumAttachmentSlots) in use',
+                            style: TextStyle(
+                              color: Colors.orangeAccent,
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                     if (files.isNotEmpty)
                       Column(
