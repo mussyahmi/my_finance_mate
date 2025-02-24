@@ -180,9 +180,9 @@ class AccountDialogState extends State<AccountDialog> {
     }
 
     //* Check if the value is 0
-    if (double.parse(cleanedValue) == 0) {
-      return 'The amount cannot be zero.';
-    }
+    // if (double.parse(cleanedValue) == 0) {
+    //   return 'The amount cannot be zero.';
+    // }
 
     //* Custom currency validation (you can modify this based on your requirements)
     //* Here, we are checking if the value has up to 2 decimal places
