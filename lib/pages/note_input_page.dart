@@ -35,6 +35,12 @@ class _NoteInputPageState extends State<NoteInputPage> {
         actions: [
           TextButton(
             onPressed: () {
+              if (jsonEncode(controller.document.toJson()) ==
+                  '[{"insert":"\\n"}]') {
+                Navigator.of(context).pop('');
+                return;
+              }
+
               Navigator.of(context)
                   .pop(jsonEncode(controller.document.toJson()));
             },
