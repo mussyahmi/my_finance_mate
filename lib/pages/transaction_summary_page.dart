@@ -179,91 +179,93 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                   height: 350,
                   child: _isLoading
                       ? const Center(child: Text('Loading...'))
-                      : PieChart(
-                          PieChartData(
-                            pieTouchData: PieTouchData(
-                              touchCallback: (p0, p1) {
-                                if (p1 != null) {
-                                  switch (p1
-                                      .touchedSection!.touchedSection!.title) {
-                                    case 'Needs':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TransactionListPage(
-                                            subType: 'needs',
-                                          ),
-                                        ),
-                                      );
-                                    case 'Wants':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TransactionListPage(
-                                            subType: 'wants',
-                                          ),
-                                        ),
-                                      );
-                                    case 'Savings':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TransactionListPage(
-                                            subType: 'savings',
-                                          ),
-                                        ),
-                                      );
-                                    case 'Others':
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const TransactionListPage(
-                                            subType: 'others',
-                                          ),
-                                        ),
-                                      );
-                                  }
-                                }
-                              },
+                      : totalTransaction == 0
+                          ? const Center(child: Text('No transactions found.'))
+                          : PieChart(
+                              PieChartData(
+                                pieTouchData: PieTouchData(
+                                  touchCallback: (p0, p1) {
+                                    if (p1 != null) {
+                                      switch (p1.touchedSection!.touchedSection!
+                                          .title) {
+                                        case 'Needs':
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const TransactionListPage(
+                                                subType: 'needs',
+                                              ),
+                                            ),
+                                          );
+                                        case 'Wants':
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const TransactionListPage(
+                                                subType: 'wants',
+                                              ),
+                                            ),
+                                          );
+                                        case 'Savings':
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const TransactionListPage(
+                                                subType: 'savings',
+                                              ),
+                                            ),
+                                          );
+                                        case 'Others':
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const TransactionListPage(
+                                                subType: 'others',
+                                              ),
+                                            ),
+                                          );
+                                      }
+                                    }
+                                  },
+                                ),
+                                sections: [
+                                  _pieChartSectionData(
+                                    _savedThemeMode == AdaptiveThemeMode.dark
+                                        ? Colors.green[900]!
+                                        : Colors.green[600]!,
+                                    needsPercentage,
+                                    'Needs',
+                                  ),
+                                  _pieChartSectionData(
+                                    _savedThemeMode == AdaptiveThemeMode.dark
+                                        ? Colors.blue[900]!
+                                        : Colors.blue[600]!,
+                                    wantsPercentage,
+                                    'Wants',
+                                  ),
+                                  _pieChartSectionData(
+                                    _savedThemeMode == AdaptiveThemeMode.dark
+                                        ? Colors.yellow[900]!
+                                        : Colors.yellow[600]!,
+                                    savingsPercentage,
+                                    'Savings',
+                                  ),
+                                  _pieChartSectionData(
+                                    _savedThemeMode == AdaptiveThemeMode.dark
+                                        ? Colors.blueGrey[900]!
+                                        : Colors.blueGrey[600]!,
+                                    othersPercentage,
+                                    'Others',
+                                  ),
+                                ],
+                                sectionsSpace: 3,
+                                centerSpaceRadius: 0,
+                              ),
                             ),
-                            sections: [
-                              _pieChartSectionData(
-                                _savedThemeMode == AdaptiveThemeMode.dark
-                                    ? Colors.green[900]!
-                                    : Colors.green[600]!,
-                                needsPercentage,
-                                'Needs',
-                              ),
-                              _pieChartSectionData(
-                                _savedThemeMode == AdaptiveThemeMode.dark
-                                    ? Colors.blue[900]!
-                                    : Colors.blue[600]!,
-                                wantsPercentage,
-                                'Wants',
-                              ),
-                              _pieChartSectionData(
-                                _savedThemeMode == AdaptiveThemeMode.dark
-                                    ? Colors.yellow[900]!
-                                    : Colors.yellow[600]!,
-                                savingsPercentage,
-                                'Savings',
-                              ),
-                              _pieChartSectionData(
-                                _savedThemeMode == AdaptiveThemeMode.dark
-                                    ? Colors.blueGrey[900]!
-                                    : Colors.blueGrey[600]!,
-                                othersPercentage,
-                                'Others',
-                              ),
-                            ],
-                            sectionsSpace: 3,
-                            centerSpaceRadius: 0,
-                          ),
-                        ),
                 ),
                 if (!context.read<PersonProvider>().user!.isPremium)
                   Column(
