@@ -274,7 +274,8 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                         adCacheService: _adCacheService,
                         number: 1,
                         adSize: AdSize.largeBanner,
-                        adUnitId: _adMobService.bannerChartAdUnitId!,
+                        adUnitId:
+                            _adMobService.bannerTransactionSummaryAdUnitId!,
                         height: 100.0,
                       ),
                       const SizedBox(height: 10),

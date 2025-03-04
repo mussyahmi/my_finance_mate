@@ -4,13 +4,18 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../models/transaction.dart' as t;
 import '../providers/cycle_provider.dart';
+import '../providers/person_provider.dart';
 import '../providers/transactions_provider.dart';
+import '../services/ad_cache_service.dart';
+import '../services/ad_mob_service.dart';
+import '../widgets/ad_container.dart';
 
 class CumulativeTrendsPage extends StatefulWidget {
   const CumulativeTrendsPage({
@@ -28,14 +33,18 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
   List<FlSpot> _receivedSpots = [];
   bool _isLoading = true;
   DateTime _startDate = DateTime.now();
+  late AdMobService _adMobService;
+  late AdCacheService _adCacheService;
 
   @override
-  void initState() {
-    super.initState();
-    initAsync();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _adMobService = context.read<AdMobService>();
+    _adCacheService = context.read<AdCacheService>();
+    _initAsync();
   }
 
-  Future<void> initAsync() async {
+  Future<void> _initAsync() async {
     await generateCumulativeSpots();
   }
 
@@ -278,6 +287,20 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
                               ),
                             ),
                           ),
+                          if (!context.read<PersonProvider>().user!.isPremium)
+                            Column(
+                              children: [
+                                AdContainer(
+                                  adCacheService: _adCacheService,
+                                  number: 1,
+                                  adSize: AdSize.largeBanner,
+                                  adUnitId: _adMobService
+                                      .bannerCumulativeTrendsAdUnitId!,
+                                  height: 100.0,
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            ),
                           if (_filteredTransactions.isNotEmpty)
                             Column(
                               children: _filteredTransactions
