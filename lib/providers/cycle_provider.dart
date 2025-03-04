@@ -192,7 +192,6 @@ class CycleProvider extends ChangeNotifier {
       accountData['opening_balance'] = accountData['amount_balance'];
       accountData['amount_received'] = '0.00';
       accountData['amount_spent'] = '0.00';
-      accountData['created_at'] = now;
       accountData['updated_at'] = now;
 
       await FirebaseFirestore.instance
