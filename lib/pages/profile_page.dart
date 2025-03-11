@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
@@ -298,6 +299,24 @@ class ProfilePageState extends State<ProfilePage> {
                               builder: (context) => const WishlistPage(),
                             ),
                           );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: const Text(
+                        'Tools',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('KWSP Projection'),
+                        trailing: const Icon(CupertinoIcons.arrow_right),
+                        onTap: () async {
+                          await launchUrl(Uri.parse('https://my-finance-mate.com/kwsp-projection'));
                         },
                       ),
                     ),
