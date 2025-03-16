@@ -313,10 +313,21 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('KWSP Projection'),
-                        trailing: const Icon(CupertinoIcons.arrow_right),
+                        title: const Text('KWSP Growth Calculator'),
+                        trailing: const Icon(CupertinoIcons.right_chevron),
                         onTap: () async {
-                          await launchUrl(Uri.parse('https://my-finance-mate.com/kwsp-projection'));
+                          await launchUrl(Uri.parse(
+                              'https://my-finance-mate.com/kwsp-growth-calculator'));
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('KWSP Withdrawal Planner'),
+                        trailing: const Icon(CupertinoIcons.right_chevron),
+                        onTap: () async {
+                          await launchUrl(Uri.parse(
+                              'https://my-finance-mate.com/kwsp-withdrawal-planner'));
                         },
                       ),
                     ),
