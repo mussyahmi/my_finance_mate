@@ -306,9 +306,6 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
         _applyFilter(budgetFilter);
         Navigator.pop(context);
       },
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
       selected: currentFilter == budgetFilter,
       selectedColor: Theme.of(context).colorScheme.onPrimary,
       selectedTileColor: Theme.of(context).colorScheme.primary,

@@ -133,11 +133,21 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.light,
           useMaterial3: true,
           colorSchemeSeed: widget.themeColor,
+          listTileTheme: ListTileThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
         ),
         dark: ThemeData(
           brightness: Brightness.dark,
           useMaterial3: true,
           colorSchemeSeed: widget.themeColor,
+          listTileTheme: ListTileThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
         ),
         initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
         builder: (theme, darkTheme) => MaterialApp(
@@ -157,11 +167,21 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.light,
           useMaterial3: true,
           colorSchemeSeed: widget.themeColor,
+          listTileTheme: ListTileThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
         ),
         dark: ThemeData(
           brightness: Brightness.dark,
           useMaterial3: true,
           colorSchemeSeed: widget.themeColor,
+          listTileTheme: ListTileThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
         ),
         initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
         builder: (theme, darkTheme) => MaterialApp(
@@ -183,11 +203,21 @@ class _MyAppState extends State<MyApp> {
         brightness: Brightness.light,
         useMaterial3: true,
         colorSchemeSeed: widget.themeColor,
+        listTileTheme: ListTileThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
       ),
       dark: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
         colorSchemeSeed: widget.themeColor,
+        listTileTheme: ListTileThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+        ),
       ),
       initial: widget.savedThemeMode ?? AdaptiveThemeMode.light,
       builder: (theme, darkTheme) => MaterialApp(
