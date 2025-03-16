@@ -57,8 +57,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   List<Category> categories = [];
   String? selectedAccountId;
   String? selectedAccountToId;
-  TextEditingController transactionAmountController = TextEditingController();
-  TextEditingController transactionNoteController = TextEditingController();
+  final TextEditingController _transactionAmountController =
+      TextEditingController();
+  final TextEditingController _transactionNoteController =
+      TextEditingController();
   DateTime selectedDateTime = DateTime.now();
   bool _isLoading = false;
   List<dynamic> files = [];
@@ -92,8 +94,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;
-      transactionAmountController.text = widget.transaction!.amount;
-      transactionNoteController.text = widget.transaction!.note;
+      _transactionAmountController.text = widget.transaction!.amount;
+      _transactionNoteController.text = widget.transaction!.note;
       selectedDateTime = widget.transaction!.dateTime;
       files = widget.transaction!.files;
 
@@ -439,18 +441,18 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => AmountInputPage(
-                              amount: transactionAmountController.text,
+                              amount: _transactionAmountController.text,
                             ),
                           ),
                         );
 
                         if (result != null && result is String) {
-                          transactionAmountController.text = result;
+                          _transactionAmountController.text = result;
                         }
                       },
                       child: AbsorbPointer(
                         child: TextField(
-                          controller: transactionAmountController,
+                          controller: _transactionAmountController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Amount',
@@ -467,27 +469,31 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => NoteInputPage(
-                                note: transactionNoteController.text,
+                                note: _transactionNoteController.text,
                               ),
                             ),
                           );
 
-                          if (note.isNotEmpty) {
+                          if (note == 'empty') {
                             setState(() {
-                              transactionNoteController.text = note;
+                              _transactionNoteController.text = '';
+                            });
+                          } else if (note.isNotEmpty) {
+                            setState(() {
+                              _transactionNoteController.text = note;
                             });
                           }
                         },
                         leading: Icon(Icons.notes),
                         title: Text(
-                          transactionNoteController.text.isEmpty
+                          _transactionNoteController.text.isEmpty
                               ? 'Add Note'
-                              : transactionNoteController.text
+                              : _transactionNoteController.text
                                       .contains('insert')
                                   ? ParchmentDocument.fromJson(jsonDecode(
-                                          transactionNoteController.text))
+                                          _transactionNoteController.text))
                                       .toPlainText()
-                                  : transactionNoteController.text
+                                  : _transactionNoteController.text
                                       .split('\\n')[0],
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
@@ -806,8 +812,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           String? categoryId = selectedCategoryId;
                           String? accountId = selectedAccountId;
                           String? accountToId = selectedAccountToId;
-                          String amount = transactionAmountController.text;
-                          String note = transactionNoteController.text;
+                          String amount = _transactionAmountController.text;
+                          String note = _transactionNoteController.text;
                           DateTime dateTime = selectedDateTime;
 
                           //* Validate the form data
@@ -939,7 +945,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
       return 'Please enter a valid currency value with up to 2 decimal places';
     }
 
-    transactionAmountController.text = cleanedValue;
+    _transactionAmountController.text = cleanedValue;
 
     return '';
   }

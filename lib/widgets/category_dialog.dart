@@ -163,7 +163,11 @@ class CategoryDialogState extends State<CategoryDialog> {
                         ),
                       );
 
-                      if (note.isNotEmpty) {
+                      if (note == 'empty') {
+                        setState(() {
+                          _categoryNoteController.text = '';
+                        });
+                      } else if (note.isNotEmpty) {
                         setState(() {
                           _categoryNoteController.text = note;
                         });

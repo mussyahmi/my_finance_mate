@@ -78,7 +78,11 @@ class WishlistDialogState extends State<WishlistDialog> {
                       ),
                     );
 
-                    if (note.isNotEmpty) {
+                    if (note == 'empty') {
+                      setState(() {
+                        _wishlistNoteController.text = '';
+                      });
+                    } else if (note.isNotEmpty) {
                       setState(() {
                         _wishlistNoteController.text = note;
                       });
