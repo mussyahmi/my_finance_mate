@@ -159,7 +159,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       child: Card(
                         child: ListTile(
                           title: Text(category.name),
-                          trailing: selectedType == 'spent'
+                          trailing: type == 'spent'
                               ? SubTypeTag(subType: category.subType)
                               : null,
                           onTap: () {
