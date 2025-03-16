@@ -158,7 +158,6 @@ class CycleProvider extends ChangeNotifier {
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();
       categoryData['total_amount'] = '0.00';
-      categoryData['created_at'] = now;
       categoryData['updated_at'] = now;
 
       await FirebaseFirestore.instance
@@ -167,7 +166,8 @@ class CycleProvider extends ChangeNotifier {
           .collection('cycles')
           .doc(newCycleId)
           .collection('categories')
-          .add(categoryData);
+          .doc(doc.id) //* Set the document ID to the same as the original
+          .set(categoryData);
     }
   }
 
