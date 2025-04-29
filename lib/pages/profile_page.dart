@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -65,6 +66,7 @@ class ProfilePageState extends State<ProfilePage> {
   late AdCacheService _adCacheService;
   RewardedAd? _rewardedAd;
   int customizeThemeColor = 0;
+  SystemUiMode systemUiMode = SystemUiMode.edgeToEdge;
 
   @override
   void initState() {
@@ -95,6 +97,7 @@ class ProfilePageState extends State<ProfilePage> {
         sharedPreferences.getBool('show_pinned_wishlist');
     final savedCustomizeThemeColor =
         sharedPreferences.getInt('customize_theme_color');
+    final savedSystemUiMode = sharedPreferences.getString('system_ui_mode');
 
     setState(() {
       prefs = sharedPreferences;
@@ -105,6 +108,10 @@ class ProfilePageState extends State<ProfilePage> {
       showNetBalance = savedShowNetBalance ?? false;
       showPinnedWishlist = savedShowPinnedWishlist ?? false;
       customizeThemeColor = savedCustomizeThemeColor ?? 0;
+      systemUiMode = savedSystemUiMode != null
+          ? SystemUiMode.values
+              .firstWhere((mode) => mode.toString() == savedSystemUiMode)
+          : SystemUiMode.edgeToEdge;
     });
   }
 
@@ -431,7 +438,7 @@ class ProfilePageState extends State<ProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              '(Slide left for more options)',
+                              'Slide left for more options',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -461,6 +468,67 @@ class ProfilePageState extends State<ProfilePage> {
                                       ],
                                     );
                                   }).toList(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: Text('System UI Mode'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Control status bar & navigation visibility',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Row(
+                                  children: [
+                                    ...{
+                                      SystemUiMode.edgeToEdge:
+                                          'Default (Visible)',
+                                      SystemUiMode.immersiveSticky:
+                                          'Fullscreen (Sticky)',
+                                    }.entries.map((entry) {
+                                      final mode = entry.key;
+                                      final label = entry.value;
+
+                                      return Row(
+                                        children: [
+                                          ChoiceChip(
+                                            label: Text(label),
+                                            selected: systemUiMode == mode,
+                                            onSelected: (bool selected) async {
+                                              if (selected) {
+                                                setState(() {
+                                                  systemUiMode = mode;
+                                                });
+                                                await SystemChrome
+                                                    .setEnabledSystemUIMode(
+                                                        mode);
+                                                await prefs.setString(
+                                                    'system_ui_mode',
+                                                    mode.toString());
+                                              }
+                                            },
+                                          ),
+                                          const SizedBox(width: 8),
+                                        ],
+                                      );
+                                    }),
+                                  ],
                                 ),
                               ),
                             ),
