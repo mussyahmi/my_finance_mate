@@ -637,7 +637,7 @@ class _DashboardPageState extends State<DashboardPage>
           ? FloatingActionButton(
               onPressed: () async {
                 if (_selectedIndex == 0) {
-                  Account.showAccountFormDialog(context, 'Add');
+                  Account.showAccountFormDialog(context, cycle, 'Add');
                 } else if (_selectedIndex == 1) {
                   if (context.read<AccountsProvider>().accounts!.isEmpty) {
                     EasyLoading.showInfo(

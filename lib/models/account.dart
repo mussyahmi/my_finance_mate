@@ -21,6 +21,7 @@ class Account {
   String amountReceived;
   String amountSpent;
   String cycleId;
+  DateTime createdAt;
   bool isExcluded;
 
   Account({
@@ -31,6 +32,7 @@ class Account {
     required this.amountReceived,
     required this.amountSpent,
     required this.cycleId,
+    required this.createdAt,
     required this.isExcluded,
   });
 
@@ -67,8 +69,11 @@ class Account {
                     IconButton.filledTonal(
                       onPressed: () async {
                         final result = await showAccountFormDialog(
-                            context, 'Edit',
-                            account: this);
+                          context,
+                          cycle,
+                          'Edit',
+                          account: this,
+                        );
 
                         if (result) {
                           Navigator.of(context).pop();
@@ -233,12 +238,14 @@ class Account {
     }
   }
 
-  static Future<bool> showAccountFormDialog(BuildContext context, String action,
+  static Future<bool> showAccountFormDialog(
+      BuildContext context, Cycle cycle, String action,
       {Account? account}) async {
     return await showDialog(
       context: context,
       builder: (context) {
         return AccountDialog(
+          cycle: cycle,
           action: action,
           account: account,
         );

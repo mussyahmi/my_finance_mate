@@ -5,16 +5,19 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
+import '../models/cycle.dart';
 import '../pages/amount_input_page.dart';
 import '../providers/accounts_provider.dart';
 import '../services/message_services.dart';
 
 class AccountDialog extends StatefulWidget {
+  final Cycle cycle;
   final String action;
   final Account? account;
 
   const AccountDialog({
     super.key,
+    required this.cycle,
     required this.action,
     required this.account,
   });
@@ -29,6 +32,7 @@ class AccountDialogState extends State<AccountDialog> {
   final TextEditingController _openingBalanceController =
       TextEditingController();
   bool _isExcluded = false;
+  bool _canEditOpeningBalance = true;
 
   @override
   void initState() {
@@ -38,6 +42,9 @@ class AccountDialogState extends State<AccountDialog> {
       _nameController.text = widget.account!.name;
       _openingBalanceController.text = widget.account!.openingBalance;
       _isExcluded = widget.account!.isExcluded;
+      _canEditOpeningBalance =
+          widget.account!.createdAt.isAfter(widget.cycle.startDate) &&
+              widget.account!.createdAt.isBefore(widget.cycle.endDate);
     }
   }
 
@@ -64,20 +71,22 @@ class AccountDialogState extends State<AccountDialog> {
             ),
             const SizedBox(height: 20),
             GestureDetector(
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AmountInputPage(
-                      amount: _openingBalanceController.text,
-                    ),
-                  ),
-                );
+              onTap: _canEditOpeningBalance
+                  ? () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AmountInputPage(
+                            amount: _openingBalanceController.text,
+                          ),
+                        ),
+                      );
 
-                if (result != null && result is String) {
-                  _openingBalanceController.text = result;
-                }
-              },
+                      if (result != null && result is String) {
+                        _openingBalanceController.text = result;
+                      }
+                    }
+                  : null,
               child: AbsorbPointer(
                 child: TextField(
                   controller: _openingBalanceController,
@@ -136,6 +145,7 @@ class AccountDialogState extends State<AccountDialog> {
 
               await context.read<AccountsProvider>().updateAccount(
                     context,
+                    widget.cycle,
                     widget.action,
                     _nameController.text,
                     double.parse(_openingBalanceController.text)

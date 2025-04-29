@@ -42,6 +42,7 @@ class AccountsProvider extends ChangeNotifier {
         amountReceived: doc['amount_received'],
         amountSpent: doc['amount_spent'],
         cycleId: cycle.id,
+        createdAt: (doc['created_at'] as Timestamp).toDate(),
         isExcluded:
             doc.data().containsKey('is_excluded') ? doc['is_excluded'] : false,
       );
@@ -74,12 +75,11 @@ class AccountsProvider extends ChangeNotifier {
     return accounts!.firstWhere((account) => account.name == accountName);
   }
 
-  Future<void> updateAccount(BuildContext context, String action, String name,
-      String openingBalance, bool isExcluded,
+  Future<void> updateAccount(BuildContext context, Cycle cycle, String action,
+      String name, String openingBalance, bool isExcluded,
       {Account? account}) async {
     try {
       final Person user = context.read<PersonProvider>().user!;
-      final Cycle cycle = context.read<CycleProvider>().cycle!;
 
       //* Get current timestamp
       final now = DateTime.now();
