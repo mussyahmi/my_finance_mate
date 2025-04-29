@@ -2,6 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
@@ -120,7 +121,19 @@ class _CyclePageState extends State<CyclePage> {
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     )
-                  : null,
+                  : title == 'Cycle ID'
+                      ? IconButton.filledTonal(
+                          onPressed: () async {
+                            await Clipboard.setData(ClipboardData(text: data));
+
+                            EasyLoading.showSuccess('Copied to clipboard');
+                          },
+                          icon: Icon(
+                            Icons.copy,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : null,
         ),
       );
     }
