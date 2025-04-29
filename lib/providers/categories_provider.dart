@@ -86,7 +86,6 @@ class CategoriesProvider extends ChangeNotifier {
             .toList();
         break;
       case BudgetFilter.all:
-      default:
         filteredBudgets = budgets;
         break;
     }
