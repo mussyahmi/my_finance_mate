@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -52,6 +53,13 @@ void main() async {
   final themeColor = savedThemeColorIndex != null
       ? themeColors[savedThemeColorIndex]
       : Colors.teal;
+
+  final savedSystemUiMode = prefs.getString('system_ui_mode');
+  SystemUiMode systemUiMode = savedSystemUiMode != null
+      ? SystemUiMode.values
+          .firstWhere((mode) => mode.toString() == savedSystemUiMode)
+      : SystemUiMode.edgeToEdge;
+  await SystemChrome.setEnabledSystemUIMode(systemUiMode);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
