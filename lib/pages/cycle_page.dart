@@ -45,10 +45,6 @@ class _CyclePageState extends State<CyclePage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (context.read<CyclesProvider>().cycles == null) {
-      context.read<CyclesProvider>().fetchCycles(context);
-    }
-
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
 

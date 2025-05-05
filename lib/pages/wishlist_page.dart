@@ -29,11 +29,6 @@ class _WishlistPageState extends State<WishlistPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    if (context.read<WishlistProvider>().wishlist == null) {
-      context.read<WishlistProvider>().fetchWishlist(context);
-    }
-
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
   }

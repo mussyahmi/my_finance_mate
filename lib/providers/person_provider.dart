@@ -8,9 +8,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
+import 'accounts_provider.dart';
+import 'categories_provider.dart';
+import 'cycle_provider.dart';
+import 'cycles_provider.dart';
+import 'transactions_provider.dart';
+import 'wishlist_provider.dart';
 
 class PersonProvider extends ChangeNotifier {
   Person? user;
@@ -194,5 +201,35 @@ class PersonProvider extends ChangeNotifier {
     user!.forceRefresh = false;
 
     notifyListeners();
+  }
+
+  Future<void> fetchData(BuildContext context) async {
+    final bool forceRefresh = user!.forceRefresh;
+
+    await context
+        .read<CycleProvider>()
+        .fetchCycle(context, refresh: forceRefresh);
+
+    await context
+        .read<CyclesProvider>()
+        .fetchCycles(context, refresh: forceRefresh);
+
+    await context.read<CategoriesProvider>().fetchCategories(
+        context, context.read<CycleProvider>().cycle!,
+        refresh: forceRefresh);
+
+    await context.read<AccountsProvider>().fetchAccounts(
+        context, context.read<CycleProvider>().cycle!,
+        refresh: forceRefresh);
+
+    await context.read<TransactionsProvider>().fetchTransactions(
+        context, context.read<CycleProvider>().cycle!,
+        refresh: forceRefresh);
+
+    await context
+        .read<WishlistProvider>()
+        .fetchWishlist(context, refresh: forceRefresh);
+
+    if (forceRefresh) await resetForceRefresh();
   }
 }

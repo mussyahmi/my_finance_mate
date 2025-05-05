@@ -377,6 +377,8 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
 
+        await context.read<PersonProvider>().fetchData(context);
+
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
@@ -482,6 +484,8 @@ class _LoginPageState extends State<LoginPage> {
         context.read<PersonProvider>().setUser(newUser: person);
 
         print('Google Sign-In Successful');
+
+        await context.read<PersonProvider>().fetchData(context);
 
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(

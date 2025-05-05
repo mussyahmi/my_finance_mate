@@ -19,7 +19,6 @@ import '../providers/categories_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../providers/person_provider.dart';
-import '../providers/wishlist_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../size_config.dart';
@@ -64,45 +63,6 @@ class _DashboardPageState extends State<DashboardPage>
     super.didChangeDependencies();
 
     final Person user = context.read<PersonProvider>().user!;
-    final bool forceRefresh = user.forceRefresh;
-
-    if (forceRefresh || context.read<CycleProvider>().cycle == null) {
-      await context
-          .read<CycleProvider>()
-          .fetchCycle(context, refresh: forceRefresh);
-    }
-
-    if (forceRefresh || context.read<CycleProvider>().cycle != null) {
-      if (forceRefresh ||
-          context.read<CategoriesProvider>().categories == null) {
-        await context.read<CategoriesProvider>().fetchCategories(
-            context, context.read<CycleProvider>().cycle!,
-            refresh: forceRefresh);
-      }
-
-      if (forceRefresh || context.read<AccountsProvider>().accounts == null) {
-        await context.read<AccountsProvider>().fetchAccounts(
-            context, context.read<CycleProvider>().cycle!,
-            refresh: forceRefresh);
-      }
-
-      if (forceRefresh ||
-          context.read<TransactionsProvider>().transactions == null) {
-        await context.read<TransactionsProvider>().fetchTransactions(
-            context, context.read<CycleProvider>().cycle!,
-            refresh: forceRefresh);
-      }
-
-      if (forceRefresh) {
-        await context.read<PersonProvider>().resetForceRefresh();
-      }
-    }
-
-    if (forceRefresh || context.read<WishlistProvider>().wishlist == null) {
-      context
-          .read<WishlistProvider>()
-          .fetchWishlist(context, refresh: forceRefresh);
-    }
 
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
