@@ -15,7 +15,8 @@ class PinnedWishlist extends StatefulWidget {
   State<PinnedWishlist> createState() => _PinnedWishlistState();
 }
 
-class _PinnedWishlistState extends State<PinnedWishlist> {
+class _PinnedWishlistState extends State<PinnedWishlist>
+    with AutomaticKeepAliveClientMixin<PinnedWishlist> {
   bool showPinnedWishlist = false;
 
   @override
@@ -37,6 +38,8 @@ class _PinnedWishlistState extends State<PinnedWishlist> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     Cycle? cycle = context.watch<CycleProvider>().cycle;
 
     return showPinnedWishlist
@@ -123,4 +126,7 @@ class _PinnedWishlistState extends State<PinnedWishlist> {
           )
         : Container();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
