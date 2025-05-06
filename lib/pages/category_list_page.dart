@@ -42,7 +42,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isFromTransactionForm != null) {
-        Category.showCategoryFormDialog(context, selectedType, 'Add');
+        Category.showCategoryDialog(context, selectedType, 'Add');
       }
     });
   }

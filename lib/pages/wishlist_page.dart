@@ -138,7 +138,7 @@ class _WishlistPageState extends State<WishlistPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          Wishlist.showWishlistFormDialog(context, 'Add');
+          Wishlist.showWishlistDialog(context, 'Add');
         },
         child: const Icon(CupertinoIcons.add),
       ),

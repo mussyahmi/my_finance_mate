@@ -30,7 +30,7 @@ class Cycle {
     required this.isLastCycle,
   });
 
-  Future<bool> showCycleFormDialog(
+  Future<bool> showCycleDialog(
     BuildContext context,
     Person user,
     String title,

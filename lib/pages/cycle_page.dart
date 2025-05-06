@@ -106,7 +106,7 @@ class _CyclePageState extends State<CyclePage> {
               title != 'Cycle ID' && title != 'Start Date' && cycle.isLastCycle
                   ? IconButton.filledTonal(
                       onPressed: () async {
-                        await cycle.showCycleFormDialog(
+                        await cycle.showCycleDialog(
                           context,
                           user,
                           title,

@@ -86,7 +86,7 @@ class Category {
                   if (cycle.isLastCycle)
                     IconButton.filledTonal(
                       onPressed: () async {
-                        final result = await showCategoryFormDialog(
+                        final result = await showCategoryDialog(
                           context,
                           selectedType,
                           'Edit',
@@ -309,7 +309,7 @@ class Category {
     }
   }
 
-  static Future<bool> showCategoryFormDialog(
+  static Future<bool> showCategoryDialog(
       BuildContext context, String selectedType, String action,
       {Category? category}) async {
     return await showDialog(

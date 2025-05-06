@@ -68,7 +68,7 @@ class Account {
                   if (cycle.isLastCycle)
                     IconButton.filledTonal(
                       onPressed: () async {
-                        final result = await showAccountFormDialog(
+                        final result = await showAccountDialog(
                           context,
                           cycle,
                           'Edit',
@@ -238,7 +238,7 @@ class Account {
     }
   }
 
-  static Future<bool> showAccountFormDialog(
+  static Future<bool> showAccountDialog(
       BuildContext context, Cycle cycle, String action,
       {Account? account}) async {
     return await showDialog(

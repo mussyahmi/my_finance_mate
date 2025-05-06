@@ -62,7 +62,7 @@ class Wishlist {
                   if (cycle.isLastCycle)
                     IconButton.filledTonal(
                       onPressed: () async {
-                        final result = await showWishlistFormDialog(
+                        final result = await showWishlistDialog(
                             context, 'Edit',
                             wish: this);
 
@@ -169,7 +169,7 @@ class Wishlist {
     );
   }
 
-  static Future<bool> showWishlistFormDialog(
+  static Future<bool> showWishlistDialog(
       BuildContext context, String action,
       {Wishlist? wish}) async {
     return await showDialog(
