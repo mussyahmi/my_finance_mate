@@ -1,2 +1,3 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.shatsy.** { *; }
+-keep class com.baseflow.permissionhandler.** { *; }
