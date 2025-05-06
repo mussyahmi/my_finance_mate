@@ -1,8 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:provider/provider.dart';
 
@@ -33,12 +40,81 @@ class _ImageViewPageState extends State<ImageViewPage> {
     _adCacheService = context.read<AdCacheService>();
   }
 
+  Future<void> _downloadImage() async {
+    if (widget.type != 'url') return;
+
+    try {
+      // Show loading indicator
+      EasyLoading.show(status: 'Checking permissions...');
+
+      // Determine Android SDK version
+      bool isAndroid13OrAbove = false;
+      if (Platform.isAndroid) {
+        final deviceInfo = DeviceInfoPlugin();
+        final androidInfo = await deviceInfo.androidInfo;
+        isAndroid13OrAbove = androidInfo.version.sdkInt >= 33;
+      }
+
+      // TODO: iOS permission handling
+
+      // Request appropriate permission
+      PermissionStatus permissionStatus;
+      if (isAndroid13OrAbove) {
+        permissionStatus = await Permission.photos.request();
+      } else {
+        permissionStatus = await Permission.storage.request();
+      }
+
+      // Handle permission denied
+      if (!permissionStatus.isGranted) {
+        EasyLoading.showError(
+            'Permission denied. Please allow access to continue.');
+        return;
+      }
+
+      // Proceed with download
+      EasyLoading.show(status: 'Downloading...');
+
+      final dir = await getExternalStorageDirectory();
+      final fileName = widget.imageSource.split('/').last;
+      final savePath = '${dir!.path}/$fileName';
+
+      await Dio().download(widget.imageSource, savePath);
+
+      EasyLoading.dismiss();
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Download Complete!'),
+            content: Text('Image saved to:\n$savePath'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      EasyLoading.showError('Download failed: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          // TODO: add download image button for type = url
+          if (widget.type == 'url')
+            IconButton(
+              icon: Icon(Icons.download),
+              onPressed: _downloadImage,
+            ),
         ],
       ),
       body: Column(
