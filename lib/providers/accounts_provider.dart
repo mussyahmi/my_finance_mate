@@ -409,4 +409,34 @@ class AccountsProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  Future<Account> fetchAccountByIdFromCycle(
+      BuildContext context,
+      Cycle cycle,
+      String accountId,
+    ) async {
+    final Person user = context.read<PersonProvider>().user!;
+
+    final accountSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('accounts')
+        .doc(accountId)
+        .getSavy();
+
+    return Account(
+      id: accountSnapshot.id,
+      name: accountSnapshot['name'],
+      openingBalance: accountSnapshot['opening_balance'],
+      amountBalance: accountSnapshot['amount_balance'],
+      amountReceived: accountSnapshot['amount_received'],
+      amountSpent: accountSnapshot['amount_spent'],
+      cycleId: cycle.id,
+      createdAt: (accountSnapshot['created_at'] as Timestamp).toDate(),
+      isExcluded:
+          accountSnapshot.data()!.containsKey('is_excluded') ? true : false,
+    );
+  }
 }

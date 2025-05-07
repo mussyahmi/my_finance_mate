@@ -48,7 +48,7 @@ class CyclesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Object>> getCycles(BuildContext context) async {
+  Future<List<Cycle>> getCycles(BuildContext context) async {
     if (cycles == null) return [];
 
     return cycles!;

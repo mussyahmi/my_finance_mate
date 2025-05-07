@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
+import '../models/account.dart';
+import '../models/category.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
@@ -85,8 +87,9 @@ class TransactionsProvider extends ChangeNotifier {
 
     transactions = await Future.wait(futureTransactions);
 
-    final List<t.Transaction> sortedTransactions = List<t.Transaction>.from(transactions!)
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final List<t.Transaction> sortedTransactions =
+        List<t.Transaction>.from(transactions!)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (sortedTransactions.isNotEmpty) {
       context
@@ -537,5 +540,74 @@ class TransactionsProvider extends ChangeNotifier {
         .fetchTransactions(context, cycle);
 
     notifyListeners();
+  }
+
+  Future<List<t.Transaction>> fetchTransactionsWithAttachmentsFromCycle(
+      BuildContext context, Cycle cycle) async {
+    final Person user = context.read<PersonProvider>().user!;
+
+    var transactionQuery = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .where('deleted_at', isNull: true)
+        .where('date_time', isGreaterThanOrEqualTo: cycle.startDate)
+        .where('date_time', isLessThanOrEqualTo: cycle.endDate)
+        .where('files', isNotEqualTo: []).orderBy('date_time',
+            descending: true);
+
+    final transactionSnapshot = await transactionQuery.getSavy(refresh: true);
+    print('fetchTransactions: ${transactionSnapshot.docs.length}');
+
+    final futureTransactions = transactionSnapshot.docs.map((doc) async {
+      final data = doc.data();
+
+      Category? category;
+      Account? account;
+      Account? accountTo;
+
+      if (data['category_id'] != null) {
+        category = await context
+            .read<CategoriesProvider>()
+            .fetchCategoryByIdFromCycle(context, cycle, data['category_id']);
+      }
+
+      if (data['account_id'] != null) {
+        account = await context
+            .read<AccountsProvider>()
+            .fetchAccountByIdFromCycle(context, cycle, data['account_id']);
+      }
+
+      if (data['account_to_id'] != null) {
+        accountTo = await context
+            .read<AccountsProvider>()
+            .fetchAccountByIdFromCycle(context, cycle, data['account_to_id']);
+      }
+
+      //* Create a Transaction object with the category name
+      return t.Transaction(
+        id: doc.id,
+        cycleId: data['cycle_id'],
+        dateTime: (data['date_time'] as Timestamp).toDate(),
+        type: data['type'] as String,
+        subType: data['category_id'] != null ? category!.subType : null,
+        categoryId: data['category_id'] ?? '',
+        categoryName: data['category_id'] != null ? category!.name : '',
+        accountId: data['account_id'] ?? '',
+        accountName: data['account_id'] != null ? account!.name : '',
+        accountToId: data['account_to_id'] ?? '',
+        accountToName: data['account_to_id'] != null ? accountTo!.name : '',
+        amount: data['amount'] as String,
+        note: data['note'] as String,
+        files: data['files'] != null ? data['files'] as List : [],
+        person: user,
+        createdAt: (data['created_at'] as Timestamp).toDate(),
+      );
+    }).toList();
+
+    final trans = await Future.wait(futureTransactions);
+
+    return List<t.Transaction>.from(trans)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 }

@@ -227,8 +227,8 @@ class Transaction {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 10),
-                    const Text(
-                      'Attachment:',
+                    Text(
+                      'Attachment${files.length > 1 ? 's' : ''}:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Column(

@@ -21,6 +21,7 @@ import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
+import 'attachment_list_page.dart';
 import 'cumulative_trends_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
@@ -543,6 +544,20 @@ class ProfilePageState extends State<ProfilePage> {
                         'Account Management',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Attachment List'),
+                        trailing: const Icon(Icons.attach_file),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AttachmentListPage(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     if (FirebaseAuth

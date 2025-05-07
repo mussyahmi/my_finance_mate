@@ -355,4 +355,32 @@ class CategoriesProvider extends ChangeNotifier {
     categories!.removeWhere((category) => category.id == categoryId);
     notifyListeners();
   }
+
+  Future<Category> fetchCategoryByIdFromCycle(
+      BuildContext context, Cycle cycle, String categoryId) async {
+    final Person user = context.read<PersonProvider>().user!;
+
+    final categorySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('cycles')
+        .doc(cycle.id)
+        .collection('categories')
+        .doc(categoryId)
+        .getSavy();
+
+    final data = categorySnapshot.data()!;
+
+    return Category(
+      id: categorySnapshot.id,
+      name: data['name'],
+      type: data['type'],
+      subType: data['subType'],
+      note: data['note'],
+      budget: data['budget'],
+      totalAmount: data['total_amount'],
+      cycleId: cycle.id,
+      updatedAt: (data['updated_at'] as Timestamp).toDate(),
+    );
+  }
 }

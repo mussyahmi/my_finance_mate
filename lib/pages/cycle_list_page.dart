@@ -142,7 +142,7 @@ class _CycleListPageState extends State<CycleListPage> {
                         shrinkWrap: true,
                         itemCount: cycles.length,
                         itemBuilder: (context, index) {
-                          Cycle c = cycles[index] as Cycle;
+                          Cycle c = cycles[index];
 
                           return Column(
                             children: [
@@ -185,7 +185,7 @@ class _CycleListPageState extends State<CycleListPage> {
                                               if (!user.isPremium &&
                                                   switchBetweenCycles == 0 &&
                                                   c.id !=
-                                                      (cycles.first as Cycle)
+                                                      (cycles.first)
                                                           .id) {
                                                 return showDialog(
                                                   context: context,
@@ -278,8 +278,7 @@ class _CycleListPageState extends State<CycleListPage> {
                                                       switchBetweenCycles !=
                                                           0 &&
                                                       c.id !=
-                                                          (cycles.first
-                                                                  as Cycle)
+                                                          (cycles.first)
                                                               .id;
 
                                               if (updateSwitchBetweenCycles) {
