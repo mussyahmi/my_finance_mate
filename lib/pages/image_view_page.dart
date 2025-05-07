@@ -7,6 +7,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:gal/gal.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -76,19 +77,44 @@ class _ImageViewPageState extends State<ImageViewPage> {
       EasyLoading.show(status: 'Downloading...');
 
       final dir = await getExternalStorageDirectory();
-      final fileName = widget.imageSource.split('/').last;
+      final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpeg";
       final savePath = '${dir!.path}/$fileName';
 
       await Dio().download(widget.imageSource, savePath);
 
+      try {
+        await Gal.putImage(savePath, album: "My Finance Mate");
+        EasyLoading.showSuccess('Image saved to gallery!');
+        return;
+      } on GalException catch (e) {
+        EasyLoading.dismiss();
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Download Failed!'),
+              content: Text(e.type.message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
+    } catch (e) {
       EasyLoading.dismiss();
-
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Download Complete!'),
-            content: Text('Image saved to:\n$savePath'),
+            title: const Text('Download Failed!'),
+            content: Text(e.toString()),
             actions: [
               TextButton(
                 onPressed: () {
@@ -100,8 +126,6 @@ class _ImageViewPageState extends State<ImageViewPage> {
           );
         },
       );
-    } catch (e) {
-      EasyLoading.showError('Download failed: $e');
     }
   }
 
