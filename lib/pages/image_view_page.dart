@@ -74,13 +74,27 @@ class _ImageViewPageState extends State<ImageViewPage> {
       }
 
       // Proceed with download
-      EasyLoading.show(status: 'Downloading...');
+      EasyLoading.show(status: 'Preparing download...');
 
       final dir = await getExternalStorageDirectory();
       final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpeg";
       final savePath = '${dir!.path}/$fileName';
 
-      await Dio().download(widget.imageSource, savePath);
+      final dio = Dio();
+
+      await dio.download(
+        widget.imageSource,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            double progress = received / total;
+            EasyLoading.showProgress(
+              progress,
+              status: 'Downloading... ${(progress * 100).toStringAsFixed(0)}%',
+            );
+          }
+        },
+      );
 
       try {
         await Gal.putImage(savePath, album: "My Finance Mate");
