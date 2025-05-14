@@ -66,7 +66,7 @@ class _AccountSummaryState extends State<AccountSummary> {
                   Text(
                     !_isAmountVisible
                         ? 'RM****'
-                        : 'RM${widget.account.amountBalance}',
+                        : '${double.parse(widget.account.amountBalance) < 0 ? '-' : ''}RM${widget.account.amountBalance.replaceFirst('-', '')}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,

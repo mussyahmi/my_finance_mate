@@ -66,7 +66,9 @@ class _CycleSummaryState extends State<CycleSummary> {
                     Text(
                       !_isAmountVisible
                           ? 'RM****'
-                          : 'RM${cycle != null ? cycle.amountBalance : '0.00'}',
+                          : cycle != null
+                              ? '${double.parse(cycle.amountBalance) < 0 ? '-' : ''}RM${cycle.amountBalance.replaceFirst('-', '')}'
+                              : 'RM0.00',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,

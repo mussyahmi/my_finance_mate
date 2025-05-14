@@ -122,7 +122,8 @@ class Account {
                     'Available Balance:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text('RM$amountBalance'),
+                  Text(
+                      '${double.parse(amountBalance) < 0 ? '-' : ''}RM${amountBalance.replaceFirst('-', '')}'),
                 ],
               ),
               const SizedBox(height: 5),

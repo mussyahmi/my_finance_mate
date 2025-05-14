@@ -238,7 +238,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                       children: [
                         const SizedBox(height: 8.0),
                         Text(
-                          'Net Balance: RM$amountBalanceAfterBudget',
+                          'Net Balance: ${double.parse(amountBalanceAfterBudget) < 0 ? '-' : ''}RM${amountBalanceAfterBudget.replaceFirst('-', '')}',
                           style: TextStyle(
                             color: double.parse(amountBalanceAfterBudget) < 0
                                 ? Colors.orange
