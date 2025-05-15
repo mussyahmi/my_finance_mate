@@ -542,13 +542,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => ImageViewPage(
-                                              imageSource:
-                                                  files[index] is String
-                                                      ? files[index]
-                                                      : files[index].path,
-                                              type: files[index] is String
-                                                  ? 'url'
-                                                  : 'local',
+                                              files: files,
+                                              index: index,
                                             ),
                                           ),
                                         );

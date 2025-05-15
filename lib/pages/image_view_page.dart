@@ -12,6 +12,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/person_provider.dart';
@@ -20,11 +21,10 @@ import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
 class ImageViewPage extends StatefulWidget {
-  final dynamic imageSource;
-  final String type;
+  final List<dynamic> files;
+  final int index;
 
-  const ImageViewPage(
-      {super.key, required this.imageSource, required this.type});
+  const ImageViewPage({super.key, required this.files, required this.index});
 
   @override
   State<ImageViewPage> createState() => _ImageViewPageState();
@@ -33,6 +33,15 @@ class ImageViewPage extends StatefulWidget {
 class _ImageViewPageState extends State<ImageViewPage> {
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.index;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
 
   @override
   void didChangeDependencies() {
@@ -42,13 +51,15 @@ class _ImageViewPageState extends State<ImageViewPage> {
   }
 
   Future<void> _downloadImage() async {
-    if (widget.type != 'url') return;
+    final currentFile = widget.files[_currentIndex];
+    final type = currentFile is String ? 'url' : 'file';
+    final imageSource = type == 'url' ? currentFile : currentFile.path;
+
+    if (type != 'url') return;
 
     try {
-      // Show loading indicator
       EasyLoading.show(status: 'Checking permissions...');
 
-      // Determine Android SDK version
       bool isAndroid13OrAbove = false;
       if (Platform.isAndroid) {
         final deviceInfo = DeviceInfoPlugin();
@@ -56,9 +67,6 @@ class _ImageViewPageState extends State<ImageViewPage> {
         isAndroid13OrAbove = androidInfo.version.sdkInt >= 33;
       }
 
-      // TODO: iOS permission handling
-
-      // Request appropriate permission
       PermissionStatus permissionStatus;
       if (isAndroid13OrAbove) {
         permissionStatus = await Permission.photos.request();
@@ -66,14 +74,12 @@ class _ImageViewPageState extends State<ImageViewPage> {
         permissionStatus = await Permission.storage.request();
       }
 
-      // Handle permission denied
       if (!permissionStatus.isGranted) {
         EasyLoading.showError(
             'Permission denied. Please allow access to continue.');
         return;
       }
 
-      // Proceed with download
       EasyLoading.show(status: 'Preparing download...');
 
       final dir = await getExternalStorageDirectory();
@@ -83,7 +89,7 @@ class _ImageViewPageState extends State<ImageViewPage> {
       final dio = Dio();
 
       await dio.download(
-        widget.imageSource,
+        imageSource,
         savePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
@@ -148,7 +154,7 @@ class _ImageViewPageState extends State<ImageViewPage> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          if (widget.type == 'url')
+          if (widget.files[_currentIndex] is String)
             IconButton(
               icon: Icon(Icons.download),
               onPressed: _downloadImage,
@@ -158,21 +164,59 @@ class _ImageViewPageState extends State<ImageViewPage> {
       body: Column(
         children: [
           Expanded(
-            child: PhotoView.customChild(
-              initialScale: PhotoViewComputedScale.contained,
-              minScale: PhotoViewComputedScale.contained * 0.8,
-              maxScale: PhotoViewComputedScale.covered * 1.8,
-              child: widget.type == 'url'
-                  ? CachedNetworkImage(
-                      imageUrl: widget.imageSource,
-                      placeholder: (context, url) => Center(
-                        child:
-                            CircularProgressIndicator(), // Placeholder while loading
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: PhotoViewGallery.builder(
+                    pageController: _pageController,
+                    itemCount: widget.files.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentIndex = index;
+                      });
+                    },
+                    builder: (context, index) {
+                      final file = widget.files[index];
+                      final type = file is String ? 'url' : 'file';
+                      final imageSource = type == 'url' ? file : file.path;
+
+                      return PhotoViewGalleryPageOptions.customChild(
+                        child: type == 'url'
+                            ? CachedNetworkImage(
+                                imageUrl: imageSource,
+                                placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              )
+                            : Image.file(File(imageSource)),
+                        initialScale: PhotoViewComputedScale.contained,
+                        minScale: PhotoViewComputedScale.contained * 0.8,
+                        maxScale: PhotoViewComputedScale.covered * 1.8,
+                      );
+                    },
+                  ),
+                ),
+                if (widget.files.length > 1)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      errorWidget: (context, url, error) =>
-                          Icon(Icons.error), // Error widget
-                    )
-                  : Image.file(File(widget.imageSource)),
+                      child: Text(
+                        '${_currentIndex + 1} / ${widget.files.length} attachments',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           if (!context.read<PersonProvider>().user!.isPremium)

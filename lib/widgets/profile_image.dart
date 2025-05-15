@@ -35,8 +35,8 @@ class _ProfileImageState extends State<ProfileImage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ImageViewPage(
-                          imageSource: user.imageUrl,
-                          type: 'url',
+                          files: [user.imageUrl],
+                          index: 0,
                         ),
                       ),
                     );

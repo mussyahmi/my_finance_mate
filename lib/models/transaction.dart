@@ -250,8 +250,8 @@ class Transaction {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ImageViewPage(
-                                            imageSource: files[index],
-                                            type: 'url',
+                                            files: files,
+                                            index: index,
                                           ),
                                         ),
                                       );
