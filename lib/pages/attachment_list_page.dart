@@ -104,49 +104,59 @@ class _AttachmentListPageState extends State<AttachmentListPage> {
             snap: true,
           ),
         ],
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-            itemCount: cyclesWithAttachments.length + 1,
-            itemBuilder: (_, index) {
-              if (index < cyclesWithAttachments.length) {
-                return cyclesWithAttachments[index];
-              } else if (cyclesLoaded > 0 &&
-                  cyclesLoaded < cycles.length) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: ElevatedButton(
-                        onPressed: _loadMore,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: isLoading
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimary,
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            : const Text("Load More Cycles"),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return null;
-            },
-          ),
-        ),
+        body: cyclesWithAttachments.isEmpty
+            ? Center(
+                child: const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    'No attachments found.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: cyclesWithAttachments.length + 1,
+                  itemBuilder: (_, index) {
+                    if (index < cyclesWithAttachments.length) {
+                      return cyclesWithAttachments[index];
+                    } else if (cyclesLoaded > 0 &&
+                        cyclesLoaded < cycles.length) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: ElevatedButton(
+                              onPressed: _loadMore,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              child: isLoading
+                                  ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                        strokeWidth: 2.0,
+                                      ),
+                                    )
+                                  : const Text("Load More Cycles"),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                    return null;
+                  },
+                ),
+              ),
       ),
       floatingActionButton: _showScrollToTopButton
           ? FloatingActionButton(

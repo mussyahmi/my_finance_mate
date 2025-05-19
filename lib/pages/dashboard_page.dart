@@ -647,8 +647,7 @@ class _DashboardPageState extends State<DashboardPage>
                     }
                   }
                 } else if (_selectedIndex == 2) {
-                  Category.showCategoryDialog(
-                      context, _categoryType, 'Add');
+                  Category.showCategoryDialog(context, _categoryType, 'Add');
                 }
               },
               child: const Icon(CupertinoIcons.add),
@@ -782,6 +781,9 @@ class _DashboardPageState extends State<DashboardPage>
           );
         },
       );
+    } else {
+      EasyLoading.showInfo('Ad not loaded. Please try again later.');
+      setState(() {});
     }
   }
 }

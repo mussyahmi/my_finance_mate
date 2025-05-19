@@ -52,7 +52,7 @@ class CycleProvider extends ChangeNotifier {
 
       if (cycle!.endDate.isBefore(now)) {
         //* Last cycle has ended, redirect to add cycle page
-        Navigator.pushAndRemoveUntil(
+        await Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => CycleAddPage(cycle: cycle)),
           (route) =>
@@ -63,7 +63,7 @@ class CycleProvider extends ChangeNotifier {
       notifyListeners();
     } else {
       //* No cycles found, redirect to add cycle page
-      Navigator.pushAndRemoveUntil(
+      await Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
             builder: (context) => const CycleAddPage(cycle: null)),
