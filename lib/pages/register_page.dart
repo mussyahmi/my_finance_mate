@@ -317,7 +317,23 @@ class RegisterPageState extends State<RegisterPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      print('Email/Password Sign-In Error: $e');
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Registration Failed!'),
+            content: Text(e.message ?? 'An unknown error occurred.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
