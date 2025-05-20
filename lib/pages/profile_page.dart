@@ -119,7 +119,9 @@ class ProfilePageState extends State<ProfilePage> {
   Card card(Person user, String title) {
     var data = '';
 
-    if (title == 'Display Name') {
+    if (title == 'User ID') {
+      data = user.uid;
+    } else if (title == 'Display Name') {
       data = user.displayName;
     } else if (title == 'Email') {
       data = user.email;
@@ -136,17 +138,29 @@ class ProfilePageState extends State<ProfilePage> {
           data,
           style: const TextStyle(fontSize: 14),
         ),
-        trailing: title == 'Display Name'
+        trailing: title == 'User ID'
             ? IconButton.filledTonal(
                 onPressed: () async {
-                  await user.showEditDisplayNameDialog(context);
+                  await Clipboard.setData(ClipboardData(text: data));
+
+                  EasyLoading.showSuccess('Copied to clipboard');
                 },
                 icon: Icon(
-                  CupertinoIcons.pencil,
+                  Icons.copy,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               )
-            : null,
+            : title == 'Display Name'
+                ? IconButton.filledTonal(
+                    onPressed: () async {
+                      await user.showEditDisplayNameDialog(context);
+                    },
+                    icon: Icon(
+                      CupertinoIcons.pencil,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  )
+                : null,
       ),
     );
   }
@@ -184,6 +198,7 @@ class ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                     ProfileImage(),
                     const SizedBox(height: 20),
+                    card(user, 'User ID'),
                     card(user, 'Display Name'),
                     card(user, 'Email'),
                     const SizedBox(height: 30),

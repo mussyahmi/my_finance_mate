@@ -20,7 +20,6 @@ import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/sub_type_tag.dart';
 import 'cycle.dart';
-import 'person.dart';
 
 class Transaction {
   String id;
@@ -37,7 +36,6 @@ class Transaction {
   String amount;
   String note;
   List files;
-  Person person;
   DateTime createdAt;
 
   Transaction({
@@ -55,7 +53,6 @@ class Transaction {
     required this.amount,
     required this.note,
     required this.files,
-    required this.person,
     required this.createdAt,
   });
 
@@ -131,6 +128,17 @@ class Transaction {
           ),
           contents: Column(
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'ID:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(id),
+                ],
+              ),
+              const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -226,7 +234,7 @@ class Transaction {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     Text(
                       'Attachment${files.length > 1 ? 's' : ''}:',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -234,7 +242,7 @@ class Transaction {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -276,7 +284,7 @@ class Transaction {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     const Text(
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),

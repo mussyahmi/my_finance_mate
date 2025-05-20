@@ -126,6 +126,17 @@ class Category {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
+                    'ID:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(id),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
                     'Name:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -204,7 +215,7 @@ class Category {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     const Text(
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),

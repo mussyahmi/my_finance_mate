@@ -108,6 +108,17 @@ class Account {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
+                    'ID:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(id),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
                     'Name:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),

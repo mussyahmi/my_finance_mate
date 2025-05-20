@@ -80,7 +80,6 @@ class TransactionsProvider extends ChangeNotifier {
         amount: data['amount'] as String,
         note: data['note'] as String,
         files: data['files'] != null ? data['files'] as List : [],
-        person: user,
         createdAt: (data['created_at'] as Timestamp).toDate(),
       );
     }).toList();
@@ -195,7 +194,6 @@ class TransactionsProvider extends ChangeNotifier {
                 amount: data['amount'] as String,
                 note: data['note'] as String,
                 files: data['files'] != null ? data['files'] as List : [],
-                person: user,
                 createdAt: (data['created_at'] as Timestamp).toDate(),
               )
             ];
@@ -233,7 +231,6 @@ class TransactionsProvider extends ChangeNotifier {
               amount: data['amount'] as String,
               note: data['note'] as String,
               files: data['files'] != null ? data['files'] as List : [],
-              person: user,
               createdAt: (data['created_at'] as Timestamp).toDate(),
             )
           ];
@@ -600,7 +597,6 @@ class TransactionsProvider extends ChangeNotifier {
         amount: data['amount'] as String,
         note: data['note'] as String,
         files: data['files'] != null ? data['files'] as List : [],
-        person: user,
         createdAt: (data['created_at'] as Timestamp).toDate(),
       );
     }).toList();

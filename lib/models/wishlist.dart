@@ -62,8 +62,7 @@ class Wishlist {
                   if (cycle.isLastCycle)
                     IconButton.filledTonal(
                       onPressed: () async {
-                        final result = await showWishlistDialog(
-                            context, 'Edit',
+                        final result = await showWishlistDialog(context, 'Edit',
                             wish: this);
 
                         if (result) {
@@ -85,6 +84,17 @@ class Wishlist {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
+                    'ID:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SelectableText(id),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
                     'Name:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -95,7 +105,7 @@ class Wishlist {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     const Text(
                       'Note:',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -169,8 +179,7 @@ class Wishlist {
     );
   }
 
-  static Future<bool> showWishlistDialog(
-      BuildContext context, String action,
+  static Future<bool> showWishlistDialog(BuildContext context, String action,
       {Wishlist? wish}) async {
     return await showDialog(
       context: context,
