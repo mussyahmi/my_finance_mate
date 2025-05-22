@@ -27,12 +27,10 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
   @override
   void initState() {
     super.initState();
-    _initializePurchaseService();
+    _loadAvailableProducts();
   }
 
-  Future<void> _initializePurchaseService() async {
-    await _purchaseService.initialize(context);
-
+  Future<void> _loadAvailableProducts() async {
     setState(() {
       products = _purchaseService.products;
     });
@@ -130,9 +128,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                 ),
                 const SizedBox(height: 20),
                 products.isEmpty
-                    ? Center(
-                        child: CircularProgressIndicator(),
-                      )
+                    ? Center(child: const Text('No products available.'))
                     : Column(
                         children: products
                             .map((product) => SubscriptionOption(
@@ -141,6 +137,26 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                             .toList(),
                       ),
                 const SizedBox(height: 30),
+                if (user.isPremium && user.premiumEndDate == null)
+                  Card(
+                    surfaceTintColor: Theme.of(context).colorScheme.primary,
+                    child: ListTile(
+                      title: Text(
+                        'You have Lifetime Premium Access!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Enjoy unlimited access - no expiry!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ),
                 if (user.isPremium &&
                     user.premiumEndDate != null &&
                     user.premiumEndDate!.isAfter(DateTime.now()))
@@ -189,7 +205,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                                   onPressed: () {
                                     Navigator.of(context).pop(false);
                                   },
-                                  child: Text('Cancel'),
+                                  child: Text('Later'),
                                 ),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -218,7 +234,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                               .activateFreeTrial();
 
                           EasyLoading.showSuccess(
-                              "Trial activated! Enjoy Premium features.");
+                              "Trial activated! Enjoy your premium access");
                         }
                       },
                     ),

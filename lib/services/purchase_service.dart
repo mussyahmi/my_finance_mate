@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:provider/provider.dart';
 
@@ -28,7 +29,6 @@ class PurchaseService {
   BuildContext? _context;
   bool _isAvailable = false;
   List<ProductDetails> _products = [];
-  // List<PurchaseDetails> _purchases = [];
 
   Future<void> initialize(BuildContext context) async {
     _context = context;
@@ -68,8 +68,12 @@ class PurchaseService {
         } else {
           _handleInvalidPurchase(purchase);
         }
+      } else if (purchase.status == PurchaseStatus.pending) {
+        EasyLoading.show(status: "Processing purchase... Please wait.");
       } else if (purchase.status == PurchaseStatus.error) {
         _handlePurchaseError(purchase.error);
+      } else if (purchase.status == PurchaseStatus.canceled) {
+        EasyLoading.showInfo("Purchase canceled.");
       }
       if (purchase.pendingCompletePurchase) {
         await _iap.completePurchase(purchase);
@@ -82,19 +86,34 @@ class PurchaseService {
     return true;
   }
 
-  void _deliverProduct(PurchaseDetails purchase) {
-    print("Delivering product: ${purchase.productID}");
-    _context!
-        .read<PersonProvider>()
-        .activatePremium(purchase.productID, purchase.transactionDate!);
+  void _deliverProduct(PurchaseDetails purchase) async {
+    final matchedProduct = _products.firstWhere(
+      (product) => product.id == purchase.productID,
+      orElse: () => throw Exception("Product not found"),
+    );
+
+    String countryCode = await _iap.countryCode();
+
+    await _context!.read<PersonProvider>().activatePremium(
+          purchase.productID,
+          purchase.transactionDate!,
+          matchedProduct.currencyCode,
+          matchedProduct.currencySymbol,
+          matchedProduct.price,
+          matchedProduct.rawPrice,
+          countryCode,
+        );
+
+    EasyLoading.showSuccess("Purchase successful! Enjoy your premium access.");
   }
 
   void _handleInvalidPurchase(PurchaseDetails purchase) {
-    print("Invalid purchase: ${purchase.productID}");
+    EasyLoading.showError("Invalid purchase! Please try again.");
   }
 
   void _handlePurchaseError(IAPError? error) {
-    print("Purchase error: ${error?.message}");
+    EasyLoading.showError(
+        "Purchase error: ${error?.message}. Please try again.");
   }
 
   void dispose() {

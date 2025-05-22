@@ -46,12 +46,19 @@ class PersonProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> activatePremium(String productId, String transactionDate) async {
+  Future<void> activatePremium(
+    String productId,
+    String transactionDate,
+    String currencyCode,
+    String currencySymbol,
+    String price,
+    double rawPrice,
+    String countryCode,
+  ) async {
     final DateTime transactionDateTime =
         DateTime.fromMillisecondsSinceEpoch(int.parse(transactionDate));
     Duration subscriptionDuration;
 
-    //* Set subscription duration based on the product ID
     switch (productId) {
       case 'one_day_access':
         subscriptionDuration = Duration(days: 1);
@@ -70,15 +77,33 @@ class PersonProvider extends ChangeNotifier {
         return;
     }
 
+    DateTime premiumEnd = transactionDateTime.add(subscriptionDuration);
+
+    // 🔥 Update user premium status
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
       'is_premium': true,
       'premium_start_date': transactionDateTime,
-      'premium_end_date': transactionDateTime.add(subscriptionDuration),
+      'premium_end_date': premiumEnd,
+    });
+
+    // ✅ Save to subscriptions history
+    await FirebaseFirestore.instance.collection('subscriptions').add({
+      'user_id': user!.uid,
+      'product_id': productId,
+      'premium_start_date': transactionDateTime,
+      'premium_end_date': premiumEnd,
+      'created_at': FieldValue.serverTimestamp(),
+      'platform': Platform.isIOS ? 'iOS' : 'Android',
+      'currency_code': currencyCode,
+      'currency_symbol': currencySymbol,
+      'price': price,
+      'raw_price': rawPrice,
+      'country_code': countryCode,
     });
 
     user!.isPremium = true;
     user!.premiumStartDate = transactionDateTime;
-    user!.premiumEndDate = transactionDateTime.add(subscriptionDuration);
+    user!.premiumEndDate = premiumEnd;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('show_premium_ended', false);
