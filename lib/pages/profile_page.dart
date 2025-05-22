@@ -26,7 +26,7 @@ import 'cumulative_trends_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
-import 'premium_subscription_page.dart';
+import 'premium_access_page.dart';
 import 'wishlist_page.dart';
 
 class ProfilePage extends StatefulWidget {

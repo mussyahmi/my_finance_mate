@@ -27,7 +27,7 @@ import '../widgets/monthly_expenses.dart';
 import '../widgets/pinned_wishlist.dart';
 import 'account_list_page.dart';
 import 'category_list_page.dart';
-import 'premium_subscription_page.dart';
+import 'premium_access_page.dart';
 import 'profile_page.dart';
 import '../models/transaction.dart' as t;
 import 'transaction_form_page.dart';

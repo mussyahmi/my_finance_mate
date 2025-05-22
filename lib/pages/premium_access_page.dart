@@ -53,7 +53,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
             title: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                'Premium Subscription',
+                'Premium Access',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 24,

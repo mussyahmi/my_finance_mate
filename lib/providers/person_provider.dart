@@ -86,8 +86,8 @@ class PersonProvider extends ChangeNotifier {
       'premium_end_date': premiumEnd,
     });
 
-    // ✅ Save to subscriptions history
-    await FirebaseFirestore.instance.collection('subscriptions').add({
+    // ✅ Save to purchases history
+    await FirebaseFirestore.instance.collection('purchases').add({
       'user_id': user!.uid,
       'product_id': productId,
       'premium_start_date': transactionDateTime,

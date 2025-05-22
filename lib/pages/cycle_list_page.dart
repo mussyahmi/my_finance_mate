@@ -15,7 +15,7 @@ import '../providers/person_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
-import 'premium_subscription_page.dart';
+import 'premium_access_page.dart';
 
 class CycleListPage extends StatefulWidget {
   final Person user;

@@ -34,7 +34,7 @@ import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
 import 'note_input_page.dart';
-import 'premium_subscription_page.dart';
+import 'premium_access_page.dart';
 
 class TransactionFormPage extends StatefulWidget {
   final String action;

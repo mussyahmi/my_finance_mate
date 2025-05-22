@@ -19,7 +19,7 @@ import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
 import 'cycle_list_page.dart';
-import 'premium_subscription_page.dart';
+import 'premium_access_page.dart';
 
 class CyclePage extends StatefulWidget {
   const CyclePage({super.key});
