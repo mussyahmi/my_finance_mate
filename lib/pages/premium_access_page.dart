@@ -27,10 +27,12 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
   @override
   void initState() {
     super.initState();
-    _loadAvailableProducts();
+    _initializePurchaseService();
   }
 
-  Future<void> _loadAvailableProducts() async {
+  Future<void> _initializePurchaseService() async {
+    await _purchaseService.initialize(context);
+
     setState(() {
       products = _purchaseService.products;
     });
@@ -128,7 +130,9 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                 ),
                 const SizedBox(height: 20),
                 products.isEmpty
-                    ? Center(child: const Text('No products available.'))
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
                     : Column(
                         children: products
                             .map((product) => SubscriptionOption(

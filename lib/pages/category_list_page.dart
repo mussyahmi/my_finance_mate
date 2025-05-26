@@ -13,7 +13,7 @@ import '../providers/person_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
-import '../widgets/sub_type_tag.dart';
+import '../widgets/tag.dart';
 
 class CategoryListPage extends StatefulWidget {
   final Function(String)? changeCategoryType;
@@ -160,7 +160,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                         child: ListTile(
                           title: Text(category.name),
                           trailing: type == 'spent'
-                              ? SubTypeTag(subType: category.subType)
+                              ? Tag(title: category.subType)
                               : null,
                           onTap: () {
                             category.showCategoryDetails(

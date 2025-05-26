@@ -18,8 +18,8 @@ class PurchaseService {
 
   final InAppPurchase _iap = InAppPurchase.instance;
   final Set<String> _productIds = {
-    'one_day_access',
-    'one_week_access',
+    '1_day_access',
+    '1_week_access',
     'monthly_access',
     'yearly_access'
   };

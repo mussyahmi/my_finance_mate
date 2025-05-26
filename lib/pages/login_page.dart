@@ -19,7 +19,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
-import '../services/purchase_service.dart';
 import '../widgets/package_info_summary.dart';
 import 'dashboard_page.dart';
 import 'email_verification_page.dart';
@@ -380,9 +379,6 @@ class _LoginPageState extends State<LoginPage> {
 
         await context.read<PersonProvider>().fetchData(context);
 
-        final PurchaseService purchaseService = PurchaseService();
-        await purchaseService.initialize(context);
-
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const DashboardPage()),
@@ -490,9 +486,6 @@ class _LoginPageState extends State<LoginPage> {
         print('Google Sign-In Successful');
 
         await context.read<PersonProvider>().fetchData(context);
-
-        final PurchaseService purchaseService = PurchaseService();
-        await purchaseService.initialize(context);
 
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(

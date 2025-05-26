@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import '../extensions/string_extension.dart';
 import 'package:provider/provider.dart';
 
 import '../models/person.dart';
@@ -15,17 +16,7 @@ class SubscriptionOption extends StatelessWidget {
   });
 
   String _getTitle() {
-    if (product.id == 'one_day_access') {
-      return '1 Day Access';
-    } else if (product.id == 'one_week_access') {
-      return '1 Week Access';
-    } else if (product.id == 'monthly_access') {
-      return 'Monthly Access';
-    } else if (product.id == 'yearly_access') {
-      return 'Yearly Access';
-    } else {
-      return '';
-    }
+    return product.id.split('_').map((word) => word.capitalize()).join(' ');
   }
 
   @override
@@ -65,8 +56,8 @@ class SubscriptionOption extends StatelessWidget {
             final PurchaseParam purchaseParam =
                 PurchaseParam(productDetails: product);
 
-            if (product.id == 'one_day_access' ||
-                product.id == 'one_week_access') {
+            if (product.id == '1_day_access' ||
+                product.id == '1_week_access') {
               await InAppPurchase.instance
                   .buyConsumable(purchaseParam: purchaseParam);
             } else if (product.id == 'monthly_access' ||

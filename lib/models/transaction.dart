@@ -18,7 +18,7 @@ import '../providers/transactions_provider.dart';
 import '../services/message_services.dart';
 import '../extensions/string_extension.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
-import '../widgets/sub_type_tag.dart';
+import '../widgets/tag.dart';
 import 'cycle.dart';
 
 class Transaction {
@@ -174,7 +174,7 @@ class Transaction {
                           'Sub Type:',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        SubTypeTag(subType: subType),
+                        Tag(title: subType),
                       ],
                     ),
                   ],

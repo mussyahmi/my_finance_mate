@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-class CyclePage extends StatefulWidget {
-  const CyclePage({super.key});
+class TemplatePage extends StatefulWidget {
+  const TemplatePage({super.key});
 
   @override
-  State<CyclePage> createState() => _CyclePageState();
+  State<TemplatePage> createState() => _TemplatePageState();
 }
 
-class _CyclePageState extends State<CyclePage> {
+class _TemplatePageState extends State<TemplatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           const SliverAppBar(
-            title: Text('Cycle'),
+            title: Text('Template'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
             floating: true,

@@ -28,7 +28,7 @@ import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
-import '../widgets/sub_type_tag.dart';
+import '../widgets/tag.dart';
 import 'amount_input_page.dart';
 import 'category_list_page.dart';
 import 'image_view_page.dart';
@@ -365,8 +365,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                     children: [
                                       Text(item),
                                       if (selectedType == 'spent')
-                                        SubTypeTag(
-                                          subType: context
+                                        Tag(
+                                          title: context
                                               .read<CategoriesProvider>()
                                               .getCategoryByName(
                                                   selectedType, item)

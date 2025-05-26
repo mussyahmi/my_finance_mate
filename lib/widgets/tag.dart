@@ -2,19 +2,19 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import '../extensions/string_extension.dart';
 
-class SubTypeTag extends StatefulWidget {
-  final String? subType;
+class Tag extends StatefulWidget {
+  final String? title;
 
-  const SubTypeTag({
+  const Tag({
     super.key,
-    this.subType,
+    this.title,
   });
 
   @override
-  State<SubTypeTag> createState() => _SubTypeTagState();
+  State<Tag> createState() => _TagState();
 }
 
-class _SubTypeTagState extends State<SubTypeTag> {
+class _TagState extends State<Tag> {
   AdaptiveThemeMode? _savedThemeMode;
 
   @override
@@ -36,13 +36,13 @@ class _SubTypeTagState extends State<SubTypeTag> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
       decoration: BoxDecoration(
-        color: _getTagColor(widget.subType),
+        color: _getBackgroundColor(widget.title),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Text(
-        widget.subType != null ? widget.subType!.capitalize() : 'Others',
-        style: const TextStyle(
-          color: Colors.white,
+        widget.title != null ? widget.title!.capitalize() : 'Others',
+        style: TextStyle(
+          color: _getTextColor(widget.title),
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
@@ -50,8 +50,8 @@ class _SubTypeTagState extends State<SubTypeTag> {
     );
   }
 
-  Color _getTagColor(String? subType) {
-    switch (subType) {
+  Color _getBackgroundColor(String? title) {
+    switch (title) {
       case 'needs':
         return _savedThemeMode == AdaptiveThemeMode.dark
             ? Colors.green[900]!
@@ -64,10 +64,25 @@ class _SubTypeTagState extends State<SubTypeTag> {
         return _savedThemeMode == AdaptiveThemeMode.dark
             ? Colors.yellow[900]!
             : Colors.yellow[600]!;
+      case 'active':
+        return Colors.green[100]!;
+      case 'expired':
+        return Colors.red[100]!;
       default:
         return _savedThemeMode == AdaptiveThemeMode.dark
             ? Colors.blueGrey[900]!
             : Colors.blueGrey[600]!;
+    }
+  }
+
+  Color _getTextColor(String? title) {
+    switch (title) {
+      case 'active':
+        return Colors.green[900]!;
+      case 'expired':
+        return Colors.red[900]!;
+      default:
+        return Colors.white;
     }
   }
 }

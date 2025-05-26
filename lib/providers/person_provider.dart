@@ -60,10 +60,10 @@ class PersonProvider extends ChangeNotifier {
     Duration subscriptionDuration;
 
     switch (productId) {
-      case 'one_day_access':
+      case '1_day_access':
         subscriptionDuration = Duration(days: 1);
         break;
-      case 'one_week_access':
+      case '1_week_access':
         subscriptionDuration = Duration(days: 7);
         break;
       case 'monthly_access':
@@ -86,7 +86,7 @@ class PersonProvider extends ChangeNotifier {
       'premium_end_date': premiumEnd,
     });
 
-    // ✅ Save to purchases history
+    // ✅ Save to purchase history
     await FirebaseFirestore.instance.collection('purchases').add({
       'user_id': user!.uid,
       'product_id': productId,

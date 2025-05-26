@@ -23,6 +23,7 @@ import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
 import 'attachment_list_page.dart';
 import 'cumulative_trends_page.dart';
+import 'purchase_history_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
 import 'category_summary_page.dart';
@@ -245,6 +246,20 @@ class ProfilePageState extends State<ProfilePage> {
                             MaterialPageRoute(
                                 builder: (context) =>
                                     const PremiumSubscriptionPage()),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Purchase History'),
+                        trailing: const Icon(Icons.receipt_long),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PurchaseHistoryPage(),
+                            ),
                           );
                         },
                       ),
