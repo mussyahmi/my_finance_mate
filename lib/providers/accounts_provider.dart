@@ -128,7 +128,7 @@ class AccountsProvider extends ChangeNotifier {
           context, action, openingBalance, now, account);
 
       await context.read<CycleProvider>().fetchCycle(context);
-      await context.read<AccountsProvider>().fetchAccounts(context, cycle);
+      await fetchAccounts(context, cycle);
 
       notifyListeners();
     } catch (e) {
@@ -405,16 +405,16 @@ class AccountsProvider extends ChangeNotifier {
     }
 
     await context.read<CategoriesProvider>().fetchCategories(context, cycle);
-    await context.read<AccountsProvider>().fetchAccounts(context, cycle);
+    await fetchAccounts(context, cycle);
 
     notifyListeners();
   }
 
   Future<Account> fetchAccountByIdFromCycle(
-      BuildContext context,
-      Cycle cycle,
-      String accountId,
-    ) async {
+    BuildContext context,
+    Cycle cycle,
+    String accountId,
+  ) async {
     final Person user = context.read<PersonProvider>().user!;
 
     final accountSnapshot = await FirebaseFirestore.instance

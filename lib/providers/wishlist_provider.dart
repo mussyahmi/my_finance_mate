@@ -94,7 +94,7 @@ class WishlistProvider extends ChangeNotifier {
         });
       }
 
-      await context.read<WishlistProvider>().fetchWishlist(context);
+      await fetchWishlist(context);
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
       print('Error $action wishlist: $e');

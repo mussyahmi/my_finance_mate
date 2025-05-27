@@ -98,11 +98,7 @@ class _CycleListPageState extends State<CycleListPage> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Padding(
                   padding: EdgeInsets.only(bottom: 16.0),
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(),
-                    ],
-                  ),
+                  child: CircularProgressIndicator(),
                 ); //* Display a loading indicator
               } else if (snapshot.hasError) {
                 return Padding(
@@ -184,9 +180,7 @@ class _CycleListPageState extends State<CycleListPage> {
                                             onPressed: () async {
                                               if (!user.isPremium &&
                                                   switchBetweenCycles == 0 &&
-                                                  c.id !=
-                                                      (cycles.first)
-                                                          .id) {
+                                                  c.id != (cycles.first).id) {
                                                 return showDialog(
                                                   context: context,
                                                   barrierDismissible: false,
@@ -277,9 +271,7 @@ class _CycleListPageState extends State<CycleListPage> {
                                                   !user.isPremium &&
                                                       switchBetweenCycles !=
                                                           0 &&
-                                                      c.id !=
-                                                          (cycles.first)
-                                                              .id;
+                                                      c.id != (cycles.first).id;
 
                                               if (updateSwitchBetweenCycles) {
                                                 await prefs.setInt(

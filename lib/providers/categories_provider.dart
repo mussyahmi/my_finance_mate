@@ -256,7 +256,7 @@ class CategoriesProvider extends ChangeNotifier {
         });
       }
 
-      await context.read<CategoriesProvider>().fetchCategories(context, cycle);
+      await fetchCategories(context, cycle);
 
       if (!(action == 'Edit' && category!.subType == subType)) {
         await context

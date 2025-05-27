@@ -114,7 +114,7 @@ class CycleProvider extends ChangeNotifier {
       await _copyAccountsFromLastCycle(user, cycle!.id, newCycleDoc.id, now);
     }
 
-    await context.read<CycleProvider>().fetchCycle(context);
+    await fetchCycle(context);
     await context
         .read<CategoriesProvider>()
         .fetchCategories(context, context.read<CycleProvider>().cycle!);

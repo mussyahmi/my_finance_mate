@@ -14,6 +14,7 @@ import 'providers/accounts_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/cycles_provider.dart';
+import 'providers/purchases_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'services/ad_cache_service.dart';
@@ -93,6 +94,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => WishlistProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => PurchasesProvider(),
       ),
     ],
     child: MyApp(savedThemeMode: savedThemeMode, themeColor: themeColor),

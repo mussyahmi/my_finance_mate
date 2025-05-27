@@ -75,11 +75,7 @@ class _AccountListPageState extends State<AccountListPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
                     padding: EdgeInsets.only(bottom: 16.0),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(),
-                      ],
-                    ),
+                    child: CircularProgressIndicator(),
                   ); //* Display a loading indicator
                 } else if (snapshot.hasError) {
                   return Padding(

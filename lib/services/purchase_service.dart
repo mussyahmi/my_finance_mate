@@ -95,12 +95,9 @@ class PurchaseService {
     String countryCode = await _iap.countryCode();
 
     await _context!.read<PersonProvider>().activatePremium(
-          purchase.productID,
-          purchase.transactionDate!,
-          matchedProduct.currencyCode,
-          matchedProduct.currencySymbol,
-          matchedProduct.price,
-          matchedProduct.rawPrice,
+          _context!,
+          purchase,
+          matchedProduct,
           countryCode,
         );
 
