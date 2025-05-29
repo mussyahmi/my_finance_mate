@@ -156,7 +156,6 @@ class _CyclePageState extends State<CyclePage> {
           },
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),

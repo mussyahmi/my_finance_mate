@@ -178,7 +178,6 @@ class _DashboardPageState extends State<DashboardPage>
               },
               child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 20),
                     if (!user.isPremium && _showPremiumEnded)
