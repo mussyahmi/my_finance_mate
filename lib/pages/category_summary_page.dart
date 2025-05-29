@@ -120,7 +120,6 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                   //* Display the list of categories
                   final categories = snapshot.data!;
                   return ListView.builder(
-                    shrinkWrap: true,
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       Category category = categories[index] as Category;

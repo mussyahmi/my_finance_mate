@@ -135,7 +135,6 @@ class _CycleListPageState extends State<CycleListPage> {
                       ),
                     Expanded(
                       child: ListView.builder(
-                        shrinkWrap: true,
                         itemCount: cycles.length,
                         itemBuilder: (context, index) {
                           Cycle c = cycles[index];

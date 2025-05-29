@@ -405,7 +405,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
                   children: [
                     Expanded(
                       child: ListView.builder(
-                        shrinkWrap: true,
                         itemCount: transactions!.length,
                         itemBuilder: (context, index) {
                           t.Transaction transaction =
