@@ -76,11 +76,15 @@ class CycleProvider extends ChangeNotifier {
   Future<void> switchCycle(BuildContext context, Cycle newCycle) async {
     cycle = newCycle;
 
-    await context.read<CategoriesProvider>().fetchCategories(context, newCycle);
-    await context.read<AccountsProvider>().fetchAccounts(context, newCycle);
+    await context
+        .read<CategoriesProvider>()
+        .fetchCategories(context, newCycle, refresh: true);
+    await context
+        .read<AccountsProvider>()
+        .fetchAccounts(context, newCycle, refresh: true);
     await context
         .read<TransactionsProvider>()
-        .fetchTransactions(context, newCycle);
+        .fetchTransactions(context, newCycle, refresh: true);
 
     notifyListeners();
   }
