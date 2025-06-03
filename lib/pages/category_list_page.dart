@@ -79,83 +79,86 @@ class _CategoryListPageState extends State<CategoryListPage> {
               }
             });
 
-            return Scaffold(
-              body: NestedScrollView(
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  SliverAppBar(
-                    title: isSearching
-                        ? Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainer,
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: TextField(
-                              controller: searchController,
-                              autofocus: true,
-                              decoration: InputDecoration(
-                                icon: const Icon(Icons.search),
-                                hintText: 'Search categories...',
-                                border: InputBorder.none,
-                                suffixIcon: searchQuery.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear),
-                                        onPressed: () {
-                                          setState(() {
-                                            searchController.clear();
-                                            searchQuery = '';
-                                          });
-                                        },
-                                      )
-                                    : null,
+            return GestureDetector(
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: Scaffold(
+                body: NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverAppBar(
+                      title: const Text('Category List'),
+                      centerTitle: true,
+                      scrolledUnderElevation: 9999,
+                      floating: true,
+                      snap: true,
+                      bottom: PreferredSize(
+                        preferredSize: const Size.fromHeight(100),
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainer,
+                                borderRadius: BorderRadius.circular(24),
                               ),
-                              onChanged: (value) {
-                                setState(() {
-                                  searchQuery = value;
-                                });
-                              },
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: TextField(
+                                controller: searchController,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: 'Search categories...',
+                                  border: InputBorder.none,
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(
+                                        CupertinoIcons.clear_circled),
+                                    tooltip: 'Clear search',
+                                    onPressed: () {
+                                      setState(() {
+                                        searchController.clear();
+                                        searchQuery = '';
+                                      });
+                                    },
+                                  ),
+                                ),
+                                style: TextStyle(fontSize: 16),
+                                textAlignVertical: TextAlignVertical.center,
+                                textAlign: TextAlign.start,
+                                textInputAction: TextInputAction.search,
+                                onSubmitted: (value) {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+
+                                  setState(() {
+                                    searchQuery = value;
+                                  });
+                                },
+                              ),
                             ),
-                          )
-                        : const Text('Category List'),
-                    centerTitle: true,
-                    scrolledUnderElevation: 9999,
-                    floating: true,
-                    snap: true,
-                    bottom: const TabBar(
-                      tabs: [
-                        Tab(
-                          icon: Icon(CupertinoIcons.tray_arrow_up_fill),
-                          text: 'Spent',
+                            const TabBar(
+                              tabs: [
+                                Tab(
+                                  // icon: Icon(CupertinoIcons.tray_arrow_up_fill),
+                                  text: 'Spent',
+                                ),
+                                Tab(
+                                  // icon: Icon(CupertinoIcons.tray_arrow_down_fill),
+                                  text: 'Received',
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        Tab(
-                          icon: Icon(CupertinoIcons.tray_arrow_down_fill),
-                          text: 'Received',
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: Icon(isSearching ? Icons.close : Icons.search),
-                        onPressed: () {
-                          setState(() {
-                            if (isSearching) {
-                              searchQuery = '';
-                              searchController.clear();
-                            }
-                            isSearching = !isSearching;
-                          });
-                        },
                       ),
+                    ),
+                  ],
+                  body: TabBarView(
+                    children: [
+                      _buildCategoryList(context, cycle, 'spent'),
+                      _buildCategoryList(context, cycle, 'received'),
                     ],
                   ),
-                ],
-                body: TabBarView(
-                  children: [
-                    _buildCategoryList(context, cycle, 'spent'),
-                    _buildCategoryList(context, cycle, 'received'),
-                  ],
                 ),
               ),
             );
@@ -198,6 +201,16 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 .where((cat) =>
                     cat.name.toLowerCase().contains(searchQuery.toLowerCase()))
                 .toList();
+
+            if (filteredCategories.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  'No categories found for your search.',
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
 
             return ListView.builder(
               itemCount: filteredCategories.length,
