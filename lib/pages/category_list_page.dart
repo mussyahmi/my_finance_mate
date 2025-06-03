@@ -35,6 +35,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -79,13 +82,48 @@ class _CategoryListPageState extends State<CategoryListPage> {
             return Scaffold(
               body: NestedScrollView(
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  const SliverAppBar(
-                    title: Text('Category List'),
+                  SliverAppBar(
+                    title: isSearching
+                        ? Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainer,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: TextField(
+                              controller: searchController,
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                icon: const Icon(Icons.search),
+                                hintText: 'Search categories...',
+                                border: InputBorder.none,
+                                suffixIcon: searchQuery.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () {
+                                          setState(() {
+                                            searchController.clear();
+                                            searchQuery = '';
+                                          });
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              onChanged: (value) {
+                                setState(() {
+                                  searchQuery = value;
+                                });
+                              },
+                            ),
+                          )
+                        : const Text('Category List'),
                     centerTitle: true,
                     scrolledUnderElevation: 9999,
                     floating: true,
                     snap: true,
-                    bottom: TabBar(
+                    bottom: const TabBar(
                       tabs: [
                         Tab(
                           icon: Icon(CupertinoIcons.tray_arrow_up_fill),
@@ -97,6 +135,20 @@ class _CategoryListPageState extends State<CategoryListPage> {
                         ),
                       ],
                     ),
+                    actions: [
+                      IconButton(
+                        icon: Icon(isSearching ? Icons.close : Icons.search),
+                        onPressed: () {
+                          setState(() {
+                            if (isSearching) {
+                              searchQuery = '';
+                              searchController.clear();
+                            }
+                            isSearching = !isSearching;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ],
                 body: TabBarView(
@@ -141,12 +193,16 @@ class _CategoryListPageState extends State<CategoryListPage> {
             ); //* Display a message for no categories
           } else {
             //* Display the list of categories
-            final categories = snapshot.data!;
+            final List<Category> categories = snapshot.data!;
+            final filteredCategories = categories
+                .where((cat) =>
+                    cat.name.toLowerCase().contains(searchQuery.toLowerCase()))
+                .toList();
 
             return ListView.builder(
-              itemCount: categories.length,
+              itemCount: filteredCategories.length,
               itemBuilder: (context, index) {
-                Category category = categories[index] as Category;
+                Category category = filteredCategories[index];
 
                 return Column(
                   children: [

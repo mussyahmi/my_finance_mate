@@ -93,7 +93,7 @@ class CategoriesProvider extends ChangeNotifier {
     return filteredBudgets;
   }
 
-  Future<List<Object>> getCategories(
+  Future<List<Category>> getCategories(
       BuildContext context, String? type, String fromPage) async {
     List<Category> filteredCategories = [];
 
