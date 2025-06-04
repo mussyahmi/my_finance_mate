@@ -30,7 +30,6 @@ import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/tag.dart';
 import 'amount_input_page.dart';
-import 'category_list_page.dart';
 import 'image_view_page.dart';
 import '../models/transaction.dart' as t;
 import 'note_input_page.dart';
@@ -278,6 +277,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         showSearchBox: true,
                         searchDelay: const Duration(milliseconds: 500),
                         menuProps: MenuProps(surfaceTintColor: Colors.grey),
+                        searchFieldProps: TextFieldProps(
+                          decoration: InputDecoration(
+                            hintText: 'Search accounts...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                        ),
                         itemBuilder: (context, item, isDisabled, isSelected) {
                           return ListTile(title: Text(item));
                         },
@@ -297,31 +304,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             onChanged: (newValue) async {
                               FocusManager.instance.primaryFocus?.unfocus();
 
-                              if (newValue == 'add_new') {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return CategoryListPage(
-                                      type: selectedType,
-                                      isFromTransactionForm: true,
-                                    );
-                                  }),
-                                );
+                              final selectedCategory = context
+                                  .read<CategoriesProvider>()
+                                  .getCategoryByName(selectedType, newValue);
 
-                                setState(() {
-                                  selectedCategoryId = null;
-                                });
-
-                                await _fetchCategories();
-                              } else {
-                                final selectedCategory = context
-                                    .read<CategoriesProvider>()
-                                    .getCategoryByName(selectedType, newValue);
-
-                                setState(() {
-                                  selectedCategoryId = selectedCategory.id;
-                                });
-                              }
+                              setState(() {
+                                selectedCategoryId = selectedCategory.id;
+                              });
                             },
                             items: (filter, loadProps) {
                               final filteredCategories = categories
@@ -331,7 +320,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   .toList();
 
                               return [
-                                'add_new',
                                 ...filteredCategories
                                     .map((category) => category.name),
                               ];
@@ -349,17 +337,18 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               searchDelay: const Duration(milliseconds: 500),
                               menuProps:
                                   MenuProps(surfaceTintColor: Colors.grey),
+                              searchFieldProps: TextFieldProps(
+                                decoration: InputDecoration(
+                                  hintText: 'Search categories...',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                              ),
                               itemBuilder:
                                   (context, item, isDisabled, isSelected) {
-                                if (item == 'add_new') {
-                                  return ListTile(
-                                    leading:
-                                        Icon(CupertinoIcons.add_circled_solid),
-                                    title: Text('Add New'),
-                                  );
-                                } else {
-                                  return ListTile(
-                                      title: Row(
+                                return ListTile(
+                                  title: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
@@ -373,8 +362,8 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                               .subType,
                                         ),
                                     ],
-                                  ));
-                                }
+                                  ),
+                                );
                               },
                             ),
                           ),
@@ -424,6 +413,14 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               searchDelay: const Duration(milliseconds: 500),
                               menuProps:
                                   MenuProps(surfaceTintColor: Colors.grey),
+                              searchFieldProps: TextFieldProps(
+                                decoration: InputDecoration(
+                                  hintText: 'Search accounts...',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                              ),
                               itemBuilder:
                                   (context, item, isDisabled, isSelected) {
                                 return ListTile(title: Text(item));

@@ -118,11 +118,11 @@ class _CategorySummaryPageState extends State<CategorySummaryPage> {
                   ); //* Display a message for no categories
                 } else {
                   //* Display the list of categories
-                  final categories = snapshot.data!;
+                  final List<Category> categories = snapshot.data!;
                   return ListView.builder(
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
-                      Category category = categories[index] as Category;
+                      Category category = categories[index];
 
                       return Column(
                         children: [

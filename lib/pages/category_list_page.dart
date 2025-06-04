@@ -17,14 +17,10 @@ import '../widgets/tag.dart';
 
 class CategoryListPage extends StatefulWidget {
   final Function(String)? changeCategoryType;
-  final String? type;
-  final bool? isFromTransactionForm;
 
   const CategoryListPage({
     super.key,
     this.changeCategoryType,
-    this.type,
-    this.isFromTransactionForm,
   });
 
   @override
@@ -32,29 +28,26 @@ class CategoryListPage extends StatefulWidget {
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
-  late String selectedType = widget.type ?? 'spent'; //* Use for initialIndex
+  late String selectedType = 'spent'; //* Use for initialIndex
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
-  String searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.isFromTransactionForm != null) {
-        Category.showCategoryDialog(context, selectedType, 'Add');
-      }
-    });
-  }
+  final ValueNotifier<String> searchQueryNotifier = ValueNotifier('');
+  late Future<List<Category>> spentCategoriesFuture;
+  late Future<List<Category>> receivedCategoriesFuture;
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
+    spentCategoriesFuture = context
+        .read<CategoriesProvider>()
+        .getCategories(context, 'spent', 'category_list');
+    receivedCategoriesFuture = context
+        .read<CategoriesProvider>()
+        .getCategories(context, 'received', 'category_list');
   }
 
   @override
@@ -62,196 +55,192 @@ class _CategoryListPageState extends State<CategoryListPage> {
     Cycle cycle = context.watch<CycleProvider>().cycle!;
 
     return DefaultTabController(
-        initialIndex: selectedType == 'spent' ? 0 : 1,
-        length: 2,
-        child: Builder(
-          builder: (context) {
-            final TabController tabController =
-                DefaultTabController.of(context);
+      initialIndex: selectedType == 'spent' ? 0 : 1,
+      length: 2,
+      child: Builder(
+        builder: (context) {
+          final TabController tabController = DefaultTabController.of(context);
 
-            tabController.addListener(() {
-              if (!tabController.indexIsChanging) {
-                selectedType = tabController.index == 0 ? 'spent' : 'received';
+          tabController.addListener(() {
+            if (!tabController.indexIsChanging) {
+              selectedType = tabController.index == 0 ? 'spent' : 'received';
 
-                if (widget.changeCategoryType != null) {
-                  widget.changeCategoryType!(selectedType);
-                }
+              if (widget.changeCategoryType != null) {
+                widget.changeCategoryType!(selectedType);
               }
-            });
-
-            return GestureDetector(
-              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-              child: Scaffold(
-                body: NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                    SliverAppBar(
-                      title: const Text('Category List'),
-                      centerTitle: true,
-                      scrolledUnderElevation: 9999,
-                      floating: true,
-                      snap: true,
-                      bottom: PreferredSize(
-                        preferredSize: const Size.fromHeight(100),
-                        child: Column(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainer,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: TextField(
-                                controller: searchController,
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  hintText: 'Search categories...',
-                                  border: InputBorder.none,
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(
-                                        CupertinoIcons.clear_circled),
-                                    tooltip: 'Clear search',
-                                    onPressed: () {
-                                      setState(() {
-                                        searchController.clear();
-                                        searchQuery = '';
-                                      });
-                                    },
-                                  ),
-                                ),
-                                style: TextStyle(fontSize: 16),
-                                textAlignVertical: TextAlignVertical.center,
-                                textAlign: TextAlign.start,
-                                textInputAction: TextInputAction.search,
-                                onSubmitted: (value) {
-                                  FocusManager.instance.primaryFocus?.unfocus();
-
-                                  setState(() {
-                                    searchQuery = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            const TabBar(
-                              tabs: [
-                                Tab(
-                                  // icon: Icon(CupertinoIcons.tray_arrow_up_fill),
-                                  text: 'Spent',
-                                ),
-                                Tab(
-                                  // icon: Icon(CupertinoIcons.tray_arrow_down_fill),
-                                  text: 'Received',
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  body: TabBarView(
-                    children: [
-                      _buildCategoryList(context, cycle, 'spent'),
-                      _buildCategoryList(context, cycle, 'received'),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ));
-  }
-
-  Widget _buildCategoryList(BuildContext context, Cycle cycle, String type) {
-    return Center(
-      child: FutureBuilder(
-        future: context
-            .watch<CategoriesProvider>()
-            .getCategories(context, type, 'category_list'),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Padding(
-              padding: EdgeInsets.only(bottom: 16.0),
-              child: CircularProgressIndicator(),
-            ); //* Display a loading indicator
-          } else if (snapshot.hasError) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: SelectableText(
-                'Error: ${snapshot.error}',
-                textAlign: TextAlign.center,
-              ),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.only(bottom: 16.0),
-              child: Text(
-                'No categories found.',
-                textAlign: TextAlign.center,
-              ),
-            ); //* Display a message for no categories
-          } else {
-            //* Display the list of categories
-            final List<Category> categories = snapshot.data!;
-            final filteredCategories = categories
-                .where((cat) =>
-                    cat.name.toLowerCase().contains(searchQuery.toLowerCase()))
-                .toList();
-
-            if (filteredCategories.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
-                child: Text(
-                  'No categories found for your search.',
-                  textAlign: TextAlign.center,
-                ),
-              );
             }
+          });
 
-            return ListView.builder(
-              itemCount: filteredCategories.length,
-              itemBuilder: (context, index) {
-                Category category = filteredCategories[index];
-
-                return Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Card(
-                        child: ListTile(
-                          title: Text(category.name),
-                          trailing: type == 'spent'
-                              ? Tag(title: category.subType)
-                              : null,
-                          onTap: () {
-                            category.showCategoryDetails(
-                                context, cycle, selectedType);
-                          },
+          return GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: Scaffold(
+              body: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  SliverAppBar(
+                    title: const Text('Category List'),
+                    centerTitle: true,
+                    scrolledUnderElevation: 9999,
+                    floating: true,
+                    snap: true,
+                    bottom: const TabBar(
+                      tabs: [
+                        Tab(
+                          icon: Icon(CupertinoIcons.tray_arrow_up_fill),
+                          text: 'Spent',
                         ),
+                        Tab(
+                          icon: Icon(CupertinoIcons.tray_arrow_down_fill),
+                          text: 'Received',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildCategoryList(context, cycle, 'spent'),
+                          _buildCategoryList(context, cycle, 'received'),
+                        ],
                       ),
                     ),
-                    if (!context.read<PersonProvider>().user!.isPremium &&
-                        (index == 1 || index == 7 || index == 13))
-                      AdContainer(
-                        adCacheService: _adCacheService,
-                        number: index,
-                        adSize: AdSize.banner,
-                        adUnitId: _adMobService.bannerCategoryListAdUnitId!,
-                        height: 50.0,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                    if (index == categories.length - 1)
-                      const SizedBox(height: 80),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      margin: EdgeInsets.only(
+                          left: 16, top: 16, right: 90, bottom: 16),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search categories...',
+                          border: InputBorder.none,
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.search_circle,
+                              color: Colors.transparent,
+                            ),
+                            onPressed: null,
+                          ),
+                        ),
+                        style: TextStyle(fontSize: 16),
+                        textAlignVertical: TextAlignVertical.center,
+                        textAlign: TextAlign.start,
+                        textInputAction: TextInputAction.search,
+                        onChanged: (value) {
+                          searchQueryNotifier.value = value;
+                        },
+                      ),
+                    ),
                   ],
-                );
-              },
-            );
-          }
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
+  }
+
+  Widget _buildCategoryList(BuildContext context, Cycle cycle, String type) {
+    return ValueListenableBuilder(
+        valueListenable: searchQueryNotifier,
+        builder: (context, searchQuery, _) {
+          return Center(
+            child: FutureBuilder(
+              future: type == 'spent'
+                  ? spentCategoriesFuture
+                  : receivedCategoriesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: CircularProgressIndicator(),
+                  ); //* Display a loading indicator
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: SelectableText(
+                      'Error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      'No categories found.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ); //* Display a message for no categories
+                } else {
+                  //* Display the list of categories
+                  final List<Category> categories = snapshot.data!;
+                  final filteredCategories = categories
+                      .where((cat) => cat.name
+                          .toLowerCase()
+                          .contains(searchQuery.toLowerCase()))
+                      .toList();
+
+                  if (filteredCategories.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'No categories found for your search.',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: filteredCategories.length,
+                    itemBuilder: (context, index) {
+                      Category category = filteredCategories[index];
+
+                      return Column(
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(category.name),
+                                trailing: type == 'spent'
+                                    ? Tag(title: category.subType)
+                                    : null,
+                                onTap: () {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+
+                                  category.showCategoryDetails(
+                                      context, cycle, selectedType);
+                                },
+                              ),
+                            ),
+                          ),
+                          if (!context.read<PersonProvider>().user!.isPremium &&
+                              (index == 1 || index == 7 || index == 13))
+                            AdContainer(
+                              adCacheService: _adCacheService,
+                              number: index,
+                              adSize: AdSize.banner,
+                              adUnitId:
+                                  _adMobService.bannerCategoryListAdUnitId!,
+                              height: 50.0,
+                            ),
+                          if (index == categories.length - 1)
+                            const SizedBox(height: 80),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          );
+        });
   }
 }
