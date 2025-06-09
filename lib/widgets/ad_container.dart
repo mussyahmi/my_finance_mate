@@ -26,34 +26,49 @@ class AdContainer extends StatefulWidget {
 }
 
 class _AdContainerState extends State<AdContainer> {
-  late BannerAd _bannerAd;
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _bannerAd = widget.adCacheService.getCachedAd(
+    final ad = widget.adCacheService.getCachedAd(
       number: widget.number,
       adUnitId: widget.adUnitId,
       adSize: widget.adSize,
       listener: BannerAdListener(
-        onAdLoaded: (_) => setState(() {}),
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+            _isAdLoaded = true;
+          });
+        },
         onAdFailedToLoad: (ad, error) {
           print('Ad failed to load: $error');
           ad.dispose();
         },
       ),
     );
+
+    if (ad.responseInfo != null) {
+      _bannerAd = ad;
+      _isAdLoaded = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isAdLoaded || _bannerAd == null) {
+      return SizedBox(height: widget.height);
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5.0),
       height: widget.height,
       child: AdWidget(
         key: Key(
             '${widget.adUnitId}-${widget.adSize.width}x${widget.adSize.height}-${widget.number}'),
-        ad: _bannerAd,
+        ad: _bannerAd!,
       ),
     );
   }
