@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -130,554 +131,592 @@ class _DashboardPageState extends State<DashboardPage>
     //* Initialize SizeConfig
     SizeConfig().init(context);
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          cycle != null ? const AccountListPage() : Container(),
-          NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              SliverAppBar(
-                title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
-                centerTitle: true,
-                scrolledUnderElevation: 9999,
-                floating: true,
-                snap: true,
-                actions: [
-                  if (cycle != null)
-                    IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CyclePage(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(CupertinoIcons.calendar))
-                ],
-              ),
-            ],
-            body: RefreshIndicator(
-              onRefresh: () async {
-                if (cycle!.isLastCycle) {
-                  context
-                      .read<CycleProvider>()
-                      .fetchCycle(context, refresh: true);
-                  context
-                      .read<CategoriesProvider>()
-                      .fetchCategories(context, cycle, refresh: true);
-                  context
-                      .read<AccountsProvider>()
-                      .fetchAccounts(context, cycle, refresh: true);
-                  context
-                      .read<TransactionsProvider>()
-                      .fetchTransactions(context, cycle, refresh: true);
-                }
-              },
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    if (!user.isPremium && _showPremiumEnded)
-                      Column(
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Card(
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    title: Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: const Text(
-                                        'Premium Access Ended',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Exit Confirmation'),
+              content: const Text('Are you sure you want to exit the app?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: () => SystemNavigator.pop(),
+                  child: const Text('Exit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            cycle != null ? const AccountListPage() : Container(),
+            NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                SliverAppBar(
+                  title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
+                  centerTitle: true,
+                  scrolledUnderElevation: 9999,
+                  floating: true,
+                  snap: true,
+                  actions: [
+                    if (cycle != null)
+                      IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CyclePage(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(CupertinoIcons.calendar))
+                  ],
+                ),
+              ],
+              body: RefreshIndicator(
+                onRefresh: () async {
+                  if (cycle!.isLastCycle) {
+                    context
+                        .read<CycleProvider>()
+                        .fetchCycle(context, refresh: true);
+                    context
+                        .read<CategoriesProvider>()
+                        .fetchCategories(context, cycle, refresh: true);
+                    context
+                        .read<AccountsProvider>()
+                        .fetchAccounts(context, cycle, refresh: true);
+                    context
+                        .read<TransactionsProvider>()
+                        .fetchTransactions(context, cycle, refresh: true);
+                  }
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      if (!user.isPremium && _showPremiumEnded)
+                        Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Card(
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      title: Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 8.0),
+                                        child: const Text(
+                                          'Premium Access Ended',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20),
+                                        ),
+                                      ),
+                                      subtitle: Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 4.0),
+                                        child: const Text(
+                                            'Your premium access has ended. Upgrade to continue enjoying premium features!'),
                                       ),
                                     ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: const Text(
-                                          'Your premium access has ended. Upgrade to continue enjoying premium features!'),
-                                    ),
-                                  ),
-                                  const Divider(),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      right: 16.0,
-                                      bottom: 8.0,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        TextButton(
-                                          onPressed: () async {
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
+                                    const Divider(),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        bottom: 8.0,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          TextButton(
+                                            onPressed: () async {
+                                              SharedPreferences prefs =
+                                                  await SharedPreferences
+                                                      .getInstance();
 
-                                            prefs.setBool(
-                                                'show_premium_ended', false);
+                                              prefs.setBool(
+                                                  'show_premium_ended', false);
 
-                                            setState(() {
-                                              _showPremiumEnded = false;
-                                            });
-                                          },
-                                          child: const Text('Later'),
-                                        ),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            surfaceTintColor: Colors.orange,
-                                            foregroundColor:
-                                                Colors.orangeAccent,
+                                              setState(() {
+                                                _showPremiumEnded = false;
+                                              });
+                                            },
+                                            child: const Text('Later'),
                                           ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const PremiumSubscriptionPage(),
-                                              ),
-                                            );
-                                          },
-                                          child:
-                                              const Text('Upgrade to Premium'),
-                                        ),
-                                      ],
+                                          ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              surfaceTintColor: Colors.orange,
+                                              foregroundColor:
+                                                  Colors.orangeAccent,
+                                            ),
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      const PremiumSubscriptionPage(),
+                                                ),
+                                              );
+                                            },
+                                            child: const Text(
+                                                'Upgrade to Premium'),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    const MonthlyExpenses(),
-                    const SizedBox(height: 20),
-                    if (_adMobService != null && !user.isPremium)
-                      Column(
-                        children: [
-                          AdContainer(
-                            adCacheService: _adCacheService,
-                            number: 1,
-                            adSize: AdSize.mediumRectangle,
-                            adUnitId: _adMobService!.bannerDasboardAdUnitId!,
-                            height: 250.0,
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    PinnedWishlist(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Latest Transactions',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const TransactionListPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('See all'))
-                        ],
-                      ),
-                    ),
-                    FutureBuilder(
-                      future: context
-                          .watch<TransactionsProvider>()
-                          .getLatestTransactions(context),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            cycle == null) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: CircularProgressIndicator(),
-                          ); //* Display a loading indicator
-                        } else if (snapshot.hasError) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: SelectableText(
-                              'Error: ${snapshot.error}',
-                              textAlign: TextAlign.center,
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      const MonthlyExpenses(),
+                      const SizedBox(height: 20),
+                      if (_adMobService != null && !user.isPremium)
+                        Column(
+                          children: [
+                            AdContainer(
+                              adCacheService: _adCacheService,
+                              number: 1,
+                              adSize: AdSize.mediumRectangle,
+                              adUnitId: _adMobService!.bannerDasboardAdUnitId!,
+                              height: 250.0,
                             ),
-                          );
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              'No transactions found.',
-                              textAlign: TextAlign.center,
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      PinnedWishlist(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Latest Transactions',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
                             ),
-                          ); //* Display a message for no transactions
-                        } else {
-                          //* Display the list of transactions
-                          final transactions = snapshot.data!;
-                          return Column(
-                            children: transactions
-                                .asMap()
-                                .entries
-                                .map<Widget>((entry) {
-                              int index = entry.key;
-                              t.Transaction transaction =
-                                  entry.value as t.Transaction;
-
-                              late t.Transaction prevTransaction;
-
-                              if (index > 0) {
-                                if (transactions[index - 1] is t.Transaction) {
-                                  prevTransaction =
-                                      transactions[index - 1] as t.Transaction;
-                                } else {
-                                  prevTransaction =
-                                      transactions[index - 2] as t.Transaction;
-                                }
-                              }
-
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Column(
-                                      children: [
-                                        if (index == 0 ||
-                                            DateTime(
-                                                    transaction.dateTime.year,
-                                                    transaction.dateTime.month,
-                                                    transaction.dateTime.day,
-                                                    0,
-                                                    0) !=
-                                                DateTime(
-                                                    prevTransaction
-                                                        .dateTime.year,
-                                                    prevTransaction
-                                                        .dateTime.month,
-                                                    prevTransaction
-                                                        .dateTime.day,
-                                                    0,
-                                                    0))
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              transaction.getDateText(),
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey),
-                                            ),
-                                          ),
-                                        Card(
-                                          child: ListTile(
-                                            title: transaction.type ==
-                                                    'transfer'
-                                                ? FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                          ),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0,
-                                                                  vertical:
-                                                                      2.0),
-                                                          child: Text(
-                                                            transaction
-                                                                .accountName,
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 14,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0),
-                                                          child: Icon(
-                                                            CupertinoIcons
-                                                                .arrow_right_arrow_left,
-                                                            color: Colors.grey,
-                                                            size: 16,
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                          ),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0,
-                                                                  vertical:
-                                                                      2.0),
-                                                          child: Text(
-                                                            transaction
-                                                                .accountToName,
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 14,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Text(
-                                                      transaction.categoryName,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 16),
-                                                    ),
-                                                  ),
-                                            subtitle: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  transaction.note
-                                                          .contains('insert')
-                                                      ? ParchmentDocument
-                                                              .fromJson(
-                                                                  jsonDecode(
-                                                                      transaction
-                                                                          .note))
-                                                          .toPlainText()
-                                                      : transaction.note
-                                                          .split('\\n')[0],
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                      color: Colors.grey),
-                                                ),
-                                              ],
-                                            ),
-                                            trailing: Text(
-                                              '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: transaction.type ==
-                                                          'transfer'
-                                                      ? Colors.grey
-                                                      : transaction.type ==
-                                                              'spent'
-                                                          ? Colors.red
-                                                          : Colors.green),
-                                            ),
-                                            onTap: () {
-                                              //* Show the transaction summary dialog when tapped
-                                              transaction
-                                                  .showTransactionDetails(
-                                                      context, cycle);
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const TransactionListPage(),
                                     ),
-                                  ),
-                                  if (!user.isPremium &&
-                                      (index == 1 || index == 7 || index == 13))
-                                    AdContainer(
-                                      adCacheService: _adCacheService,
-                                      number: index,
-                                      adSize: AdSize.banner,
-                                      adUnitId: _adMobService!
-                                          .bannerTransactionLatestAdUnitId!,
-                                      height: 50.0,
-                                    )
-                                ],
-                              );
-                            }).toList(),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 80),
-                  ],
+                                  );
+                                },
+                                child: const Text('See all'))
+                          ],
+                        ),
+                      ),
+                      FutureBuilder(
+                        future: context
+                            .watch<TransactionsProvider>()
+                            .getLatestTransactions(context),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting ||
+                              cycle == null) {
+                            return const Padding(
+                              padding: EdgeInsets.only(bottom: 16.0),
+                              child: CircularProgressIndicator(),
+                            ); //* Display a loading indicator
+                          } else if (snapshot.hasError) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: SelectableText(
+                                'Error: ${snapshot.error}',
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.only(bottom: 16.0),
+                              child: Text(
+                                'No transactions found.',
+                                textAlign: TextAlign.center,
+                              ),
+                            ); //* Display a message for no transactions
+                          } else {
+                            //* Display the list of transactions
+                            final transactions = snapshot.data!;
+                            return Column(
+                              children: transactions
+                                  .asMap()
+                                  .entries
+                                  .map<Widget>((entry) {
+                                int index = entry.key;
+                                t.Transaction transaction =
+                                    entry.value as t.Transaction;
+
+                                late t.Transaction prevTransaction;
+
+                                if (index > 0) {
+                                  if (transactions[index - 1]
+                                      is t.Transaction) {
+                                    prevTransaction = transactions[index - 1]
+                                        as t.Transaction;
+                                  } else {
+                                    prevTransaction = transactions[index - 2]
+                                        as t.Transaction;
+                                  }
+                                }
+
+                                return Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Column(
+                                        children: [
+                                          if (index == 0 ||
+                                              DateTime(
+                                                      transaction.dateTime.year,
+                                                      transaction
+                                                          .dateTime.month,
+                                                      transaction.dateTime.day,
+                                                      0,
+                                                      0) !=
+                                                  DateTime(
+                                                      prevTransaction
+                                                          .dateTime.year,
+                                                      prevTransaction
+                                                          .dateTime.month,
+                                                      prevTransaction
+                                                          .dateTime.day,
+                                                      0,
+                                                      0))
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                transaction.getDateText(),
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey),
+                                              ),
+                                            ),
+                                          Card(
+                                            child: ListTile(
+                                              title: transaction.type ==
+                                                      'transfer'
+                                                  ? FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Row(
+                                                        children: [
+                                                          Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              border:
+                                                                  Border.all(
+                                                                color:
+                                                                    Colors.grey,
+                                                                width: 1.0,
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.0),
+                                                            ),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4.0,
+                                                                    vertical:
+                                                                        2.0),
+                                                            child: Text(
+                                                              transaction
+                                                                  .accountName,
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4.0),
+                                                            child: Icon(
+                                                              CupertinoIcons
+                                                                  .arrow_right_arrow_left,
+                                                              color:
+                                                                  Colors.grey,
+                                                              size: 16,
+                                                            ),
+                                                          ),
+                                                          Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              border:
+                                                                  Border.all(
+                                                                color:
+                                                                    Colors.grey,
+                                                                width: 1.0,
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.0),
+                                                            ),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        4.0,
+                                                                    vertical:
+                                                                        2.0),
+                                                            child: Text(
+                                                              transaction
+                                                                  .accountToName,
+                                                              style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  : FittedBox(
+                                                      fit: BoxFit.scaleDown,
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: Text(
+                                                        transaction
+                                                            .categoryName,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 16),
+                                                      ),
+                                                    ),
+                                              subtitle: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    transaction.note
+                                                            .contains('insert')
+                                                        ? ParchmentDocument.fromJson(
+                                                                jsonDecode(
+                                                                    transaction
+                                                                        .note))
+                                                            .toPlainText()
+                                                        : transaction.note
+                                                            .split('\\n')[0],
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                    style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                        color: Colors.grey),
+                                                  ),
+                                                ],
+                                              ),
+                                              trailing: Text(
+                                                '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: transaction.type ==
+                                                            'transfer'
+                                                        ? Colors.grey
+                                                        : transaction.type ==
+                                                                'spent'
+                                                            ? Colors.red
+                                                            : Colors.green),
+                                              ),
+                                              onTap: () {
+                                                //* Show the transaction summary dialog when tapped
+                                                transaction
+                                                    .showTransactionDetails(
+                                                        context, cycle);
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (!user.isPremium &&
+                                        (index == 1 ||
+                                            index == 7 ||
+                                            index == 13))
+                                      AdContainer(
+                                        adCacheService: _adCacheService,
+                                        number: index,
+                                        adSize: AdSize.banner,
+                                        adUnitId: _adMobService!
+                                            .bannerTransactionLatestAdUnitId!,
+                                        height: 50.0,
+                                      )
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          cycle != null
-              ? CategoryListPage(changeCategoryType: changeCategoryType)
-              : Container(),
-          cycle != null ? const ProfilePage() : Container(),
-        ],
-      ),
-      floatingActionButton: _selectedIndex != 3 &&
-              cycle != null &&
-              cycle.isLastCycle
-          ? FloatingActionButton(
-              onPressed: () async {
-                if (_selectedIndex == 0) {
-                  Account.showAccountDialog(context, cycle, 'Add');
-                } else if (_selectedIndex == 1) {
-                  if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                    EasyLoading.showInfo(
-                        'No accounts? Let\'s fix that—add one to begin!');
-                  } else if (!user.isPremium &&
-                      user.dailyTransactionsMade >= 5) {
-                    await showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Daily Transaction Cap Reached!'),
-                          content: const Text(
-                              'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
-                          actions: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
-                              ),
-                              onPressed: () {
-                                if (!user.isPremium) {
-                                  _showRewardedAd();
-                                }
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Watch Ad'),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                surfaceTintColor: Colors.orange,
-                                foregroundColor: Colors.orangeAccent,
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const PremiumSubscriptionPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('Upgrade to Premium'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Later'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else {
-                    final bool result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const TransactionFormPage(action: 'Add'),
-                      ),
-                    );
-
-                    if (result &&
-                        !user.isPremium &&
+            cycle != null
+                ? CategoryListPage(changeCategoryType: changeCategoryType)
+                : Container(),
+            cycle != null ? const ProfilePage() : Container(),
+          ],
+        ),
+        floatingActionButton: _selectedIndex != 3 &&
+                cycle != null &&
+                cycle.isLastCycle
+            ? FloatingActionButton(
+                onPressed: () async {
+                  if (_selectedIndex == 0) {
+                    Account.showAccountDialog(context, cycle, 'Add');
+                  } else if (_selectedIndex == 1) {
+                    if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                      EasyLoading.showInfo(
+                          'No accounts? Let\'s fix that—add one to begin!');
+                    } else if (!user.isPremium &&
                         user.dailyTransactionsMade >= 5) {
-                      setState(() {});
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Daily Transaction Cap Reached!'),
+                            content: const Text(
+                                'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+                            actions: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                onPressed: () {
+                                  if (!user.isPremium) {
+                                    _showRewardedAd();
+                                  }
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Watch Ad'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  surfaceTintColor: Colors.orange,
+                                  foregroundColor: Colors.orangeAccent,
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const PremiumSubscriptionPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Upgrade to Premium'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Later'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      final bool result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const TransactionFormPage(action: 'Add'),
+                        ),
+                      );
+
+                      if (result &&
+                          !user.isPremium &&
+                          user.dailyTransactionsMade >= 5) {
+                        setState(() {});
+                      }
                     }
+                  } else if (_selectedIndex == 2) {
+                    Category.showCategoryDialog(context, _categoryType, 'Add');
                   }
-                } else if (_selectedIndex == 2) {
-                  Category.showCategoryDialog(context, _categoryType, 'Add');
-                }
-              },
-              child: const Icon(CupertinoIcons.add),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(CupertinoIcons.creditcard),
-            selectedIcon: Icon(CupertinoIcons.creditcard_fill),
-            label: 'Account List',
-          ),
-          NavigationDestination(
-            icon: Icon(CupertinoIcons.square_grid_2x2),
-            selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(CupertinoIcons.rectangle_grid_1x2),
-            selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
-            label: 'Category List',
-          ),
-          NavigationDestination(
-            icon: Icon(CupertinoIcons.person),
-            selectedIcon: Icon(CupertinoIcons.person_fill),
-            label: 'Profile',
-          ),
-        ],
-        onDestinationSelected: (value) async {
-          setState(() {
-            _selectedIndex = value;
-          });
-        },
-        elevation: 9999,
-        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+                },
+                child: const Icon(CupertinoIcons.add),
+              )
+            : null,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _selectedIndex,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.creditcard),
+              selectedIcon: Icon(CupertinoIcons.creditcard_fill),
+              label: 'Account List',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.square_grid_2x2),
+              selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.rectangle_grid_1x2),
+              selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
+              label: 'Category List',
+            ),
+            NavigationDestination(
+              icon: Icon(CupertinoIcons.person),
+              selectedIcon: Icon(CupertinoIcons.person_fill),
+              label: 'Profile',
+            ),
+          ],
+          onDestinationSelected: (value) async {
+            setState(() {
+              _selectedIndex = value;
+            });
+          },
+          elevation: 9999,
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        ),
       ),
     );
   }

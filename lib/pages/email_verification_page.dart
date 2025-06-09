@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'dashboard_page.dart';
@@ -21,6 +22,31 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
   Widget build(BuildContext context) {
     return PopScope(
         canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('Exit Confirmation'),
+                content: const Text('Are you sure you want to exit the app?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    onPressed: () => SystemNavigator.pop(),
+                    child: const Text('Exit'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
