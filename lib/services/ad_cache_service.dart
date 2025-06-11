@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdCacheService {
@@ -13,7 +14,7 @@ class AdCacheService {
     final String cacheKey =
         '$adUnitId-${adSize.width}x${adSize.height}-$number';
 
-    if (_adCache.containsKey(cacheKey)) {
+    if (_adCache.containsKey(cacheKey) && !kDebugMode) {
       return _adCache[cacheKey]!;
     }
 
