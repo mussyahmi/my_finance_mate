@@ -30,18 +30,19 @@ class _AdContainerState extends State<AdContainer> {
   bool _isAdLoaded = false;
 
   @override
-  void initState() {
-    super.initState();
-    final ad = widget.adCacheService.getCachedAd(
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initAsync();
+  }
+
+  Future<void> _initAsync() async {
+    final ad = await widget.adCacheService.getCachedAd(
       number: widget.number,
       adUnitId: widget.adUnitId,
       adSize: widget.adSize,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          setState(() {
-            _bannerAd = ad as BannerAd;
-            _isAdLoaded = true;
-          });
+          print('Ad loaded successfully');
         },
         onAdFailedToLoad: (ad, error) {
           print('Ad failed to load: $error');
@@ -50,10 +51,10 @@ class _AdContainerState extends State<AdContainer> {
       ),
     );
 
-    if (ad.responseInfo != null) {
+    setState(() {
       _bannerAd = ad;
       _isAdLoaded = true;
-    }
+    });
   }
 
   @override

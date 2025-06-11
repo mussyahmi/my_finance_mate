@@ -4,12 +4,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdCacheService {
   final Map<String, BannerAd> _adCache = {};
 
-  BannerAd getCachedAd({
+  Future<BannerAd> getCachedAd({
     required int number,
     required String adUnitId,
     required AdSize adSize,
     required BannerAdListener listener,
-  }) {
+  }) async {
     //* Use a unique key for each ad based on its properties
     final String cacheKey =
         '$adUnitId-${adSize.width}x${adSize.height}-$number';
@@ -24,7 +24,9 @@ class AdCacheService {
       size: adSize,
       listener: listener,
       request: const AdRequest(),
-    )..load();
+    );
+
+    await newAd.load();
 
     _adCache[cacheKey] = newAd;
     return newAd;
