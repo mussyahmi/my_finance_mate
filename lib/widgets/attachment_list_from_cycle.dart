@@ -58,7 +58,8 @@ class AttachmentListFromCycle extends StatelessWidget {
                 child: InkWell(
                   onTap: () {
                     //* Show the transaction summary dialog when tapped
-                    transaction.showTransactionDetails(context, cycle);
+                    transaction.showTransactionDetails(context, cycle,
+                        showButtons: false);
                   },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

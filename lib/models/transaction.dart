@@ -70,7 +70,8 @@ class Transaction {
     }
   }
 
-  void showTransactionDetails(BuildContext context, Cycle cycle) {
+  void showTransactionDetails(BuildContext context, Cycle cycle,
+      {bool showButtons = true}) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -83,47 +84,48 @@ class Transaction {
                 'Transaction Details',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              Row(
-                children: [
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await _deleteHandler(context);
+              if (showButtons)
+                Row(
+                  children: [
+                    if (cycle.isLastCycle)
+                      IconButton.filledTonal(
+                        onPressed: () async {
+                          final result = await _deleteHandler(context);
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: const Icon(
-                        CupertinoIcons.delete_solid,
-                        color: Colors.red,
+                          if (result) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        icon: const Icon(
+                          CupertinoIcons.delete_solid,
+                          color: Colors.red,
+                        ),
                       ),
-                    ),
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        //* Edit action
-                        final bool result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransactionFormPage(
-                              action: 'Edit',
-                              transaction: this,
+                    if (cycle.isLastCycle)
+                      IconButton.filledTonal(
+                        onPressed: () async {
+                          //* Edit action
+                          final bool result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TransactionFormPage(
+                                action: 'Edit',
+                                transaction: this,
+                              ),
                             ),
-                          ),
-                        );
+                          );
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: Icon(
-                        CupertinoIcons.pencil,
-                        color: Theme.of(context).colorScheme.primary,
+                          if (result) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        icon: Icon(
+                          CupertinoIcons.pencil,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                    ),
-                ],
-              )
+                  ],
+                )
             ],
           ),
           contents: Column(
