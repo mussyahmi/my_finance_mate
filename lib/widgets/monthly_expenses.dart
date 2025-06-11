@@ -265,7 +265,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
 
   String _getAmountBalanceAfterBudget(
       BuildContext context, List<Category> budgets) {
-    final List<Account> accounts = context.read<AccountsProvider>().accounts!;
+    final List<Account> accounts = context.watch<AccountsProvider>().accounts!;
     double budgetBalance = accounts
         .where((account) => !account.isExcluded)
         .fold(0.0, (sum, account) => sum + double.parse(account.amountBalance));
