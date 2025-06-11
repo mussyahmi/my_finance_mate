@@ -34,8 +34,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
   final ValueNotifier<String> searchQueryNotifier = ValueNotifier('');
-  late Future<List<Category>> spentCategoriesFuture;
-  late Future<List<Category>> receivedCategoriesFuture;
+  Future<List<Category>> spentCategoriesFuture = Future.value([]);
+  Future<List<Category>> receivedCategoriesFuture = Future.value([]);
   List<Category>? _cachedSpentCategories;
   List<Category>? _cachedReceivedCategories;
 
