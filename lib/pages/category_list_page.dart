@@ -36,18 +36,54 @@ class _CategoryListPageState extends State<CategoryListPage> {
   final ValueNotifier<String> searchQueryNotifier = ValueNotifier('');
   late Future<List<Category>> spentCategoriesFuture;
   late Future<List<Category>> receivedCategoriesFuture;
+  List<Category>? _cachedSpentCategories;
+  List<Category>? _cachedReceivedCategories;
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
-    spentCategoriesFuture = context
+    _refreshCategories();
+  }
+
+  void _refreshCategories() async {
+    final newSpentCategories = await context
         .read<CategoriesProvider>()
         .getCategories(context, 'spent', 'category_list');
-    receivedCategoriesFuture = context
+    final newReceivedCategories = await context
         .read<CategoriesProvider>()
         .getCategories(context, 'received', 'category_list');
+
+    bool spentChanged =
+        !_listEquals(_cachedSpentCategories, newSpentCategories);
+    bool receivedChanged =
+        !_listEquals(_cachedReceivedCategories, newReceivedCategories);
+
+    if (spentChanged || receivedChanged) {
+      setState(() {
+        if (spentChanged) {
+          spentCategoriesFuture = Future.value(newSpentCategories);
+          _cachedSpentCategories = newSpentCategories;
+        }
+        if (receivedChanged) {
+          receivedCategoriesFuture = Future.value(newReceivedCategories);
+          _cachedReceivedCategories = newReceivedCategories;
+        }
+      });
+    }
+  }
+
+  bool _listEquals(List<Category>? a, List<Category>? b) {
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].updatedAt != b[i].updatedAt) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @override
@@ -212,11 +248,13 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                 trailing: type == 'spent'
                                     ? Tag(title: category.subType)
                                     : null,
-                                onTap: () {
+                                onTap: () async {
                                   FocusManager.instance.primaryFocus?.unfocus();
 
-                                  category.showCategoryDetails(
+                                  await category.showCategoryDetails(
                                       context, cycle, type);
+
+                                  _refreshCategories();
                                 },
                               ),
                             ),

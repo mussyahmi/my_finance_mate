@@ -53,9 +53,9 @@ class Category {
     return double.parse(totalAmount) / double.parse(budget);
   }
 
-  void showCategoryDetails(
-      BuildContext context, Cycle cycle, String selectedType) {
-    showModalBottomSheet(
+  Future<void> showCategoryDetails(
+      BuildContext context, Cycle cycle, String selectedType) async {
+    await showModalBottomSheet(
       context: context,
       builder: (context) {
         return CustomDraggableScrollableSheet(
