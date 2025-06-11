@@ -216,7 +216,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                   FocusManager.instance.primaryFocus?.unfocus();
 
                                   category.showCategoryDetails(
-                                      context, cycle, selectedType);
+                                      context, cycle, type);
                                 },
                               ),
                             ),
