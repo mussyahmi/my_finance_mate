@@ -349,18 +349,21 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                   (context, item, isDisabled, isSelected) {
                                 return ListTile(
                                   title: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(item),
                                       if (selectedType == 'spent')
-                                        Tag(
-                                          title: context
-                                              .read<CategoriesProvider>()
-                                              .getCategoryByName(
-                                                  selectedType, item)
-                                              .subType,
+                                        Row(
+                                          children: [
+                                            Tag(
+                                              title: context
+                                                  .read<CategoriesProvider>()
+                                                  .getCategoryByName(
+                                                      selectedType, item)
+                                                  .subType,
+                                            ),
+                                            SizedBox(width: 10),
+                                          ],
                                         ),
+                                      Text(item),
                                     ],
                                   ),
                                 );

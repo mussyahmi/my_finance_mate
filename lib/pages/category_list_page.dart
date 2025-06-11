@@ -244,15 +244,25 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Card(
                               child: ListTile(
-                                title: Text(category.name),
-                                trailing: type == 'spent'
+                                leading: category.type == 'spent'
                                     ? Tag(title: category.subType)
+                                    : null,
+                                title: Text(category.name),
+                                trailing: double.parse(category.totalAmount) > 0
+                                    ? Text(
+                                        '${category.type == 'spent' ? '-' : ''}RM${category.totalAmount}',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: category.type == 'spent'
+                                                ? Colors.red
+                                                : Colors.green),
+                                      )
                                     : null,
                                 onTap: () async {
                                   FocusManager.instance.primaryFocus?.unfocus();
 
                                   await category.showCategoryDetails(
-                                      context, cycle, type);
+                                      context, cycle, category.type);
 
                                   _refreshCategories();
                                 },

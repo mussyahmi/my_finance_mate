@@ -26,7 +26,6 @@ import 'cumulative_trends_page.dart';
 import 'purchase_history_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
-import 'category_summary_page.dart';
 import 'premium_access_page.dart';
 import 'wishlist_page.dart';
 
@@ -271,20 +270,6 @@ class ProfilePageState extends State<ProfilePage> {
                         'Analysis & Insights',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Category Summary'),
-                        trailing: const Icon(CupertinoIcons.chart_bar_fill),
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CategorySummaryPage(),
-                            ),
-                          );
-                        },
                       ),
                     ),
                     Card(
