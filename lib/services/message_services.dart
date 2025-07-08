@@ -26,7 +26,7 @@ class MessageService {
     "Out with the old... Deleting now!",
     "Just one sec... Sending it to oblivion!",
     "Clearing out the clutter... Deleting!",
-    "That item won’t bother you anymore... Deleting!"
+    "That item won't bother you anymore... Deleting!"
   ];
 
   // List of messages for adding action (loading)

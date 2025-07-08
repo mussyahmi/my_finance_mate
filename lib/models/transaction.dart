@@ -105,7 +105,7 @@ class Transaction {
                       IconButton.filledTonal(
                         onPressed: () async {
                           //* Edit action
-                          final bool result = await Navigator.push(
+                          final bool? result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => TransactionFormPage(
@@ -114,6 +114,10 @@ class Transaction {
                               ),
                             ),
                           );
+
+                          if (result == null) {
+                            return;
+                          }
 
                           if (result) {
                             Navigator.of(context).pop();

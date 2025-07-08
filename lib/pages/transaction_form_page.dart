@@ -465,7 +465,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                     Card(
                       child: ListTile(
                         onTap: () async {
-                          String note = await Navigator.push(
+                          final String? note = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => NoteInputPage(
@@ -473,6 +473,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               ),
                             ),
                           );
+
+                          if (note == null) {
+                            return;
+                          }
 
                           if (note == 'empty') {
                             setState(() {

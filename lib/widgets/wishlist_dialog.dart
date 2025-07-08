@@ -69,7 +69,7 @@ class WishlistDialogState extends State<WishlistDialog> {
               Card(
                 child: ListTile(
                   onTap: () async {
-                    String note = await Navigator.push(
+                    final String? note = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => NoteInputPage(
@@ -77,6 +77,10 @@ class WishlistDialogState extends State<WishlistDialog> {
                         ),
                       ),
                     );
+
+                    if (note == null) {
+                      return;
+                    }
 
                     if (note == 'empty') {
                       setState(() {

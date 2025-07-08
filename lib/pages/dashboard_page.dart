@@ -664,13 +664,17 @@ class _DashboardPageState extends State<DashboardPage>
                         },
                       );
                     } else {
-                      final bool result = await Navigator.push(
+                      final bool? result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
                               const TransactionFormPage(action: 'Add'),
                         ),
                       );
+
+                      if (result == null) {
+                        return;
+                      }
 
                       if (result &&
                           !user.isPremium &&

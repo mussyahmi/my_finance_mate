@@ -154,7 +154,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                 Card(
                   child: ListTile(
                     onTap: () async {
-                      String note = await Navigator.push(
+                      final String? note = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => NoteInputPage(
@@ -162,6 +162,10 @@ class CategoryDialogState extends State<CategoryDialog> {
                           ),
                         ),
                       );
+
+                      if (note == null) {
+                        return;
+                      }
 
                       if (note == 'empty') {
                         setState(() {
