@@ -359,6 +359,7 @@ class _LoginPageState extends State<LoginPage> {
           premiumEndDate: userDoc['premium_end_date'] != null
               ? (userDoc['premium_end_date'] as Timestamp).toDate()
               : null,
+          deviceInfoJson: deviceInfoJson,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
@@ -479,6 +480,7 @@ class _LoginPageState extends State<LoginPage> {
           premiumEndDate: userDoc['premium_end_date'] != null
               ? (userDoc['premium_end_date'] as Timestamp).toDate()
               : null,
+          deviceInfoJson: deviceInfoJson,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);
@@ -642,6 +644,7 @@ class _LoginPageState extends State<LoginPage> {
                       launchUrl(Uri.parse(
                           'https://play.google.com/store/apps/details?id=com.mustafasyahmi.myfinancemate'));
                     } else {
+                      // TODO: Add iOS App Store link
                       Navigator.pop(context);
                     }
                   },

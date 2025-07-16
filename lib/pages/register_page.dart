@@ -292,6 +292,7 @@ class RegisterPageState extends State<RegisterPage> {
           premiumEndDate: userDoc['premium_end_date'] != null
               ? (userDoc['premium_end_date'] as Timestamp).toDate()
               : null,
+          deviceInfoJson: deviceInfoJson,
         );
 
         context.read<PersonProvider>().setUser(newUser: person);

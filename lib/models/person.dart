@@ -14,6 +14,7 @@ class Person {
   bool isPremium;
   DateTime? premiumStartDate;
   DateTime? premiumEndDate;
+  String deviceInfoJson;
 
   Person({
     required this.uid,
@@ -26,6 +27,7 @@ class Person {
     required this.isPremium,
     required this.premiumStartDate,
     required this.premiumEndDate,
+    required this.deviceInfoJson,
   });
 
   Future<bool> showEditDisplayNameDialog(

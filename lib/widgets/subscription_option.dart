@@ -56,14 +56,19 @@ class SubscriptionOption extends StatelessWidget {
             final PurchaseParam purchaseParam =
                 PurchaseParam(productDetails: product);
 
-            if (product.id == '1_day_access' ||
-                product.id == '1_week_access') {
+            if (product.id == '1_day_access' || product.id == '1_week_access') {
               await InAppPurchase.instance
                   .buyConsumable(purchaseParam: purchaseParam);
             } else if (product.id == 'monthly_access' ||
                 product.id == 'yearly_access') {
-              await InAppPurchase.instance
-                  .buyNonConsumable(purchaseParam: purchaseParam);
+              // await InAppPurchase.instance
+              //     .buyNonConsumable(purchaseParam: purchaseParam);
+
+              // coming soon
+              EasyLoading.showInfo(
+                'This feature is coming soon. Please check back later.',
+                duration: const Duration(seconds: 2),
+              );
             }
           }
         },

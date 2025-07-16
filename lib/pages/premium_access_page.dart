@@ -3,6 +3,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+// import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -31,6 +32,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
   }
 
   Future<void> _initializePurchaseService() async {
+    _purchaseService.dispose();
     await _purchaseService.initialize(context);
 
     setState(() {
@@ -243,6 +245,16 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                       },
                     ),
                   ),
+                // ElevatedButton(
+                //   onPressed: () async {
+                //     await InAppPurchase.instance.restorePurchases();
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Theme.of(context).colorScheme.primary,
+                //     foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                //   ),
+                //   child: Text('Restore Purchases'),
+                // ),
                 const SizedBox(height: 20),
               ],
             ),

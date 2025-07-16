@@ -75,12 +75,6 @@ class _DashboardPageState extends State<DashboardPage>
       if (user.dailyTransactionsMade >= 5) {
         _createRewardedAd();
       }
-    } else {
-      if (user.premiumEndDate != null &&
-          user.premiumEndDate!.isBefore(DateTime.now())) {
-        await context.read<PersonProvider>().endPremiumAccess();
-        await prefs.setBool('show_premium_ended', true);
-      }
     }
 
     _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;

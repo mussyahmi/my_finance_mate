@@ -61,7 +61,8 @@ class PurchaseService {
 
   void _onPurchaseUpdate(List<PurchaseDetails> purchaseDetailsList) async {
     for (var purchase in purchaseDetailsList) {
-      if (purchase.status == PurchaseStatus.purchased) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
         final bool valid = await _verifyPurchase(purchase);
         if (valid) {
           _deliverProduct(purchase);
@@ -94,14 +95,14 @@ class PurchaseService {
 
     String countryCode = await _iap.countryCode();
 
+    EasyLoading.show(status: "Activating premium access...");
+
     await _context!.read<PersonProvider>().activatePremium(
           _context!,
           purchase,
           matchedProduct,
           countryCode,
         );
-
-    EasyLoading.showSuccess("Purchase successful! Enjoy your premium access.");
   }
 
   void _handleInvalidPurchase(PurchaseDetails purchase) {

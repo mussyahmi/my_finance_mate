@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -236,7 +238,7 @@ class ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         trailing: const Icon(
-                          CupertinoIcons.star_fill,
+                          CupertinoIcons.star_circle_fill,
                           color: Colors.orangeAccent,
                         ),
                         onTap: () {
@@ -251,7 +253,7 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('Purchase History'),
+                        title: const Text('My Purchases'),
                         trailing: const Icon(Icons.receipt_long),
                         onTap: () async {
                           await Navigator.push(
@@ -260,6 +262,36 @@ class ProfilePageState extends State<ProfilePage> {
                               builder: (context) => const PurchaseHistoryPage(),
                             ),
                           );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Order History'),
+                        trailing: const Icon(Icons.history),
+                        onTap: () {
+                          if (Platform.isAndroid) {
+                            launchUrl(Uri.parse(
+                                'https://play.google.com/store/account/orderhistory'));
+                          } else {
+                            // TODO: Implement iOS order history
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Manage Subscriptions'),
+                        trailing: const Icon(CupertinoIcons.creditcard),
+                        onTap: () {
+                          if (Platform.isAndroid) {
+                            launchUrl(Uri.parse(
+                                'https://play.google.com/store/account/subscriptions'));
+                          } else {
+                            // TODO: Implement iOS subscriptions
+                            Navigator.pop(context);
+                          }
                         },
                       ),
                     ),
@@ -772,7 +804,7 @@ class ProfilePageState extends State<ProfilePage> {
           );
         }
 
-        await EasyLoading.show(status: messageService.getRandomUpdateMessage());
+        EasyLoading.show(status: messageService.getRandomUpdateMessage());
 
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(
