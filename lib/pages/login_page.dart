@@ -386,7 +386,19 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      EasyLoading.showError('Failed to login. Error: $e');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Failed'),
+          content: Text('Failed to login. Error: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -497,7 +509,19 @@ class _LoginPageState extends State<LoginPage> {
         print('Google Sign-In Cancelled');
       }
     } catch (e) {
-      EasyLoading.showError('Failed to login. Error: $e');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Failed'),
+          content: Text('Failed to login. Error: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 

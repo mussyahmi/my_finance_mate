@@ -33,6 +33,7 @@ class CycleAddPageState extends State<CycleAddPage> {
   bool _isLoading = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
+  bool _isAcknowledged = false;
 
   @override
   void didChangeDependencies() {
@@ -130,6 +131,8 @@ class CycleAddPageState extends State<CycleAddPage> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
+                            await _showEndDateRecommendationDialog(context);
+
                             final selectedDate = await showDatePicker(
                               context: context,
                               initialDate: _endDate ?? DateTime.now(),
@@ -145,23 +148,47 @@ class CycleAddPageState extends State<CycleAddPage> {
                                     .subtract(const Duration(minutes: 1));
                               });
                             }
-
-                            _showEndDateRecommendationDialog(context);
                           },
                           child: Text(
                             'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
                           ),
                         ),
                         const SizedBox(height: 10),
-                        TextField(
-                          controller: cycleNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Name',
-                            helperText: 'Example: Nov 2024 Salary',
-                            helperStyle: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
+                        Focus(
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus && !_isAcknowledged) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Cycle Name Info'),
+                                  content: const Text(
+                                    'Enter a descriptive name for your cycle. Mentioning your salary (e.g., "Nov 2024 Salary") helps you track your finances more clearly and relate each cycle to your income period.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _isAcknowledged = true;
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          },
+                          child: TextField(
+                            controller: cycleNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Name',
+                              helperText: 'Example: Nov 2024 Salary',
+                              helperStyle: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ),
                         ),
@@ -235,8 +262,8 @@ class CycleAddPageState extends State<CycleAddPage> {
   }
 
   //* Show alert box with recommendation for End Date
-  void _showEndDateRecommendationDialog(BuildContext context) {
-    showDialog(
+  Future<void> _showEndDateRecommendationDialog(BuildContext context) async {
+    await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

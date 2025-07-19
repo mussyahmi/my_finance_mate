@@ -67,6 +67,7 @@ dependencies:
   dio: ^5.8.0+1
   gal: ^2.3.1
   firebase_crashlytics: ^4.3.6
+  showcaseview: ^4.0.1
 
 dev_dependencies:
   flutter_test:
