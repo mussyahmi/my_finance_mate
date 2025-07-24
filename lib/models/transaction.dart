@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/image_view_page.dart';
@@ -108,9 +109,14 @@ class Transaction {
                           final bool? result = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TransactionFormPage(
-                                action: 'Edit',
-                                transaction: this,
+                              builder: (context) => ShowCaseWidget(
+                                builder: (showcaseContext) =>
+                                    TransactionFormPage(
+                                  action: 'Edit',
+                                  transaction: this,
+                                  isTourMode: false,
+                                  showcaseContext: showcaseContext,
+                                ),
                               ),
                             ),
                           );

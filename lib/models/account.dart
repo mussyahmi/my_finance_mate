@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../pages/transaction_list_page.dart';
 import '../providers/accounts_provider.dart';
@@ -252,14 +253,18 @@ class Account {
 
   static Future<bool> showAccountDialog(
       BuildContext context, Cycle cycle, String action,
-      {Account? account}) async {
+      {Account? account, bool? isTourMode}) async {
     return await showDialog(
       context: context,
       builder: (context) {
-        return AccountDialog(
-          cycle: cycle,
-          action: action,
-          account: account,
+        return ShowCaseWidget(
+          builder: (showcaseContext) => AccountDialog(
+            cycle: cycle,
+            action: action,
+            account: account,
+            isTourMode: isTourMode,
+            showcaseContext: showcaseContext,
+          ),
         );
       },
     );

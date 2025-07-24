@@ -32,7 +32,12 @@ import 'premium_access_page.dart';
 import 'wishlist_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final Function askToStartTutorial;
+
+  const ProfilePage({
+    super.key,
+    required this.askToStartTutorial,
+  });
 
   @override
   ProfilePageState createState() => ProfilePageState();
@@ -591,6 +596,15 @@ class ProfilePageState extends State<ProfilePage> {
                         'Account Management',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Take a Tour'),
+                        trailing: const Icon(Icons.tour),
+                        onTap: () {
+                          widget.askToStartTutorial();
+                        },
                       ),
                     ),
                     Card(

@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/transaction_list_page.dart';
@@ -322,14 +323,18 @@ class Category {
 
   static Future<bool> showCategoryDialog(
       BuildContext context, String selectedType, String action,
-      {Category? category}) async {
+      {Category? category, bool? isTourMode}) async {
     return await showDialog(
       context: context,
       builder: (context) {
-        return CategoryDialog(
-          type: selectedType,
-          action: action,
-          category: category,
+        return ShowCaseWidget(
+          builder: (showcaseContext) => CategoryDialog(
+            type: selectedType,
+            action: action,
+            category: category,
+            isTourMode: isTourMode,
+            showcaseContext: showcaseContext,
+          ),
         );
       },
     );

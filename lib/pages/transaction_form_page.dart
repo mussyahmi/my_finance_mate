@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
@@ -38,11 +39,15 @@ import 'premium_access_page.dart';
 class TransactionFormPage extends StatefulWidget {
   final String action;
   final t.Transaction? transaction;
+  final bool? isTourMode;
+  final BuildContext showcaseContext;
 
   const TransactionFormPage({
     super.key,
     required this.action,
     this.transaction,
+    required this.isTourMode,
+    required this.showcaseContext,
   });
 
   @override
@@ -69,6 +74,13 @@ class TransactionFormPageState extends State<TransactionFormPage> {
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
   int freemiumAttachmentSlots = 1;
+  final GlobalKey _tourTransactionForm1 = GlobalKey();
+  final GlobalKey _tourTransactionForm2 = GlobalKey();
+  final GlobalKey _tourTransactionForm3 = GlobalKey();
+  final GlobalKey _tourTransactionForm4 = GlobalKey();
+  final GlobalKey _tourTransactionForm5 = GlobalKey();
+  final GlobalKey _tourTransactionForm6 = GlobalKey();
+  final GlobalKey _tourTransactionForm7 = GlobalKey();
 
   @override
   void initState() {
@@ -108,6 +120,20 @@ class TransactionFormPageState extends State<TransactionFormPage> {
           ? null
           : widget.transaction!.accountToId;
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isTourMode == true) {
+        ShowCaseWidget.of(widget.showcaseContext).startShowCase([
+          _tourTransactionForm1,
+          _tourTransactionForm2,
+          _tourTransactionForm3,
+          _tourTransactionForm4,
+          _tourTransactionForm5,
+          _tourTransactionForm6,
+          _tourTransactionForm7,
+        ]);
+      }
+    });
   }
 
   Future<void> _fetchCategories() async {
@@ -153,221 +179,334 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        FocusManager.instance.primaryFocus?.unfocus();
-
-                        final selectedDate = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDateTime,
-                          firstDate: cycle.startDate,
-                          lastDate: cycle.endDate,
-                        );
-                        if (selectedDate != null) {
-                          final selectedTime = await showTimePicker(
-                            context: context,
-                            initialTime:
-                                TimeOfDay.fromDateTime(selectedDateTime),
-                          );
-                          if (selectedTime != null) {
-                            setState(() {
-                              selectedDateTime = DateTime(
-                                selectedDate.year,
-                                selectedDate.month,
-                                selectedDate.day,
-                                selectedTime.hour,
-                                selectedTime.minute,
-                              );
-                            });
-                          }
-                        }
-                      },
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SegmentedButton(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'spent',
-                          label: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text('Spent'),
+                    Showcase(
+                      key: _tourTransactionForm1,
+                      description:
+                          'Select the date and time for the transaction. You can also change the date and time later.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
-                          icon: Icon(CupertinoIcons.tray_arrow_up_fill),
-                        ),
-                        ButtonSegment(
-                          value: 'received',
-                          label: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text('Received'),
-                          ),
-                          icon: Icon(CupertinoIcons.tray_arrow_down_fill),
-                        ),
-                        ButtonSegment(
-                          value: 'transfer',
-                          label: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text('Transfer'),
-                          ),
-                          icon: Icon(CupertinoIcons.arrow_right_arrow_left),
                         ),
                       ],
-                      selected: {selectedType},
-                      onSelectionChanged: (newSelection) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-
-                        if (newSelection.first == 'transfer' &&
-                            context.read<AccountsProvider>().accounts!.length <
-                                2) {
-                          EasyLoading.showInfo(
-                              'You need at least 2 accounts to make a transfer.');
-                          return;
-                        }
-
-                        setState(() {
-                          selectedType = newSelection.first;
-                          selectedCategoryId = null;
-                          selectedAccountToId = null;
-                        });
-
-                        _fetchCategories();
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownSearch<String>(
-                      selectedItem: selectedAccountId != null
-                          ? context
-                              .read<AccountsProvider>()
-                              .getAccountById(selectedAccountId)
-                              .name
-                          : null,
-                      onChanged: (newValue) async {
-                        FocusManager.instance.primaryFocus?.unfocus();
-
-                        final selectedAccount = context
-                            .read<AccountsProvider>()
-                            .getAccountByName(newValue);
-
-                        setState(() {
-                          selectedAccountId = selectedAccount.id;
-                          selectedAccountToId = null;
-                        });
-                      },
-                      items: (filter, loadProps) {
-                        return context
-                            .read<AccountsProvider>()
-                            .getFilteredAccountsByName(context, filter)
-                            .map((account) => account.name)
-                            .toList();
-                      },
-                      decoratorProps: DropDownDecoratorProps(
-                        decoration: InputDecoration(
-                          labelText: 'Account',
-                        ),
-                        baseStyle: TextStyle(
-                          fontSize: 16,
-                        ),
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                        alignment: MainAxisAlignment.end,
                       ),
-                      popupProps: PopupProps.menu(
-                        showSearchBox: true,
-                        searchDelay: const Duration(milliseconds: 500),
-                        menuProps: MenuProps(surfaceTintColor: Colors.grey),
-                        searchFieldProps: TextFieldProps(
-                          decoration: InputDecoration(
-                            hintText: 'Search accounts...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
+
+                          final selectedDate = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDateTime,
+                            firstDate: cycle.startDate,
+                            lastDate: cycle.endDate,
+                          );
+                          if (selectedDate != null) {
+                            final selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime:
+                                  TimeOfDay.fromDateTime(selectedDateTime),
+                            );
+                            if (selectedTime != null) {
+                              setState(() {
+                                selectedDateTime = DateTime(
+                                  selectedDate.year,
+                                  selectedDate.month,
+                                  selectedDate.day,
+                                  selectedTime.hour,
+                                  selectedTime.minute,
+                                );
+                              });
+                            }
+                          }
+                        },
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Date Time: ${DateFormat('EE, d MMM yyyy h:mm aa').format(selectedDateTime)}',
                           ),
                         ),
-                        itemBuilder: (context, item, isDisabled, isSelected) {
-                          return ListTile(title: Text(item));
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Showcase(
+                      key: _tourTransactionForm2,
+                      description:
+                          'Select the type of transaction: Spent, Received, or Transfer. Spent is for expenses, Received is for income, and Transfer is for moving money between accounts.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.previous,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ],
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                      ),
+                      child: SegmentedButton(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'spent',
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Spent'),
+                            ),
+                            icon: Icon(CupertinoIcons.tray_arrow_up_fill),
+                          ),
+                          ButtonSegment(
+                            value: 'received',
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Received'),
+                            ),
+                            icon: Icon(CupertinoIcons.tray_arrow_down_fill),
+                          ),
+                          ButtonSegment(
+                            value: 'transfer',
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Transfer'),
+                            ),
+                            icon: Icon(CupertinoIcons.arrow_right_arrow_left),
+                          ),
+                        ],
+                        selected: {selectedType},
+                        onSelectionChanged: (newSelection) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+
+                          if (newSelection.first == 'transfer' &&
+                              context
+                                      .read<AccountsProvider>()
+                                      .accounts!
+                                      .length <
+                                  2) {
+                            EasyLoading.showInfo(
+                                'You need at least 2 accounts to make a transfer.');
+                            return;
+                          }
+
+                          setState(() {
+                            selectedType = newSelection.first;
+                            selectedCategoryId = null;
+                            selectedAccountToId = null;
+                          });
+
+                          _fetchCategories();
                         },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Showcase(
+                      key: _tourTransactionForm3,
+                      description:
+                          'Select the account for the transaction. If you are transferring money, select the account to transfer from. If you are spending or receiving money, select the account where the money is coming from or going to.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.previous,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ],
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                      ),
+                      child: DropdownSearch<String>(
+                        selectedItem: selectedAccountId != null
+                            ? context
+                                .read<AccountsProvider>()
+                                .getAccountById(selectedAccountId)
+                                .name
+                            : null,
+                        onChanged: (newValue) async {
+                          FocusManager.instance.primaryFocus?.unfocus();
+
+                          final selectedAccount = context
+                              .read<AccountsProvider>()
+                              .getAccountByName(newValue);
+
+                          setState(() {
+                            selectedAccountId = selectedAccount.id;
+                            selectedAccountToId = null;
+                          });
+                        },
+                        items: (filter, loadProps) {
+                          return context
+                              .read<AccountsProvider>()
+                              .getFilteredAccountsByName(context, filter)
+                              .map((account) => account.name)
+                              .toList();
+                        },
+                        decoratorProps: DropDownDecoratorProps(
+                          decoration: InputDecoration(
+                            labelText: 'Account',
+                          ),
+                          baseStyle: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        popupProps: PopupProps.menu(
+                          showSearchBox: true,
+                          searchDelay: const Duration(milliseconds: 500),
+                          menuProps: MenuProps(surfaceTintColor: Colors.grey),
+                          searchFieldProps: TextFieldProps(
+                            decoration: InputDecoration(
+                              hintText: 'Search accounts...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                          ),
+                          itemBuilder: (context, item, isDisabled, isSelected) {
+                            return ListTile(title: Text(item));
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     if (selectedType != 'transfer')
                       Column(
                         children: [
-                          DropdownSearch<String>(
-                            selectedItem: selectedCategoryId != null
-                                ? context
-                                    .read<CategoriesProvider>()
-                                    .getCategoryById(selectedCategoryId)
-                                    .name
-                                : null,
-                            onChanged: (newValue) async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-
-                              final selectedCategory = context
-                                  .read<CategoriesProvider>()
-                                  .getCategoryByName(selectedType, newValue);
-
-                              setState(() {
-                                selectedCategoryId = selectedCategory.id;
-                              });
-                            },
-                            items: (filter, loadProps) {
-                              final filteredCategories = categories
-                                  .where((category) => category.name
-                                      .toLowerCase()
-                                      .contains(filter.toLowerCase()))
-                                  .toList();
-
-                              return [
-                                ...filteredCategories
-                                    .map((category) => category.name),
-                              ];
-                            },
-                            decoratorProps: DropDownDecoratorProps(
-                              decoration: InputDecoration(
-                                labelText: 'Category',
-                              ),
-                              baseStyle: TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
-                            popupProps: PopupProps.menu(
-                              showSearchBox: true,
-                              searchDelay: const Duration(milliseconds: 500),
-                              menuProps:
-                                  MenuProps(surfaceTintColor: Colors.grey),
-                              searchFieldProps: TextFieldProps(
-                                decoration: InputDecoration(
-                                  hintText: 'Search categories...',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
+                          Showcase(
+                            key: _tourTransactionForm4,
+                            description:
+                                'Select the category for the transaction. Categories help you organize your transactions and track your spending. You can create new categories in the Categories page.',
+                            disableBarrierInteraction: true,
+                            disposeOnTap: false,
+                            onTargetClick: () {},
+                            tooltipActions: [
+                              TooltipActionButton(
+                                type: TooltipDefaultActionType.previous,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                                textStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
-                              itemBuilder:
-                                  (context, item, isDisabled, isSelected) {
-                                return ListTile(
-                                  title: Row(
-                                    children: [
-                                      if (selectedType == 'spent')
-                                        Row(
-                                          children: [
-                                            Tag(
-                                              title: context
-                                                  .read<CategoriesProvider>()
-                                                  .getCategoryByName(
-                                                      selectedType, item)
-                                                  .subType,
-                                            ),
-                                            SizedBox(width: 10),
-                                          ],
-                                        ),
-                                      Text(item),
-                                    ],
-                                  ),
-                                );
+                              TooltipActionButton(
+                                type: TooltipDefaultActionType.next,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                textStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                            ],
+                            tooltipActionConfig: TooltipActionConfig(
+                              position: TooltipActionPosition.outside,
+                            ),
+                            child: DropdownSearch<String>(
+                              selectedItem: selectedCategoryId != null
+                                  ? context
+                                      .read<CategoriesProvider>()
+                                      .getCategoryById(selectedCategoryId)
+                                      .name
+                                  : null,
+                              onChanged: (newValue) async {
+                                FocusManager.instance.primaryFocus?.unfocus();
+
+                                final selectedCategory = context
+                                    .read<CategoriesProvider>()
+                                    .getCategoryByName(selectedType, newValue);
+
+                                setState(() {
+                                  selectedCategoryId = selectedCategory.id;
+                                });
                               },
+                              items: (filter, loadProps) {
+                                final filteredCategories = categories
+                                    .where((category) => category.name
+                                        .toLowerCase()
+                                        .contains(filter.toLowerCase()))
+                                    .toList();
+
+                                return [
+                                  ...filteredCategories
+                                      .map((category) => category.name),
+                                ];
+                              },
+                              decoratorProps: DropDownDecoratorProps(
+                                decoration: InputDecoration(
+                                  labelText: 'Category',
+                                ),
+                                baseStyle: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                              popupProps: PopupProps.menu(
+                                showSearchBox: true,
+                                searchDelay: const Duration(milliseconds: 500),
+                                menuProps:
+                                    MenuProps(surfaceTintColor: Colors.grey),
+                                searchFieldProps: TextFieldProps(
+                                  decoration: InputDecoration(
+                                    hintText: 'Search categories...',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                ),
+                                itemBuilder:
+                                    (context, item, isDisabled, isSelected) {
+                                  return ListTile(
+                                    title: Row(
+                                      children: [
+                                        if (selectedType == 'spent')
+                                          Row(
+                                            children: [
+                                              Tag(
+                                                title: context
+                                                    .read<CategoriesProvider>()
+                                                    .getCategoryByName(
+                                                        selectedType, item)
+                                                    .subType,
+                                              ),
+                                              SizedBox(width: 10),
+                                            ],
+                                          ),
+                                        Text(item),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -433,77 +572,135 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                           const SizedBox(height: 20),
                         ],
                       ),
-                    GestureDetector(
-                      onTap: () async {
-                        FocusManager.instance.primaryFocus?.unfocus();
-
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AmountInputPage(
-                              amount: _transactionAmountController.text,
-                            ),
+                    Showcase(
+                      key: _tourTransactionForm5,
+                      description:
+                          'Enter the amount for the transaction. For transfers, this is the amount being transferred. For spent or received transactions, this is the amount spent or received.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.previous,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        );
+                        ),
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ],
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                      ),
+                      child: GestureDetector(
+                        onTap: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
 
-                        if (result != null && result is String) {
-                          _transactionAmountController.text = result;
-                        }
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: _transactionAmountController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
-                            prefixText: 'RM',
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AmountInputPage(
+                                amount: _transactionAmountController.text,
+                              ),
+                            ),
+                          );
+
+                          if (result != null && result is String) {
+                            _transactionAmountController.text = result;
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: _transactionAmountController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Amount',
+                              prefixText: 'RM',
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 30),
-                    Card(
-                      child: ListTile(
-                        onTap: () async {
-                          final String? note = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NoteInputPage(
-                                note: _transactionNoteController.text,
+                    Showcase(
+                      key: _tourTransactionForm6,
+                      description:
+                          'Add a note for the transaction. This can be any additional information you want to remember about the transaction.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.previous,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      ],
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                      ),
+                      child: Card(
+                        child: ListTile(
+                          onTap: () async {
+                            final String? note = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NoteInputPage(
+                                  note: _transactionNoteController.text,
+                                ),
                               ),
+                            );
+
+                            if (note == null) {
+                              return;
+                            }
+
+                            if (note == 'empty') {
+                              setState(() {
+                                _transactionNoteController.text = '';
+                              });
+                            } else if (note.isNotEmpty) {
+                              setState(() {
+                                _transactionNoteController.text = note;
+                              });
+                            }
+                          },
+                          leading: Icon(Icons.notes),
+                          title: Text(
+                            _transactionNoteController.text.isEmpty
+                                ? 'Add Note'
+                                : _transactionNoteController.text
+                                        .contains('insert')
+                                    ? ParchmentDocument.fromJson(jsonDecode(
+                                            _transactionNoteController.text))
+                                        .toPlainText()
+                                    : _transactionNoteController.text
+                                        .split('\\n')[0],
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey,
                             ),
-                          );
-
-                          if (note == null) {
-                            return;
-                          }
-
-                          if (note == 'empty') {
-                            setState(() {
-                              _transactionNoteController.text = '';
-                            });
-                          } else if (note.isNotEmpty) {
-                            setState(() {
-                              _transactionNoteController.text = note;
-                            });
-                          }
-                        },
-                        leading: Icon(Icons.notes),
-                        title: Text(
-                          _transactionNoteController.text.isEmpty
-                              ? 'Add Note'
-                              : _transactionNoteController.text
-                                      .contains('insert')
-                                  ? ParchmentDocument.fromJson(jsonDecode(
-                                          _transactionNoteController.text))
-                                      .toPlainText()
-                                  : _transactionNoteController.text
-                                      .split('\\n')[0],
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: const TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
                           ),
                         ),
                       ),
@@ -609,23 +806,150 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         ],
                       ),
                     const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () async {
-                        FocusManager.instance.primaryFocus?.unfocus();
+                    Showcase(
+                      key: _tourTransactionForm7,
+                      description:
+                          'Add attachments to the transaction. You can add images related to the transaction. You can add up to 3 attachments for free, or unlock unlimited attachment slots by upgrading to Premium.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () {},
+                      tooltipActions: [
+                        TooltipActionButton(
+                          type: TooltipDefaultActionType.previous,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        TooltipActionButton(
+                          name: 'Got it',
+                          type: TooltipDefaultActionType.next,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          textStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          onTap: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                      tooltipActionConfig: TooltipActionConfig(
+                        position: TooltipActionPosition.outside,
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
 
-                        if (!user.isPremium) {
-                          if (files.isNotEmpty &&
-                              freemiumAttachmentSlots == 1) {
-                            return showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text(
-                                      'Unlock More Attachment Slots!'),
-                                  content: const Text(
-                                      'Want to add more attachments? You can upload up to 3 attachments for this transaction by watching a quick ad, or unlock unlimited additional attahcment slots by upgrading to Premium!'),
-                                  actions: [
+                          if (!user.isPremium) {
+                            if (files.isNotEmpty &&
+                                freemiumAttachmentSlots == 1) {
+                              return showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                        'Unlock More Attachment Slots!'),
+                                    content: const Text(
+                                        'Want to add more attachments? You can upload up to 3 attachments for this transaction by watching a quick ad, or unlock unlimited additional attahcment slots by upgrading to Premium!'),
+                                    actions: [
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          foregroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
+                                        ),
+                                        onPressed: () {
+                                          if (!user.isPremium)
+                                            _showRewardedAd();
+
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Watch Ad'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          surfaceTintColor: Colors.orange,
+                                          foregroundColor: Colors.orangeAccent,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const PremiumSubscriptionPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text('Upgrade to Premium'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Later'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else if (files.length ==
+                                freemiumAttachmentSlots) {
+                              return showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                        'Maximum Attachments Reached!'),
+                                    content: const Text(
+                                        'You have reached the maximum number of attachments for this transaction. Please upgrade to Premium to unlock unlimited additional attachment slots.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Later'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          surfaceTintColor: Colors.orange,
+                                          foregroundColor: Colors.orangeAccent,
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const PremiumSubscriptionPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: const Text('Upgrade to Premium'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          }
+
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text(
+                                  'Choose Option',
+                                  textAlign: TextAlign.center,
+                                ),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Theme.of(context)
@@ -635,145 +959,54 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                             .colorScheme
                                             .onPrimary,
                                       ),
-                                      onPressed: () {
-                                        if (!user.isPremium) _showRewardedAd();
-
+                                      onPressed: () async {
                                         Navigator.of(context).pop();
+                                        final result =
+                                            await FilePicker.platform.pickFiles(
+                                          type: FileType.image,
+                                        );
+                                        if (result != null) {
+                                          PlatformFile file =
+                                              result.files.first;
+
+                                          await _checkFileSize(file, file.size);
+                                        }
                                       },
-                                      child: const Text('Watch Ad'),
+                                      child: const Text('Pick from Gallery'),
                                     ),
+                                    const SizedBox(height: 10),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        surfaceTintColor: Colors.orange,
-                                        foregroundColor: Colors.orangeAccent,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
                                       ),
-                                      onPressed: () {
+                                      onPressed: () async {
                                         Navigator.of(context).pop();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const PremiumSubscriptionPage(),
-                                          ),
+                                        final file =
+                                            await ImagePicker().pickImage(
+                                          source: ImageSource.camera,
+                                          imageQuality: 50,
                                         );
+
+                                        if (file != null) {
+                                          await _checkFileSize(
+                                              file, await file.length());
+                                        }
                                       },
-                                      child: const Text('Upgrade to Premium'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Later'),
+                                      child: const Text('Take a Photo'),
                                     ),
                                   ],
-                                );
-                              },
-                            );
-                          } else if (files.length == freemiumAttachmentSlots) {
-                            return showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text(
-                                      'Maximum Attachments Reached!'),
-                                  content: const Text(
-                                      'You have reached the maximum number of attachments for this transaction. Please upgrade to Premium to unlock unlimited additional attachment slots.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Later'),
-                                    ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        surfaceTintColor: Colors.orange,
-                                        foregroundColor: Colors.orangeAccent,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const PremiumSubscriptionPage(),
-                                          ),
-                                        );
-                                      },
-                                      child: const Text('Upgrade to Premium'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          }
-                        }
-
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text(
-                                'Choose Option',
-                                textAlign: TextAlign.center,
-                              ),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
-                                      foregroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                    ),
-                                    onPressed: () async {
-                                      Navigator.of(context).pop();
-                                      final result =
-                                          await FilePicker.platform.pickFiles(
-                                        type: FileType.image,
-                                      );
-                                      if (result != null) {
-                                        PlatformFile file = result.files.first;
-
-                                        await _checkFileSize(file, file.size);
-                                      }
-                                    },
-                                    child: const Text('Pick from Gallery'),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
-                                      foregroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                    ),
-                                    onPressed: () async {
-                                      Navigator.of(context).pop();
-                                      final file =
-                                          await ImagePicker().pickImage(
-                                        source: ImageSource.camera,
-                                        imageQuality: 50,
-                                      );
-
-                                      if (file != null) {
-                                        await _checkFileSize(
-                                            file, await file.length());
-                                      }
-                                    },
-                                    child: const Text('Take a Photo'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      child: const Text('Add Attachment'),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: const Text('Add Attachment'),
+                      ),
                     ),
                     const SizedBox(height: 30),
                     if (!user.isPremium)

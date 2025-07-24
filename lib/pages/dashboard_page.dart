@@ -10,6 +10,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../models/account.dart';
 import '../models/category.dart';
@@ -51,11 +52,52 @@ class _DashboardPageState extends State<DashboardPage>
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
   bool _showPremiumEnded = false;
+  final GlobalKey _tourAccountList1 = GlobalKey();
+  final GlobalKey _tourAccountList2 = GlobalKey();
+  final GlobalKey _tourCategoryList1 = GlobalKey();
+  final GlobalKey _tourCategoryList2 = GlobalKey();
+  final GlobalKey _tourTransactionList1 = GlobalKey();
+  final GlobalKey _tourTransactionList2 = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  Future<bool> _askToStartTutorial() async {
+    bool? start = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text("Take a quick tour?"),
+        content: Text("We'll highlight key features to help you get started."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text("No thanks"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text("Start Tour"),
+          ),
+        ],
+      ),
+    );
+
+    if (start == true) {
+      _startShowcase();
+    }
+
+    return start ?? false;
+  }
+
+  void _startShowcase() async {
+    ShowCaseWidget.of(context).startShowCase([_tourAccountList1]);
   }
 
   @override
@@ -121,6 +163,11 @@ class _DashboardPageState extends State<DashboardPage>
   Widget build(BuildContext context) {
     Person user = context.watch<PersonProvider>().user!;
     Cycle? cycle = context.watch<CycleProvider>().cycle;
+    GlobalKey currentFABKey = _selectedIndex == 0
+        ? _tourAccountList2
+        : _selectedIndex == 2
+            ? _tourCategoryList2
+            : _tourTransactionList2;
 
     //* Initialize SizeConfig
     SizeConfig().init(context);
@@ -590,116 +637,235 @@ class _DashboardPageState extends State<DashboardPage>
             cycle != null
                 ? CategoryListPage(changeCategoryType: changeCategoryType)
                 : Container(),
-            cycle != null ? const ProfilePage() : Container(),
+            cycle != null
+                ? ProfilePage(askToStartTutorial: _askToStartTutorial)
+                : Container(),
           ],
         ),
         floatingActionButton: _selectedIndex != 3 &&
                 cycle != null &&
                 cycle.isLastCycle
-            ? FloatingActionButton(
-                onPressed: () async {
+            ? Showcase(
+                key: currentFABKey,
+                description: _selectedIndex == 0
+                    ? 'Tap here to add a new account.'
+                    : _selectedIndex == 2
+                        ? 'Tap here to add a new category.'
+                        : 'Tap here to add a new transaction.',
+                disableBarrierInteraction: true,
+                disposeOnTap: false,
+                onTargetClick: () async {
+                  ShowCaseWidget.of(context).dismiss();
+
                   if (_selectedIndex == 0) {
-                    Account.showAccountDialog(context, cycle, 'Add');
+                    await Account.showAccountDialog(
+                      context,
+                      cycle,
+                      'Add',
+                      isTourMode: true,
+                    );
+
+                    ShowCaseWidget.of(context)
+                        .startShowCase([_tourCategoryList1]);
                   } else if (_selectedIndex == 1) {
-                    if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                      EasyLoading.showInfo(
-                          'No accounts? Let\'s fix that—add one to begin!');
-                    } else if (!user.isPremium &&
-                        user.dailyTransactionsMade >= 5) {
-                      await showDialog(
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ShowCaseWidget(
+                          builder: (showcaseContext) => TransactionFormPage(
+                            action: 'Add',
+                            isTourMode: true,
+                            showcaseContext: showcaseContext,
+                          ),
+                        ),
+                      ),
+                    );
+
+                    showDialog(
                         context: context,
-                        barrierDismissible: false,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Daily Transaction Cap Reached!'),
+                            title: const Text('Tour Completed!'),
                             content: const Text(
-                                'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+                                'You have completed the tour. Enjoy using the app!'),
                             actions: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                onPressed: () {
-                                  if (!user.isPremium) {
-                                    _showRewardedAd();
-                                  }
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Watch Ad'),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  surfaceTintColor: Colors.orange,
-                                  foregroundColor: Colors.orangeAccent,
-                                ),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const PremiumSubscriptionPage(),
-                                    ),
-                                  );
-                                },
-                                child: const Text('Upgrade to Premium'),
-                              ),
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
-                                child: const Text('Later'),
+                                child: const Text('OK'),
                               ),
                             ],
                           );
-                        },
-                      );
-                    } else {
-                      final bool? result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const TransactionFormPage(action: 'Add'),
-                        ),
-                      );
-
-                      if (result == null) {
-                        return;
-                      }
-
-                      if (result &&
-                          !user.isPremium &&
-                          user.dailyTransactionsMade >= 5) {
-                        setState(() {});
-                      }
-                    }
+                        });
                   } else if (_selectedIndex == 2) {
-                    Category.showCategoryDialog(context, _categoryType, 'Add');
+                    await Category.showCategoryDialog(
+                      context,
+                      _categoryType,
+                      'Add',
+                      isTourMode: true,
+                    );
+
+                    ShowCaseWidget.of(context)
+                        .startShowCase([_tourTransactionList1]);
                   }
                 },
-                child: const Icon(CupertinoIcons.add),
+                child: FloatingActionButton(
+                  onPressed: () async {
+                    if (_selectedIndex == 0) {
+                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                        bool start = await _askToStartTutorial();
+
+                        if (start == false) {
+                          Account.showAccountDialog(context, cycle, 'Add');
+                        }
+                      } else {
+                        Account.showAccountDialog(context, cycle, 'Add');
+                      }
+                    } else if (_selectedIndex == 1) {
+                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                        EasyLoading.showInfo(
+                            'No accounts? Let\'s fix that—add one to begin!');
+                      } else if (!user.isPremium &&
+                          user.dailyTransactionsMade >= 5) {
+                        await showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return AlertDialog(
+                              title:
+                                  const Text('Daily Transaction Cap Reached!'),
+                              content: const Text(
+                                  'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+                              actions: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                  onPressed: () {
+                                    if (!user.isPremium) {
+                                      _showRewardedAd();
+                                    }
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Watch Ad'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    surfaceTintColor: Colors.orange,
+                                    foregroundColor: Colors.orangeAccent,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const PremiumSubscriptionPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Upgrade to Premium'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Later'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        final bool? result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ShowCaseWidget(
+                              builder: (showcaseContext) => TransactionFormPage(
+                                action: 'Add',
+                                isTourMode: false,
+                                showcaseContext: context,
+                              ),
+                            ),
+                          ),
+                        );
+
+                        if (result == null) {
+                          return;
+                        }
+
+                        if (result &&
+                            !user.isPremium &&
+                            user.dailyTransactionsMade >= 5) {
+                          setState(() {});
+                        }
+                      }
+                    } else if (_selectedIndex == 2) {
+                      Category.showCategoryDialog(
+                          context, _categoryType, 'Add');
+                    }
+                  },
+                  child: const Icon(CupertinoIcons.add),
+                ),
               )
             : null,
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(CupertinoIcons.creditcard),
-              selectedIcon: Icon(CupertinoIcons.creditcard_fill),
-              label: 'Account List',
+          destinations: [
+            Showcase(
+              key: _tourAccountList1,
+              description: 'Tap here to view your accounts.',
+              disableBarrierInteraction: true,
+              disposeOnTap: false,
+              onTargetClick: () async {
+                setState(() => _selectedIndex = 0);
+                await Future.delayed(Duration(milliseconds: 600));
+                ShowCaseWidget.of(context).startShowCase([_tourAccountList2]);
+              },
+              child: NavigationDestination(
+                icon: Icon(CupertinoIcons.creditcard),
+                selectedIcon: Icon(CupertinoIcons.creditcard_fill),
+                label: 'Account List',
+              ),
             ),
-            NavigationDestination(
-              icon: Icon(CupertinoIcons.square_grid_2x2),
-              selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
-              label: 'Dashboard',
+            Showcase(
+              key: _tourTransactionList1,
+              description:
+                  'Next, let\'s explore how to add transactions. Tap here to go to the dashboard.',
+              disableBarrierInteraction: true,
+              disposeOnTap: false,
+              onTargetClick: () async {
+                setState(() => _selectedIndex = 1);
+                await Future.delayed(Duration(milliseconds: 600));
+                ShowCaseWidget.of(context)
+                    .startShowCase([_tourTransactionList2]);
+              },
+              child: NavigationDestination(
+                icon: Icon(CupertinoIcons.square_grid_2x2),
+                selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+                label: 'Dashboard',
+              ),
             ),
-            NavigationDestination(
-              icon: Icon(CupertinoIcons.rectangle_grid_1x2),
-              selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
-              label: 'Category List',
+            Showcase(
+              key: _tourCategoryList1,
+              description:
+                  'Next, let\'s explore categories. Tap here to view your categories.',
+              disableBarrierInteraction: true,
+              disposeOnTap: false,
+              onTargetClick: () async {
+                setState(() => _selectedIndex = 2);
+                await Future.delayed(Duration(milliseconds: 600));
+                ShowCaseWidget.of(context).startShowCase([_tourCategoryList2]);
+              },
+              child: NavigationDestination(
+                icon: Icon(CupertinoIcons.rectangle_grid_1x2),
+                selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
+                label: 'Category List',
+              ),
             ),
             NavigationDestination(
               icon: Icon(CupertinoIcons.person),
