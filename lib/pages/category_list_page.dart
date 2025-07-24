@@ -156,11 +156,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           hintText: 'Search categories...',
                           border: InputBorder.none,
                           suffixIcon: IconButton(
-                            icon: const Icon(
-                              CupertinoIcons.search_circle,
-                              color: Colors.transparent,
-                            ),
-                            onPressed: null,
+                            icon: const Icon(CupertinoIcons.clear_circled),
+                            onPressed: () {
+                              searchController.clear();
+                              searchQueryNotifier.value = '';
+                            },
                           ),
                         ),
                         style: TextStyle(fontSize: 16),
