@@ -851,7 +851,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                     title: const Text(
                                         'Unlock More Attachment Slots!'),
                                     content: const Text(
-                                        'Want to add more attachments? You can upload up to 3 attachments for this transaction by watching a quick ad, or unlock unlimited additional attahcment slots by upgrading to Premium!'),
+                                        'Want to add more attachments? You can upload up to 3 attachments for this transaction by watching a quick ad, or unlock unlimited additional attachment slots by upgrading to Premium!'),
                                     actions: [
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
