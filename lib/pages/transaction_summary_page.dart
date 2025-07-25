@@ -183,55 +183,6 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                           ? const Center(child: Text('No transactions found.'))
                           : PieChart(
                               PieChartData(
-                                pieTouchData: PieTouchData(
-                                  touchCallback: (p0, p1) {
-                                    if (p1 != null) {
-                                      switch (p1.touchedSection!.touchedSection!
-                                          .title) {
-                                        case 'Needs':
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TransactionListPage(
-                                                subType: 'needs',
-                                              ),
-                                            ),
-                                          );
-                                        case 'Wants':
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TransactionListPage(
-                                                subType: 'wants',
-                                              ),
-                                            ),
-                                          );
-                                        case 'Savings':
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TransactionListPage(
-                                                subType: 'savings',
-                                              ),
-                                            ),
-                                          );
-                                        case 'Others':
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TransactionListPage(
-                                                subType: 'others',
-                                              ),
-                                            ),
-                                          );
-                                      }
-                                    }
-                                  },
-                                ),
                                 sections: [
                                   _pieChartSectionData(
                                     _savedThemeMode == AdaptiveThemeMode.dark
