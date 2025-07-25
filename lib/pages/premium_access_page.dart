@@ -93,7 +93,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                 PremiumFeatureTile(
                   title: 'Ad-Free Experience',
                   description:
-                      'Enjoy an uninterrupted experience with no ads while using the app.',
+                      'Enjoy an uninterrupted experience with no ads while using My Finance Mate.',
                   icon: Icons.block,
                 ),
                 PremiumFeatureTile(

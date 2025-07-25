@@ -323,4 +323,57 @@ class CycleProvider extends ChangeNotifier {
       'updated_at': now,
     });
   }
+
+  Future<bool> recalculateCycleAmounts(
+    BuildContext context,
+    Cycle cycle,
+  ) async {
+    final Person user = context.read<PersonProvider>().user!;
+    final List<t.Transaction> transactions =
+        context.read<TransactionsProvider>().transactions!;
+    final DateTime now = DateTime.now();
+
+    double cycleAmountReceived = 0.0;
+    double cycleAmountSpent = 0.0;
+
+    for (final transaction in transactions) {
+      if (transaction.type == 'received') {
+        cycleAmountReceived += double.parse(transaction.amount);
+      } else if (transaction.type == 'spent') {
+        cycleAmountSpent += double.parse(transaction.amount);
+      }
+    }
+
+    final double cycleOpeningBalance = double.parse(cycle.openingBalance);
+    final double updatedAmountBalance =
+        cycleOpeningBalance + cycleAmountReceived - cycleAmountSpent;
+
+    if ((cycleOpeningBalance + cycleAmountReceived - cycleAmountSpent)
+            .toStringAsFixed(2) ==
+        cycle.amountBalance) {
+      print('Cycle amounts are already up to date.');
+      return false;
+    } else {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cycles')
+          .doc(cycle.id)
+          .update({
+        'amount_received': cycleAmountReceived.toStringAsFixed(2),
+        'amount_spent': cycleAmountSpent.toStringAsFixed(2),
+        'amount_balance': updatedAmountBalance.toStringAsFixed(2),
+        'updated_at': now,
+      });
+
+      cycle.amountReceived = cycleAmountReceived.toStringAsFixed(2);
+      cycle.amountSpent = cycleAmountSpent.toStringAsFixed(2);
+      cycle.amountBalance = updatedAmountBalance.toStringAsFixed(2);
+
+      notifyListeners();
+
+      print('Cycle amounts updated successfully.');
+      return true;
+    }
+  }
 }

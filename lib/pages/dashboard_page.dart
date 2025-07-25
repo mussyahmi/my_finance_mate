@@ -687,7 +687,7 @@ class _DashboardPageState extends State<DashboardPage>
                           return AlertDialog(
                             title: const Text('Tour Completed!'),
                             content: const Text(
-                                'You have completed the tour. Enjoy using the app!'),
+                                'You have completed the tour. Enjoy using My Finance Mate!'),
                             actions: [
                               TextButton(
                                 onPressed: () {

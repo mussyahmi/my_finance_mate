@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -194,6 +197,67 @@ class _CycleSummaryState extends State<CycleSummary> {
                   ],
                 ),
               ),
+              if (cycle != null)
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: IconButton(
+                    iconSize: 20,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Recalculate Cycle Amounts'),
+                            content: const Text(
+                                'Are you sure you want to recalculate the cycle amounts?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                                onPressed: () async {
+                                  EasyLoading.show(
+                                    status: 'Recalculating...',
+                                  );
+
+                                  bool? status = await context
+                                      .read<CycleProvider>()
+                                      .recalculateCycleAmounts(context, cycle);
+
+                                  if (status == true) {
+                                    EasyLoading.showSuccess(
+                                      'Cycle amounts recalculated successfully',
+                                    );
+                                  } else {
+                                    EasyLoading.showInfo(
+                                      'Cycle amounts are already up to date',
+                                    );
+                                  }
+
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Recalculate'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: Icon(
+                      CupertinoIcons.refresh,
+                    ),
+                  ),
+                ),
               Positioned(
                 top: 4,
                 right: 4,
@@ -213,7 +277,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                         : CupertinoIcons.eye_slash_fill,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
