@@ -13,6 +13,7 @@ import '../providers/person_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
+import '../widgets/category_search_bar.dart';
 import '../widgets/tag.dart';
 
 class CategoryListPage extends StatefulWidget {
@@ -142,36 +143,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
                         ],
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainer,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      margin: EdgeInsets.only(
-                          left: 16, top: 16, right: 90, bottom: 16),
-                      child: TextField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Search categories...',
-                          border: InputBorder.none,
-                          suffixIcon: IconButton(
-                            icon: const Icon(CupertinoIcons.clear_circled),
-                            onPressed: () {
-                              searchController.clear();
-                              searchQueryNotifier.value = '';
-                            },
-                          ),
-                        ),
-                        style: TextStyle(fontSize: 16),
-                        textAlignVertical: TextAlignVertical.center,
-                        textAlign: TextAlign.start,
-                        textInputAction: TextInputAction.search,
-                        onChanged: (value) {
-                          searchQueryNotifier.value = value;
-                        },
-                      ),
-                    ),
+                    CategorySearchBar(
+                        searchController: searchController,
+                        searchQueryNotifier: searchQueryNotifier),
                   ],
                 ),
               ),

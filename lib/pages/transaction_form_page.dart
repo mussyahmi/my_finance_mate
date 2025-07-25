@@ -863,8 +863,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                               .onPrimary,
                                         ),
                                         onPressed: () {
-                                          if (!user.isPremium)
+                                          if (!user.isPremium) {
                                             _showRewardedAd();
+                                          }
 
                                           Navigator.of(context).pop();
                                         },
