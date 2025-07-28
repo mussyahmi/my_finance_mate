@@ -712,16 +712,14 @@ class _DashboardPageState extends State<DashboardPage>
                 },
                 child: FloatingActionButton(
                   onPressed: () async {
-                    if (_selectedIndex == 0) {
-                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                        bool start = await _askToStartTutorial();
+                    if (context.read<AccountsProvider>().accounts!.isEmpty) {
+                      bool start = await _askToStartTutorial();
 
-                        if (start == false) {
-                          Account.showAccountDialog(context, cycle, 'Add');
-                        }
-                      } else {
-                        Account.showAccountDialog(context, cycle, 'Add');
-                      }
+                      if (start) return;
+                    }
+
+                    if (_selectedIndex == 0) {
+                      Account.showAccountDialog(context, cycle, 'Add');
                     } else if (_selectedIndex == 1) {
                       if (context.read<AccountsProvider>().accounts!.isEmpty) {
                         EasyLoading.showInfo(
