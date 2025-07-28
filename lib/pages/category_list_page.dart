@@ -144,6 +144,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                       ),
                     ),
                     CategorySearchBar(
+                        cycle: cycle,
                         searchController: searchController,
                         searchQueryNotifier: searchQueryNotifier),
                   ],
