@@ -45,7 +45,19 @@ class _CategoryListPageState extends State<CategoryListPage> {
     super.didChangeDependencies();
     _adMobService = context.read<AdMobService>();
     _adCacheService = context.read<AdCacheService>();
+
+    final categoriesProvider = context.read<CategoriesProvider>();
+    categoriesProvider.addListener(_refreshCategories);
+
     _refreshCategories();
+  }
+
+  @override
+  void dispose() {
+    context.read<CategoriesProvider>().removeListener(_refreshCategories);
+    searchController.dispose();
+    searchQueryNotifier.dispose();
+    super.dispose();
   }
 
   void _refreshCategories() async {
@@ -238,8 +250,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
 
                                   await category.showCategoryDetails(
                                       context, cycle, category.type);
-
-                                  _refreshCategories();
                                 },
                               ),
                             ),
