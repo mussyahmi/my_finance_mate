@@ -384,8 +384,34 @@ class _LoginPageState extends State<LoginPage> {
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-              builder: (context) =>
-                  ShowCaseWidget(builder: (context) => const DashboardPage())),
+            builder: (context) => ShowCaseWidget(
+              builder: (context) => const DashboardPage(),
+              globalFloatingActionWidget: (showcaseContext) =>
+                  FloatingActionWidget(
+                right: 16,
+                top: 16,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                    child: const Text(
+                      'Skip Tour',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -530,8 +556,34 @@ class _LoginPageState extends State<LoginPage> {
         //* Navigate to the DashboardPage after sign-in
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-              builder: (context) =>
-                  ShowCaseWidget(builder: (context) => const DashboardPage())),
+            builder: (context) => ShowCaseWidget(
+              builder: (context) => const DashboardPage(),
+              globalFloatingActionWidget: (showcaseContext) =>
+                  FloatingActionWidget(
+                right: 16,
+                top: 16,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                    child: const Text(
+                      'Skip Tour',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       } else {
         print('Google Sign-In Cancelled');

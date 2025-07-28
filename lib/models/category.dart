@@ -335,6 +335,32 @@ class Category {
             isTourMode: isTourMode,
             showcaseContext: showcaseContext,
           ),
+          globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
+            right: 16,
+            top: 16,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  ShowCaseWidget.of(showcaseContext).dismiss();
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+                child: const Text(
+                  'Skip Tour',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
