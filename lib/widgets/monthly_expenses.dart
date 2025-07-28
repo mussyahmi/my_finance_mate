@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../widgets/tag.dart';
 import '../models/account.dart';
 import '../models/category.dart';
 import '../extensions/string_extension.dart';
@@ -164,64 +165,75 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                             left: 8.0,
                             right: index + 1 == budgets.length ? 8.0 : 0,
                           ),
-                          child: Card(
-                            elevation: 3,
-                            surfaceTintColor: indicatorColor,
-                            child: SizedBox(
-                              width: 180,
-                              child: ListTile(
-                                key: Key(budget.id),
-                                title: SizedBox(
-                                  height: 25,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      budget.name,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
+                          child: Stack(
+                            children: [
+                              Card(
+                                elevation: 3,
+                                surfaceTintColor: indicatorColor,
+                                child: SizedBox(
+                                  width: 180,
+                                  child: ListTile(
+                                    key: Key(budget.id),
+                                    title: SizedBox(
+                                      height: 25,
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          budget.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16),
+                                        ),
+                                      ),
                                     ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 5.0),
+                                        LinearProgressIndicator(
+                                          value: budget.progressPercentage(),
+                                          backgroundColor: Colors.grey[300],
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            indicatorColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8.0),
+                                        SizedBox(
+                                          height: 20,
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              'Spent: RM${budget.totalAmount}',
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: Text(
+                                              '$thresholdText: RM${amountBalance.abs().toStringAsFixed(2)}',
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8.0),
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      budget.showCategoryDetails(
+                                          context, cycle, budget.type);
+                                    },
                                   ),
                                 ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(height: 5.0),
-                                    LinearProgressIndicator(
-                                      value: budget.progressPercentage(),
-                                      backgroundColor: Colors.grey[300],
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        indicatorColor,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    SizedBox(
-                                      height: 20,
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          'Spent: RM${budget.totalAmount}',
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 20,
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          '$thresholdText: RM${amountBalance.abs().toStringAsFixed(2)}',
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                  ],
-                                ),
-                                onTap: () {
-                                  budget.showCategoryDetails(
-                                      context, cycle, budget.type);
-                                },
                               ),
-                            ),
+                              Positioned(
+                                right: 0,
+                                child: Tag(
+                                    title: budget.subType, simpleMode: true),
+                              ),
+                            ],
                           ),
                         );
                       },

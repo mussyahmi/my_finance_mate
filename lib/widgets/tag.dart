@@ -4,10 +4,12 @@ import '../extensions/string_extension.dart';
 
 class Tag extends StatefulWidget {
   final String? title;
+  final bool? simpleMode;
 
   const Tag({
     super.key,
     this.title,
+    this.simpleMode,
   });
 
   @override
@@ -34,18 +36,29 @@ class _TagState extends State<Tag> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width:
+          widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
+      height:
+          widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
       decoration: BoxDecoration(
         color: _getBackgroundColor(widget.title),
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Text(
-        widget.title != null ? widget.title!.capitalize() : 'Others',
+        widget.simpleMode != null && widget.simpleMode == true
+            ? widget.title != null
+                ? widget.title!.capitalize().substring(0, 1)
+                : '0'
+            : widget.title != null
+                ? widget.title!.capitalize()
+                : 'Others',
         style: TextStyle(
           color: _getTextColor(widget.title),
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }
