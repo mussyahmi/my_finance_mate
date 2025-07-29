@@ -40,7 +40,8 @@ class _TagState extends State<Tag> {
           widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
       height:
           widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+      padding: EdgeInsets.symmetric(
+          horizontal: widget.simpleMode == true ? 2.0 : 4.0, vertical: 2.0),
       decoration: BoxDecoration(
         color: _getBackgroundColor(widget.title),
         borderRadius: BorderRadius.circular(8.0),
