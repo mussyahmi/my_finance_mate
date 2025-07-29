@@ -396,14 +396,11 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      textStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Skip Tour',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 15,
                       ),
                     ),
@@ -568,14 +565,11 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      textStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Skip Tour',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 15,
                       ),
                     ),
