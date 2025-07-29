@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously
+// ignore_for_file: avoid_print, use_build_context_synchronously, unnecessary_null_comparison
 
 import 'dart:convert';
 
@@ -15,7 +15,6 @@ import '../providers/categories_provider.dart';
 import '../services/message_services.dart';
 
 class CategoryDialog extends StatefulWidget {
-  final String type;
   final String action;
   final Category? category;
   final bool? isTourMode;
@@ -23,7 +22,6 @@ class CategoryDialog extends StatefulWidget {
 
   const CategoryDialog({
     super.key,
-    required this.type,
     required this.action,
     required this.category,
     required this.isTourMode,
@@ -40,11 +38,14 @@ class CategoryDialogState extends State<CategoryDialog> {
   final TextEditingController _categoryBudgetController =
       TextEditingController();
   final TextEditingController _categoryNoteController = TextEditingController();
+  String _selectedType = 'spent';
   String _selectedSubType = 'others';
   bool _isBudgetEnabled = false;
   final GlobalKey _tourCategoryDialog1 = GlobalKey();
   final GlobalKey _tourCategoryDialog2 = GlobalKey();
   final GlobalKey _tourCategoryDialog3 = GlobalKey();
+  final GlobalKey _tourCategoryDialog4 = GlobalKey();
+  final GlobalKey _tourCategoryDialog5 = GlobalKey();
 
   @override
   void initState() {
@@ -54,6 +55,7 @@ class CategoryDialogState extends State<CategoryDialog> {
       _categoryNameController.text = widget.category!.name;
       _categoryBudgetController.text = widget.category!.budget;
       _categoryNoteController.text = widget.category!.note;
+      _selectedType = widget.category!.type;
       _selectedSubType = widget.category!.subType != null
           ? widget.category!.subType!
           : 'others';
@@ -63,8 +65,13 @@ class CategoryDialogState extends State<CategoryDialog> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isTourMode == true) {
-        ShowCaseWidget.of(widget.showcaseContext).startShowCase(
-            [_tourCategoryDialog1, _tourCategoryDialog2, _tourCategoryDialog3]);
+        ShowCaseWidget.of(widget.showcaseContext).startShowCase([
+          _tourCategoryDialog1,
+          _tourCategoryDialog2,
+          _tourCategoryDialog3,
+          _tourCategoryDialog4,
+          _tourCategoryDialog5,
+        ]);
       }
     });
   }
@@ -80,7 +87,7 @@ class CategoryDialogState extends State<CategoryDialog> {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
-        title: Text('${widget.action} Category (${widget.type.capitalize()})'),
+        title: Text('${widget.action} Category'),
         content: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -93,7 +100,7 @@ class CategoryDialogState extends State<CategoryDialog> {
                     Showcase(
                       key: _tourCategoryDialog1,
                       description:
-                          'Category name can be anything you want. It can be a type of spent or received. For example, "Groceries" or "Salary".',
+                          'Category name can be anything you want. It is used to identify the category. For example, you can use "Groceries", "Utilities", or "Entertainment".',
                       disableBarrierInteraction: true,
                       disposeOnTap: false,
                       onTargetClick: () {},
@@ -118,28 +125,111 @@ class CategoryDialogState extends State<CategoryDialog> {
                         ),
                       ),
                     ),
-                    if (widget.type == 'spent')
-                      Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          DropdownButtonFormField(
+                    Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        Showcase(
+                          key: _tourCategoryDialog2,
+                          description:
+                              'You can select the type of category. It can be either "Spent" or "Received".',
+                          disableBarrierInteraction: true,
+                          disposeOnTap: false,
+                          onTargetClick: () {},
+                          tooltipActions: [
+                            TooltipActionButton(
+                              type: TooltipDefaultActionType.previous,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                              textStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            TooltipActionButton(
+                              type: TooltipDefaultActionType.next,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              textStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                          tooltipActionConfig: TooltipActionConfig(
+                            position: TooltipActionPosition.outside,
+                          ),
+                          child: DropdownButtonFormField(
                             dropdownColor:
                                 Theme.of(context).colorScheme.onSecondary,
-                            value: _selectedSubType,
+                            value: _selectedType,
                             decoration: const InputDecoration(
-                              labelText: 'Sub Type',
+                              labelText: 'Type',
                             ),
-                            items: ['needs', 'wants', 'savings', 'others']
-                                .map((String subType) => DropdownMenuItem(
-                                      value: subType,
-                                      child: Text(subType.capitalize()),
+                            items: ['spent', 'received']
+                                .map((String type) => DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type.capitalize()),
                                     ))
                                 .toList(),
                             onChanged: (String? newValue) {
                               setState(() {
-                                _selectedSubType = newValue!;
+                                _selectedType = newValue!;
                               });
                             },
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_selectedType == 'spent')
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Showcase(
+                            key: _tourCategoryDialog3,
+                            description:
+                                'For spent categories, you can select a sub type. This is optional and can be used to further categorize your spending. For example, you can use "Needs", "Wants", "Savings", or "Others".',
+                            disableBarrierInteraction: true,
+                            disposeOnTap: false,
+                            onTargetClick: () {},
+                            tooltipActions: [
+                              TooltipActionButton(
+                                type: TooltipDefaultActionType.previous,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                                textStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              TooltipActionButton(
+                                type: TooltipDefaultActionType.next,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                textStyle: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                            ],
+                            tooltipActionConfig: TooltipActionConfig(
+                              position: TooltipActionPosition.outside,
+                            ),
+                            child: DropdownButtonFormField(
+                              dropdownColor:
+                                  Theme.of(context).colorScheme.onSecondary,
+                              value: _selectedSubType,
+                              decoration: const InputDecoration(
+                                labelText: 'Sub Type',
+                              ),
+                              items: ['needs', 'wants', 'savings', 'others']
+                                  .map((String subType) => DropdownMenuItem(
+                                        value: subType,
+                                        child: Text(subType.capitalize()),
+                                      ))
+                                  .toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedSubType = newValue!;
+                                });
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -175,9 +265,9 @@ class CategoryDialogState extends State<CategoryDialog> {
                           ),
                         ],
                       ),
-                    if (widget.type == 'spent')
+                    if (_selectedType == 'spent')
                       Showcase(
-                        key: _tourCategoryDialog2,
+                        key: _tourCategoryDialog4,
                         description:
                             'For spent categories, you can set a budget. This will help you track your spending against your budget.',
                         disableBarrierInteraction: true,
@@ -218,10 +308,10 @@ class CategoryDialogState extends State<CategoryDialog> {
                           ],
                         ),
                       ),
-                    if (widget.type == 'spent') const SizedBox(height: 10),
-                    if (widget.type == 'received') const SizedBox(height: 20),
+                    if (_selectedType == 'spent') const SizedBox(height: 10),
+                    if (_selectedType == 'received') const SizedBox(height: 20),
                     Showcase(
-                      key: _tourCategoryDialog3,
+                      key: _tourCategoryDialog5,
                       description:
                           'You can add a note to the category. This can be used to add more details about the category.',
                       disableBarrierInteraction: true,
@@ -339,7 +429,7 @@ class CategoryDialogState extends State<CategoryDialog> {
               await context.read<CategoriesProvider>().updateCategory(
                     context,
                     widget.action,
-                    widget.type,
+                    _selectedType,
                     _selectedSubType,
                     categoryName,
                     _isBudgetEnabled,

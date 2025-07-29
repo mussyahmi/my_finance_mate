@@ -89,7 +89,6 @@ class Category {
                       onPressed: () async {
                         final result = await showCategoryDialog(
                           context,
-                          selectedType,
                           'Edit',
                           category: this,
                         );
@@ -321,15 +320,13 @@ class Category {
     }
   }
 
-  static Future<bool> showCategoryDialog(
-      BuildContext context, String selectedType, String action,
+  static Future<bool> showCategoryDialog(BuildContext context, String action,
       {Category? category, bool? isTourMode}) async {
     return await showDialog(
       context: context,
       builder: (context) {
         return ShowCaseWidget(
           builder: (showcaseContext) => CategoryDialog(
-            type: selectedType,
             action: action,
             category: category,
             isTourMode: isTourMode,

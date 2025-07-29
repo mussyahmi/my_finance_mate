@@ -46,7 +46,6 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
-  String _categoryType = 'spent';
   AdMobService? _adMobService;
   late AdCacheService _adCacheService;
   AppOpenAd? _appOpenAd;
@@ -153,10 +152,6 @@ class _DashboardPageState extends State<DashboardPage>
     _rewardedAd?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  void changeCategoryType(String type) {
-    _categoryType = type;
   }
 
   @override
@@ -634,9 +629,7 @@ class _DashboardPageState extends State<DashboardPage>
                 ),
               ),
             ),
-            cycle != null
-                ? CategoryListPage(changeCategoryType: changeCategoryType)
-                : Container(),
+            cycle != null ? CategoryListPage() : Container(),
             cycle != null
                 ? ProfilePage(askToStartTutorial: _askToStartTutorial)
                 : Container(),
@@ -730,7 +723,6 @@ class _DashboardPageState extends State<DashboardPage>
                   } else if (_selectedIndex == 2) {
                     await Category.showCategoryDialog(
                       context,
-                      _categoryType,
                       'Add',
                       isTourMode: true,
                     );
@@ -832,8 +824,7 @@ class _DashboardPageState extends State<DashboardPage>
                         }
                       }
                     } else if (_selectedIndex == 2) {
-                      Category.showCategoryDialog(
-                          context, _categoryType, 'Add');
+                      Category.showCategoryDialog(context, 'Add');
                     }
                   },
                   child: const Icon(CupertinoIcons.add),

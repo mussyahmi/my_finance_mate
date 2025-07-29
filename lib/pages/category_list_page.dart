@@ -17,12 +17,7 @@ import '../widgets/category_search_bar.dart';
 import '../widgets/tag.dart';
 
 class CategoryListPage extends StatefulWidget {
-  final Function(String)? changeCategoryType;
-
-  const CategoryListPage({
-    super.key,
-    this.changeCategoryType,
-  });
+  const CategoryListPage({super.key});
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -113,10 +108,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
           tabController.addListener(() {
             if (!tabController.indexIsChanging) {
               selectedType = tabController.index == 0 ? 'spent' : 'received';
-
-              if (widget.changeCategoryType != null) {
-                widget.changeCategoryType!(selectedType);
-              }
             }
           });
 
