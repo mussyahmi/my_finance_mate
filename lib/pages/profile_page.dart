@@ -450,7 +450,7 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('Toggle Theme Mode'),
+                        title: const Text('Toggle Dark Mode'),
                         trailing: Switch(
                           value: savedThemeMode == AdaptiveThemeMode.dark,
                           onChanged: (bool value) async {
