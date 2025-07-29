@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../models/account.dart';
@@ -138,7 +139,31 @@ class CycleProvider extends ChangeNotifier {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const DashboardPage()),
+      MaterialPageRoute(
+        builder: (context) => ShowCaseWidget(
+          builder: (context) => const DashboardPage(),
+          globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
+            right: 16,
+            top: 16,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                ),
+                child: Text(
+                  'Skip Tour',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
       (route) => false, //* This line removes all previous routes from the stack
     );
   }

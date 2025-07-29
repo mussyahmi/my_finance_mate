@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import 'dashboard_page.dart';
 
@@ -99,7 +100,34 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const DashboardPage()),
+                      builder: (context) => ShowCaseWidget(
+                        builder: (context) => const DashboardPage(),
+                        globalFloatingActionWidget: (showcaseContext) =>
+                            FloatingActionWidget(
+                          right: 16,
+                          top: 16,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: ElevatedButton(
+                              onPressed:
+                                  ShowCaseWidget.of(showcaseContext).dismiss,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                              ),
+                              child: Text(
+                                'Skip Tour',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     (route) =>
                         false, //* This line removes all previous routes from the stack
                   );
