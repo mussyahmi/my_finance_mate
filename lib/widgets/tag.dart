@@ -37,29 +37,28 @@ class _TagState extends State<Tag> {
   Widget build(BuildContext context) {
     return Container(
       width:
-          widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
+          widget.simpleMode != null && widget.simpleMode == true ? 20.0 : 50.0,
       height:
-          widget.simpleMode != null && widget.simpleMode == true ? 22.0 : null,
-      padding: EdgeInsets.symmetric(
-          horizontal: widget.simpleMode == true ? 2.0 : 4.0, vertical: 2.0),
+          widget.simpleMode != null && widget.simpleMode == true ? 20.0 : 20.0,
       decoration: BoxDecoration(
         color: _getBackgroundColor(widget.title),
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: Text(
-        widget.simpleMode != null && widget.simpleMode == true
-            ? widget.title != null
-                ? widget.title!.capitalize().substring(0, 1)
-                : '0'
-            : widget.title != null
-                ? widget.title!.capitalize()
-                : 'Others',
-        style: TextStyle(
-          color: _getTextColor(widget.title),
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
+      child: Center(
+        child: Text(
+          widget.simpleMode != null && widget.simpleMode == true
+              ? widget.title != null
+                  ? widget.title!.capitalize().substring(0, 1)
+                  : '0'
+              : widget.title != null
+                  ? widget.title!.capitalize()
+                  : 'Others',
+          style: TextStyle(
+            color: _getTextColor(widget.title),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }
