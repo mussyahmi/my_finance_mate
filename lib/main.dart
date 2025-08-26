@@ -18,6 +18,7 @@ import 'providers/categories_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/cycles_provider.dart';
 import 'providers/purchases_provider.dart';
+import 'providers/qada_prayer_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'services/ad_cache_service.dart';
@@ -104,6 +105,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => WishlistProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => QadaPrayerProvider(),
       ),
       ChangeNotifierProvider(
         create: (context) => PurchasesProvider(),

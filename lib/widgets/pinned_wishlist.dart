@@ -107,8 +107,7 @@ class _PinnedWishlistState extends State<PinnedWishlist>
                           child: Card(
                             child: ListTile(
                               title: Text(wish.name),
-                              onTap: () =>
-                                  wish.showWishlistDetails(context, cycle),
+                              onTap: () => wish.showWishlistDetails(context),
                             ),
                           ),
                         );

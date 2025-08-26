@@ -26,6 +26,7 @@ import '../widgets/profile_image.dart';
 import 'attachment_list_page.dart';
 import 'cumulative_trends_page.dart';
 import 'purchase_history_page.dart';
+import 'qada_prayer_tracker_page.dart';
 import 'transaction_summary_page.dart';
 import 'login_page.dart';
 import 'premium_access_page.dart';
@@ -343,7 +344,7 @@ class ProfilePageState extends State<ProfilePage> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: const Text(
-                        'Wishlist',
+                        'Tools',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18),
                       ),
@@ -351,7 +352,7 @@ class ProfilePageState extends State<ProfilePage> {
                     Card(
                       child: ListTile(
                         title: const Text('Wishlist'),
-                        trailing: const Icon(CupertinoIcons.heart_fill),
+                        trailing: const Icon(CupertinoIcons.right_chevron),
                         onTap: () async {
                           await Navigator.push(
                             context,
@@ -362,13 +363,18 @@ class ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text(
-                        'Tools',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Qada Prayer Tracker'),
+                        trailing: const Icon(CupertinoIcons.right_chevron),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => QadaPrayerTrackerPage(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Card(

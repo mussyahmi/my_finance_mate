@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
-import '../models/cycle.dart';
 import '../models/wishlist.dart';
-import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../services/ad_cache_service.dart';
@@ -22,7 +20,6 @@ class WishlistPage extends StatefulWidget {
 }
 
 class _WishlistPageState extends State<WishlistPage> {
-  List<Object> wishlist = [];
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
 
@@ -35,8 +32,6 @@ class _WishlistPageState extends State<WishlistPage> {
 
   @override
   Widget build(BuildContext context) {
-    Cycle cycle = context.watch<CycleProvider>().cycle!;
-
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -50,11 +45,9 @@ class _WishlistPageState extends State<WishlistPage> {
         ],
         body: RefreshIndicator(
           onRefresh: () async {
-            if (cycle.isLastCycle) {
-              context
-                  .read<WishlistProvider>()
-                  .fetchWishlist(context, refresh: true);
-            }
+            context
+                .read<WishlistProvider>()
+                .fetchWishlist(context, refresh: true);
           },
           child: Center(
             child: FutureBuilder(
@@ -106,8 +99,7 @@ class _WishlistPageState extends State<WishlistPage> {
                                             .primary,
                                       )
                                     : null,
-                                onTap: () =>
-                                    wish.showWishlistDetails(context, cycle),
+                                onTap: () => wish.showWishlistDetails(context),
                               ),
                             ),
                           ),

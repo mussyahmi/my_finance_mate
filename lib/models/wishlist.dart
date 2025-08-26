@@ -13,7 +13,6 @@ import '../providers/wishlist_provider.dart';
 import '../services/message_services.dart';
 import '../widgets/custom_draggable_scrollable_sheet.dart';
 import '../widgets/wishlist_dialog.dart';
-import 'cycle.dart';
 
 class Wishlist {
   String id;
@@ -30,7 +29,7 @@ class Wishlist {
     required this.createdAt,
   });
 
-  void showWishlistDetails(BuildContext context, Cycle cycle) {
+  void showWishlistDetails(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -45,35 +44,33 @@ class Wishlist {
               ),
               Row(
                 children: [
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await _deleteHandler(context, id);
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final result = await _deleteHandler(context, id);
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: const Icon(
-                        CupertinoIcons.delete_solid,
-                        color: Colors.red,
-                      ),
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: const Icon(
+                      CupertinoIcons.delete_solid,
+                      color: Colors.red,
                     ),
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await showWishlistDialog(context, 'Edit',
-                            wish: this);
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      final result =
+                          await showWishlistDialog(context, 'Edit', wish: this);
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: Icon(
-                        CupertinoIcons.pencil,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      if (result) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(
+                      CupertinoIcons.pencil,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
+                  ),
                 ],
               ),
             ],
