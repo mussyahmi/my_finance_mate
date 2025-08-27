@@ -17,6 +17,7 @@ import 'providers/accounts_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/cycles_provider.dart';
+import 'providers/debt_provider.dart';
 import 'providers/purchases_provider.dart';
 import 'providers/qada_prayer_provider.dart';
 import 'providers/transactions_provider.dart';
@@ -105,6 +106,9 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (context) => WishlistProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => DebtProvider(),
       ),
       ChangeNotifierProvider(
         create: (context) => QadaPrayerProvider(),

@@ -25,6 +25,7 @@ import '../widgets/package_info_summary.dart';
 import '../widgets/profile_image.dart';
 import 'attachment_list_page.dart';
 import 'cumulative_trends_page.dart';
+import 'debt_tracker_page.dart';
 import 'purchase_history_page.dart';
 import 'qada_prayer_tracker_page.dart';
 import 'transaction_summary_page.dart';
@@ -358,6 +359,20 @@ class ProfilePageState extends State<ProfilePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => const WishlistPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Debt Tracker'),
+                        trailing: const Icon(CupertinoIcons.right_chevron),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DebtTrackerPage(),
                             ),
                           );
                         },

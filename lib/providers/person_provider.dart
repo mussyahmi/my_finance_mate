@@ -20,6 +20,7 @@ import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
 import 'cycles_provider.dart';
+import 'debt_provider.dart';
 import 'purchases_provider.dart';
 import 'qada_prayer_provider.dart';
 import 'transactions_provider.dart';
@@ -306,6 +307,10 @@ class PersonProvider extends ChangeNotifier {
     await context
         .read<WishlistProvider>()
         .fetchWishlist(context, refresh: forceRefresh);
+
+    await context
+        .read<DebtProvider>()
+        .fetchDebts(context, refresh: forceRefresh);
 
     await context
         .read<QadaPrayerProvider>()

@@ -22,6 +22,7 @@ class QadaPrayerProvider with ChangeNotifier {
         .doc(user.uid)
         .collection('qada_prayer')
         .getSavy(refresh: refresh);
+
     print('fetchQadaPrayers: ${qadaPrayersSnapshot.docs.length}');
 
     if (qadaPrayersSnapshot.docs.isEmpty) {
@@ -51,7 +52,7 @@ class QadaPrayerProvider with ChangeNotifier {
     return prayers!;
   }
 
-  // * Initialize qada prayers for a new user
+  //* Initialize qada prayers for a new user
   Future<void> initializeQadaPrayers(String userId) async {
     final defaultPrayers = [
       "Fajr",
