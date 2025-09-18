@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/qada_prayer.dart';
 import '../providers/qada_prayer_provider.dart';
+import '../widgets/qada_prayer_summary.dart';
 
 class QadaPrayerTrackerPage extends StatefulWidget {
   const QadaPrayerTrackerPage({super.key});
@@ -17,14 +19,17 @@ class _QadaPrayerTrackerPageState extends State<QadaPrayerTrackerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Qada Prayer Tracker"), centerTitle: true),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context
-              .read<QadaPrayerProvider>()
-              .fetchQadaPrayers(context, refresh: true);
-        },
-        child: Center(
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            title: Text('Qada Prayer Tracker'),
+            centerTitle: true,
+            scrolledUnderElevation: 9999,
+            floating: true,
+            snap: true,
+          ),
+        ],
+        body: SingleChildScrollView(
           child: FutureBuilder(
             future: context.watch<QadaPrayerProvider>().getQadaPrayers(context),
             builder: (context, snapshot) {
@@ -51,138 +56,194 @@ class _QadaPrayerTrackerPageState extends State<QadaPrayerTrackerPage> {
                 ); //* Display a message for no qada prayers
               } else {
                 //* Display the list of qada prayers
-                final qadaPrayers = snapshot.data!;
+                final qadaPrayers = snapshot.data! as List<QadaPrayer>;
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text(
-                        "💡 Tip: Tap the number to edit directly",
+                        "💡 Tip: Tap the highlighted box to update the count",
                         style: TextStyle(
                           fontSize: 14,
                           fontStyle: FontStyle.italic,
                           color: Colors.grey,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    Expanded(
-                      child: Column(
-                        children:
-                            qadaPrayers.asMap().entries.map<Widget>((entry) {
-                          QadaPrayer prayer = entry.value as QadaPrayer;
+                    QadaPrayerSummary(qadaPrayers: qadaPrayers),
+                    Column(
+                      children:
+                          qadaPrayers.asMap().entries.map<Widget>((entry) {
+                        QadaPrayer prayer = entry.value;
 
-                          return Container(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Card(
-                              child: ListTile(
-                                title: Text(prayer.prayerName),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove),
-                                      onPressed: () {
-                                        if (prayer.count > 0) {
-                                          context
-                                              .read<QadaPrayerProvider>()
-                                              .updatePrayerCount(
-                                                context,
-                                                prayer.prayerName,
-                                                prayer.count - 1,
-                                              );
-                                        }
-                                      },
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            elevation: 3,
+                            margin: const EdgeInsets.all(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Prayer title
+                                  Text(
+                                    prayer.prayerName,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        final controller =
-                                            TextEditingController(
-                                                text: prayer.count.toString());
+                                  ),
 
-                                        final result = await showDialog<int>(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: Text(
-                                                "Set ${prayer.prayerName} count"),
-                                            content: TextField(
-                                              controller: controller,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              decoration: const InputDecoration(
-                                                labelText: "Enter count",
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(
-                                                    context), // cancel
-                                                child: const Text("Cancel"),
-                                              ),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Theme.of(context)
-                                                          .colorScheme
-                                                          .primary,
-                                                  foregroundColor:
-                                                      Theme.of(context)
-                                                          .colorScheme
-                                                          .onPrimary,
-                                                ),
-                                                onPressed: () {
-                                                  final value = int.tryParse(
-                                                      controller.text);
-                                                  if (value != null &&
-                                                      value >= 0) {
-                                                    Navigator.pop(
-                                                        context, value);
-                                                  }
-                                                },
-                                                child: const Text("Save"),
-                                              ),
-                                            ],
-                                          ),
-                                        );
+                                  const SizedBox(height: 4),
 
-                                        if (result != null) {
-                                          context
-                                              .read<QadaPrayerProvider>()
-                                              .updatePrayerCount(
-                                                context,
-                                                prayer.prayerName,
-                                                result,
-                                              );
-                                        }
-                                      },
-                                      child: Text(
-                                        prayer.count.toString(),
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
+                                  // Last updated text
+                                  Text(
+                                    "Last updated\n${DateFormat('EE, d MMM yyyy h:mm aa').format(prayer.updatedAt)}",
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+
+                                  const Divider(height: 24),
+
+                                  // Counter row
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Minus button
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.remove_circle_outline),
+                                        onPressed: () {
+                                          if (prayer.count > 0) {
+                                            context
+                                                .read<QadaPrayerProvider>()
+                                                .updatePrayerCount(
+                                                  context,
+                                                  prayer.prayerName,
+                                                  prayer.count - 1,
+                                                );
+                                          }
+                                        },
                                       ),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        context
-                                            .read<QadaPrayerProvider>()
-                                            .updatePrayerCount(
-                                              context,
-                                              prayer.prayerName,
-                                              prayer.count + 1,
-                                            );
-                                      },
-                                    ),
-                                  ],
-                                ),
+
+                                      // Editable count
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final controller =
+                                              TextEditingController(
+                                            text: prayer.count.toString(),
+                                          );
+
+                                          final result = await showDialog<int>(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: Text(
+                                                  "Set ${prayer.prayerName} count"),
+                                              content: TextField(
+                                                controller: controller,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: "Enter count",
+                                                ),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: const Text("Cancel"),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .primary,
+                                                    foregroundColor:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .onPrimary,
+                                                  ),
+                                                  onPressed: () {
+                                                    final value = int.tryParse(
+                                                        controller.text);
+                                                    if (value != null &&
+                                                        value >= 0) {
+                                                      Navigator.pop(
+                                                          context, value);
+                                                    }
+                                                  },
+                                                  child: const Text("Save"),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (result != null) {
+                                            context
+                                                .read<QadaPrayerProvider>()
+                                                .updatePrayerCount(
+                                                  context,
+                                                  prayer.prayerName,
+                                                  result,
+                                                );
+                                          }
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            prayer.count.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Plus button
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.add_circle_outline),
+                                        onPressed: () {
+                                          context
+                                              .read<QadaPrayerProvider>()
+                                              .updatePrayerCount(
+                                                context,
+                                                prayer.prayerName,
+                                                prayer.count + 1,
+                                              );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
+                    const SizedBox(height: 40),
                   ],
                 );
               }
