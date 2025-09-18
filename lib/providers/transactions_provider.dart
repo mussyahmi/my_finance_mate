@@ -606,4 +606,11 @@ class TransactionsProvider extends ChangeNotifier {
     return List<t.Transaction>.from(trans)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
+
+  // i want to transform transaction list to json that i can copy to paste to chatgpt
+  List<Map<String, dynamic>> toJson() {
+    if (transactions == null) return [];
+
+    return transactions!.map((transaction) => transaction.toJson()).toList();
+  }
 }

@@ -57,6 +57,20 @@ class Transaction {
     required this.createdAt,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type,
+      'subType': subType,
+      'categoryName': categoryName,
+      'accountName': accountName,
+      'accountToName': accountToName,
+      'amount': amount,
+      'note': note,
+      'date': dateTime.toIso8601String(),
+    };
+  }
+
   String getDateText() {
     DateTime now = DateTime.now();
 

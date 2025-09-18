@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
+import '../providers/transactions_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
@@ -338,6 +340,20 @@ class ProfilePageState extends State<ProfilePage> {
                                   const TransactionSummaryPage(),
                             ),
                           );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Copy Transactions (JSON)'),
+                        trailing: const Icon(Icons.copy_all),
+                        onTap: () async {
+                          final transactionsJson = jsonEncode(
+                              context.read<TransactionsProvider>().toJson());
+                          await Clipboard.setData(
+                              ClipboardData(text: transactionsJson));
+
+                          EasyLoading.showSuccess('Copied to clipboard');
                         },
                       ),
                     ),
