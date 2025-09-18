@@ -2,6 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
@@ -108,6 +110,8 @@ class QadaPrayerProvider with ChangeNotifier {
 
   Future<void> updatePrayerCount(
       BuildContext context, String prayerName, int newCount) async {
+    HapticFeedback.mediumImpact();
+
     final Person user = context.read<PersonProvider>().user!;
 
     //* Get current timestamp
@@ -125,14 +129,12 @@ class QadaPrayerProvider with ChangeNotifier {
 
     await fetchQadaPrayers(context);
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("$prayerName count updated to $newCount")),
-    );
+    EasyLoading.showSuccess("$prayerName count updated to $newCount");
   }
 
   Future<void> updateDailyTarget(BuildContext context, int newTarget) async {
+    HapticFeedback.mediumImpact();
+
     final Person user = context.read<PersonProvider>().user!;
 
     //* Get current timestamp
@@ -153,10 +155,6 @@ class QadaPrayerProvider with ChangeNotifier {
 
     notifyListeners();
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Daily target updated to $newTarget")),
-    );
+    EasyLoading.showSuccess("Daily target updated to $newTarget");
   }
 }
