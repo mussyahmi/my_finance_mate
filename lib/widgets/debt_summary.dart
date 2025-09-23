@@ -27,7 +27,7 @@ class DebtSummary extends StatelessWidget {
             child: Column(
               children: [
                 const Text(
-                  'Net',
+                  'Net Debt',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,

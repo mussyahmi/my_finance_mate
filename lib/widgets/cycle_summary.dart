@@ -58,7 +58,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                 child: Column(
                   children: [
                     const Text(
-                      'Available Balance',
+                      'Net Balance',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,

@@ -131,7 +131,7 @@ class Account {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Available Balance:',
+                    'Net Balance:',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
