@@ -45,14 +45,15 @@ class Debt {
   static Future<bool> showDebtDialog(BuildContext parentContext, String action,
       {Debt? debt, bool? isTourMode}) async {
     return await showDialog(
-      context: parentContext,
-      builder: (context) {
-        return DebtDialog(
-          parentContext: parentContext,
-          action: action,
-          debt: debt,
-        );
-      },
-    );
+          context: parentContext,
+          builder: (context) {
+            return DebtDialog(
+              parentContext: parentContext,
+              action: action,
+              debt: debt,
+            );
+          },
+        ) ??
+        false;
   }
 }

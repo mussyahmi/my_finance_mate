@@ -179,13 +179,14 @@ class Wishlist {
   static Future<bool> showWishlistDialog(BuildContext context, String action,
       {Wishlist? wish}) async {
     return await showDialog(
-      context: context,
-      builder: (context) {
-        return WishlistDialog(
-          action: action,
-          wish: wish,
-        );
-      },
-    );
+          context: context,
+          builder: (context) {
+            return WishlistDialog(
+              action: action,
+              wish: wish,
+            );
+          },
+        ) ??
+        false;
   }
 }

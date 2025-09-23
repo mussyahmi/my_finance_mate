@@ -255,41 +255,43 @@ class Account {
       BuildContext context, Cycle cycle, String action,
       {Account? account, bool? isTourMode}) async {
     return await showDialog(
-      context: context,
-      builder: (context) {
-        return ShowCaseWidget(
-          builder: (showcaseContext) => AccountDialog(
-            cycle: cycle,
-            action: action,
-            account: account,
-            isTourMode: isTourMode,
-            showcaseContext: showcaseContext,
-          ),
-          globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
-            right: 16,
-            top: 16,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  ShowCaseWidget.of(showcaseContext).dismiss();
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                child: Text(
-                  'Skip Tour',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 15,
+          context: context,
+          builder: (context) {
+            return ShowCaseWidget(
+              builder: (showcaseContext) => AccountDialog(
+                cycle: cycle,
+                action: action,
+                account: account,
+                isTourMode: isTourMode,
+                showcaseContext: showcaseContext,
+              ),
+              globalFloatingActionWidget: (showcaseContext) =>
+                  FloatingActionWidget(
+                right: 16,
+                top: 16,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ShowCaseWidget.of(showcaseContext).dismiss();
+                      Navigator.of(context).pop(false);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Text(
+                      'Skip Tour',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
-    );
+            );
+          },
+        ) ??
+        false;
   }
 }
