@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -434,7 +435,13 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Record the error in Crashlytics
+      await FirebaseCrashlytics.instance.recordError(e, stackTrace);
+
+      // Optionally: also log custom messages for more context
+      FirebaseCrashlytics.instance.log("Email/Password sign-in failed");
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -582,7 +589,13 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         print('Google Sign-In Cancelled');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Record the error in Crashlytics
+      await FirebaseCrashlytics.instance.recordError(e, stackTrace);
+
+      // Optionally: also log custom messages for more context
+      FirebaseCrashlytics.instance.log("Google sign-in failed");
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
