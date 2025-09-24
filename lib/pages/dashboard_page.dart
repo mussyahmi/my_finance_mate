@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:quick_actions/quick_actions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 
@@ -32,6 +33,7 @@ import 'category_list_page.dart';
 import 'premium_access_page.dart';
 import 'profile_page.dart';
 import '../models/transaction.dart' as t;
+import 'qada_prayer_tracker_page.dart';
 import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
 import 'cycle_page.dart';
@@ -57,11 +59,103 @@ class _DashboardPageState extends State<DashboardPage>
   final GlobalKey _tourCategoryList2 = GlobalKey();
   final GlobalKey _tourTransactionList1 = GlobalKey();
   final GlobalKey _tourTransactionList2 = GlobalKey();
+  QuickActions quickActions = QuickActions();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    quickActions.setShortcutItems(<ShortcutItem>[
+      // NOTE: This second action icon will only work on Android.
+      // In a real world project keep the same file name for both platforms.
+      const ShortcutItem(
+        type: 'qada_prayer_tracker',
+        localizedTitle: 'Qada Prayer Tracker',
+        icon: 'prayer_icon',
+      ),
+      const ShortcutItem(
+        type: 'add_transaction',
+        localizedTitle: 'Add Transaction',
+        icon: 'add_icon',
+      ),
+    ]);
+  }
+
+  Future<void> _addTransactionHandler(Person user) async {
+    if (context.read<AccountsProvider>().accounts!.isEmpty) {
+      EasyLoading.showInfo('No accounts? Let\'s fix that—add one to begin!');
+    } else if (!user.isPremium && user.dailyTransactionsMade >= 5) {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Daily Transaction Cap Reached!'),
+            content: const Text(
+                'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+            actions: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+                onPressed: () {
+                  if (!user.isPremium) {
+                    _showRewardedAd();
+                  }
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Watch Ad'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  surfaceTintColor: Colors.orange,
+                  foregroundColor: Colors.orangeAccent,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PremiumSubscriptionPage(),
+                    ),
+                  );
+                },
+                child: const Text('Upgrade to Premium'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Later'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      final bool? result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShowCaseWidget(
+            builder: (showcaseContext) => TransactionFormPage(
+              action: 'Add',
+              isTourMode: false,
+              showcaseContext: context,
+            ),
+          ),
+        ),
+      );
+
+      if (result == null) {
+        return;
+      }
+
+      if (result && !user.isPremium && user.dailyTransactionsMade >= 5) {
+        setState(() {});
+      }
+    }
   }
 
   Future<bool> _askToStartTutorial() async {
@@ -119,6 +213,20 @@ class _DashboardPageState extends State<DashboardPage>
     }
 
     _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;
+
+    quickActions.initialize((String shortcutType) {
+      if (shortcutType == 'qada_prayer_tracker') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QadaPrayerTrackerPage(),
+          ),
+        );
+      }
+      if (shortcutType == 'add_transaction') {
+        _addTransactionHandler(user);
+      }
+    });
   }
 
   @override
@@ -355,8 +463,10 @@ class _DashboardPageState extends State<DashboardPage>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const TransactionListPage(),
+                                      builder: (context) => TransactionListPage(
+                                        addTransactionHandler:
+                                            _addTransactionHandler,
+                                      ),
                                     ),
                                   );
                                 },
@@ -739,87 +849,7 @@ class _DashboardPageState extends State<DashboardPage>
                     if (_selectedIndex == 0) {
                       Account.showAccountDialog(context, cycle, 'Add');
                     } else if (_selectedIndex == 1) {
-                      if (context.read<AccountsProvider>().accounts!.isEmpty) {
-                        EasyLoading.showInfo(
-                            'No accounts? Let\'s fix that—add one to begin!');
-                      } else if (!user.isPremium &&
-                          user.dailyTransactionsMade >= 5) {
-                        await showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) {
-                            return AlertDialog(
-                              title:
-                                  const Text('Daily Transaction Cap Reached!'),
-                              content: const Text(
-                                  'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
-                              actions: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                  ),
-                                  onPressed: () {
-                                    if (!user.isPremium) {
-                                      _showRewardedAd();
-                                    }
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Watch Ad'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    surfaceTintColor: Colors.orange,
-                                    foregroundColor: Colors.orangeAccent,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const PremiumSubscriptionPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: const Text('Upgrade to Premium'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Later'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      } else {
-                        final bool? result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ShowCaseWidget(
-                              builder: (showcaseContext) => TransactionFormPage(
-                                action: 'Add',
-                                isTourMode: false,
-                                showcaseContext: context,
-                              ),
-                            ),
-                          ),
-                        );
-
-                        if (result == null) {
-                          return;
-                        }
-
-                        if (result &&
-                            !user.isPremium &&
-                            user.dailyTransactionsMade >= 5) {
-                          setState(() {});
-                        }
-                      }
+                      _addTransactionHandler(user);
                     } else if (_selectedIndex == 2) {
                       Category.showCategoryDialog(context, 'Add');
                     }

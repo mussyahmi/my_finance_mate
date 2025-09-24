@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../models/cycle.dart';
+import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../providers/accounts_provider.dart';
 import '../providers/categories_provider.dart';
@@ -23,6 +24,7 @@ import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 
 class TransactionListPage extends StatefulWidget {
+  final Function? addTransactionHandler;
   final String? accountId;
   final String? accountToId;
   final String? type;
@@ -31,6 +33,7 @@ class TransactionListPage extends StatefulWidget {
 
   const TransactionListPage({
     super.key,
+    this.addTransactionHandler,
     this.accountId,
     this.accountToId,
     this.type,
@@ -88,8 +91,17 @@ class _TransactionListPageState extends State<TransactionListPage> {
   @override
   Widget build(BuildContext context) {
     Cycle cycle = context.watch<CycleProvider>().cycle!;
+    Person user = context.watch<PersonProvider>().user!;
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (widget.addTransactionHandler != null) {
+            await widget.addTransactionHandler!(user);
+          }
+        },
+        child: const Icon(CupertinoIcons.add),
+      ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
@@ -565,10 +577,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                   ),
                                 ),
                               ),
-                              if (!context
-                                      .read<PersonProvider>()
-                                      .user!
-                                      .isPremium &&
+                              if (!user.isPremium &&
                                   (index == 1 || index == 7 || index == 13))
                                 AdContainer(
                                   adCacheService: _adCacheService,
