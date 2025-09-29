@@ -6,7 +6,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
-import '../models/cycle.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
@@ -47,8 +46,6 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   Widget build(BuildContext context) {
-    Cycle cycle = context.watch<CycleProvider>().cycle!;
-
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -60,74 +57,63 @@ class _AccountListPageState extends State<AccountListPage> {
             snap: true,
           ),
         ],
-        body: RefreshIndicator(
-          onRefresh: () async {
-            if (cycle.isLastCycle) {
-              context
-                  .read<AccountsProvider>()
-                  .fetchAccounts(context, cycle, refresh: true);
-            }
-          },
-          child: Center(
-            child: FutureBuilder(
-              future: context.watch<AccountsProvider>().getAccounts(context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: CircularProgressIndicator(),
-                  ); //* Display a loading indicator
-                } else if (snapshot.hasError) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: SelectableText(
-                      'Error: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      'No accounts found.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ); //* Display a message for no accounts
-                } else {
-                  //* Display the list of accounts
-                  final accounts = snapshot.data!;
+        body: Center(
+          child: FutureBuilder(
+            future: context.watch<AccountsProvider>().getAccounts(context),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: CircularProgressIndicator(),
+                ); //* Display a loading indicator
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: SelectableText(
+                    'Error: ${snapshot.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    'No accounts found.',
+                    textAlign: TextAlign.center,
+                  ),
+                ); //* Display a message for no accounts
+              } else {
+                //* Display the list of accounts
+                final accounts = snapshot.data!;
 
-                  return ListView.builder(
-                    itemCount: accounts.length,
-                    itemBuilder: (context, index) {
-                      Account account = accounts[index] as Account;
+                return ListView.builder(
+                  itemCount: accounts.length,
+                  itemBuilder: (context, index) {
+                    Account account = accounts[index] as Account;
 
-                      return Column(
-                        children: [
-                          Container(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: AccountSummary(account: account),
+                    return Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: AccountSummary(account: account),
+                        ),
+                        if (!context.read<PersonProvider>().user!.isPremium &&
+                            (index == 1 || index == 7 || index == 13))
+                          AdContainer(
+                            adCacheService: _adCacheService,
+                            number: index,
+                            adSize: AdSize.largeBanner,
+                            adUnitId: _adMobService.bannerAccountListAdUnitId!,
+                            height: 100.0,
                           ),
-                          if (!context.read<PersonProvider>().user!.isPremium &&
-                              (index == 1 || index == 7 || index == 13))
-                            AdContainer(
-                              adCacheService: _adCacheService,
-                              number: index,
-                              adSize: AdSize.largeBanner,
-                              adUnitId:
-                                  _adMobService.bannerAccountListAdUnitId!,
-                              height: 100.0,
-                            ),
-                          if (index == accounts.length - 1)
-                            const SizedBox(height: 80),
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
-            ),
+                        if (index == accounts.length - 1)
+                          const SizedBox(height: 80),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
           ),
         ),
       ),

@@ -12,11 +12,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:showcaseview/showcaseview.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
-import 'dashboard_page.dart';
 import '../extensions/firestore_extensions.dart';
 import 'email_verification_page.dart';
 
@@ -310,38 +308,7 @@ class RegisterPageState extends State<RegisterPage> {
           );
         }
 
-        //* Navigate to the dashboard or home page upon successful register
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShowCaseWidget(
-              builder: (context) => const DashboardPage(),
-              globalFloatingActionWidget: (showcaseContext) =>
-                  FloatingActionWidget(
-                right: 16,
-                top: 16,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Text(
-                      'Skip Tour',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          (route) =>
-              false, //* This line removes all previous routes from the stack
-        );
+        await context.read<PersonProvider>().fetchData(context);
       }
     } on FirebaseAuthException catch (e) {
       showDialog(

@@ -13,13 +13,14 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../models/person.dart';
 // import '../services/purchase_service.dart';
+import '../pages/dashboard_page.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
-import 'cycles_provider.dart';
 import 'debt_provider.dart';
 import 'purchases_provider.dart';
 import 'qada_prayer_provider.dart';
@@ -288,10 +289,6 @@ class PersonProvider extends ChangeNotifier {
         .read<CycleProvider>()
         .fetchCycle(context, refresh: forceRefresh);
 
-    await context
-        .read<CyclesProvider>()
-        .fetchCycles(context, refresh: forceRefresh);
-
     await context.read<CategoriesProvider>().fetchCategories(
         context, context.read<CycleProvider>().cycle!,
         refresh: forceRefresh);
@@ -323,6 +320,36 @@ class PersonProvider extends ChangeNotifier {
     await checkAndUpdatePremiumStatus(context);
 
     if (forceRefresh) await resetForceRefresh();
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShowCaseWidget(
+          builder: (context) => const DashboardPage(),
+          globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
+            right: 16,
+            top: 16,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                ),
+                child: Text(
+                  'Skip Tour',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      (route) => false, //* This line removes all previous routes from the stack
+    );
   }
 
   Future<void> checkAndUpdatePremiumStatus(BuildContext context) async {

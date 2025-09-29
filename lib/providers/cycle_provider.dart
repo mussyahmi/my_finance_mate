@@ -3,7 +3,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:showcaseview/showcaseview.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../models/account.dart';
@@ -11,9 +10,9 @@ import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
 import '../pages/cycle_add_page.dart';
-import '../pages/dashboard_page.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
+import 'cycles_provider.dart';
 import 'transactions_provider.dart';
 import 'person_provider.dart';
 
@@ -62,6 +61,10 @@ class CycleProvider extends ChangeNotifier {
       }
 
       notifyListeners();
+
+      await context
+          .read<CyclesProvider>()
+          .fetchCycles(context, refresh: refresh);
     } else {
       //* No cycles found, redirect to add cycle page
       await Navigator.pushAndRemoveUntil(
@@ -119,53 +122,9 @@ class CycleProvider extends ChangeNotifier {
       await _copyAccountsFromLastCycle(user, cycle!.id, newCycleDoc.id, now);
     }
 
-    await fetchCycle(context);
-    await context
-        .read<CategoriesProvider>()
-        .fetchCategories(context, context.read<CycleProvider>().cycle!);
-    await context
-        .read<CategoriesProvider>()
-        .fetchCategories(context, context.read<CycleProvider>().cycle!);
-    await context
-        .read<AccountsProvider>()
-        .fetchAccounts(context, context.read<CycleProvider>().cycle!);
-    await context
-        .read<TransactionsProvider>()
-        .fetchTransactions(context, context.read<CycleProvider>().cycle!);
-
     user.forceRefresh = true;
 
-    notifyListeners();
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ShowCaseWidget(
-          builder: (context) => const DashboardPage(),
-          globalFloatingActionWidget: (showcaseContext) => FloatingActionWidget(
-            right: 16,
-            top: 16,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                child: Text(
-                  'Skip Tour',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      (route) => false, //* This line removes all previous routes from the stack
-    );
+    await context.read<PersonProvider>().fetchData(context);
   }
 
   Future<void> _copyCategoriesFromLastCycle(

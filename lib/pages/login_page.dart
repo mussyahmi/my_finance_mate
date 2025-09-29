@@ -15,14 +15,12 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/package_info_summary.dart';
-import 'dashboard_page.dart';
 import 'email_verification_page.dart';
 import 'register_page.dart';
 import '../size_config.dart';
@@ -381,36 +379,6 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         await context.read<PersonProvider>().fetchData(context);
-
-        //* Navigate to the DashboardPage after sign-in
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => ShowCaseWidget(
-              builder: (context) => const DashboardPage(),
-              globalFloatingActionWidget: (showcaseContext) =>
-                  FloatingActionWidget(
-                right: 16,
-                top: 16,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Text(
-                      'Skip Tour',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'An error occurred. Please try again later.';
@@ -556,36 +524,6 @@ class _LoginPageState extends State<LoginPage> {
         print('Google Sign-In Successful');
 
         await context.read<PersonProvider>().fetchData(context);
-
-        //* Navigate to the DashboardPage after sign-in
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => ShowCaseWidget(
-              builder: (context) => const DashboardPage(),
-              globalFloatingActionWidget: (showcaseContext) =>
-                  FloatingActionWidget(
-                right: 16,
-                top: 16,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: ShowCaseWidget.of(showcaseContext).dismiss,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Text(
-                      'Skip Tour',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
       } else {
         print('Google Sign-In Cancelled');
       }
