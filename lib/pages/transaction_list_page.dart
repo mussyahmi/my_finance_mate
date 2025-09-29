@@ -94,14 +94,14 @@ class _TransactionListPageState extends State<TransactionListPage> {
     Person user = context.watch<PersonProvider>().user!;
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          if (widget.addTransactionHandler != null) {
-            await widget.addTransactionHandler!(user);
-          }
-        },
-        child: const Icon(CupertinoIcons.add),
-      ),
+      floatingActionButton: widget.addTransactionHandler != null
+          ? FloatingActionButton(
+              onPressed: () {
+                widget.addTransactionHandler!(user);
+              },
+              child: const Icon(CupertinoIcons.add),
+            )
+          : null,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverAppBar(
