@@ -59,6 +59,7 @@ class _DashboardPageState extends State<DashboardPage>
   final GlobalKey _tourTransactionList1 = GlobalKey();
   final GlobalKey _tourTransactionList2 = GlobalKey();
   QuickActions quickActions = QuickActions();
+  bool _quickActionsInitialized = false;
 
   @override
   void initState() {
@@ -213,19 +214,22 @@ class _DashboardPageState extends State<DashboardPage>
 
     _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;
 
-    quickActions.initialize((String shortcutType) {
-      if (shortcutType == 'qada_prayer_tracker') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => QadaPrayerTrackerPage(),
-          ),
-        );
-      }
-      if (shortcutType == 'add_transaction') {
-        _addTransactionHandler(user);
-      }
-    });
+    if (!_quickActionsInitialized) {
+      _quickActionsInitialized = true;
+      quickActions.initialize((String shortcutType) {
+        if (shortcutType == 'qada_prayer_tracker') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QadaPrayerTrackerPage(),
+            ),
+          );
+        }
+        if (shortcutType == 'add_transaction') {
+          _addTransactionHandler(user);
+        }
+      });
+    }
   }
 
   @override
