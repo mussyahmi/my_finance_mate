@@ -16,6 +16,7 @@ import '../providers/transactions_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
+import '../extensions/date_time_extensions.dart';
 
 class CumulativeTrendsPage extends StatefulWidget {
   const CumulativeTrendsPage({
@@ -345,7 +346,7 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: Text(
-                                                transaction.getDateText(),
+                                                transaction.dateTime.getDateText(),
                                                 style: const TextStyle(
                                                     fontSize: 14,
                                                     color: Colors.grey),

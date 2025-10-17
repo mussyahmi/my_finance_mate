@@ -71,20 +71,6 @@ class Transaction {
     };
   }
 
-  String getDateText() {
-    DateTime now = DateTime.now();
-
-    if (DateTime(now.year, now.month, now.day, 0, 0) ==
-        DateTime(dateTime.year, dateTime.month, dateTime.day, 0, 0)) {
-      return 'Today';
-    } else if (DateTime(now.year, now.month, now.day - 1, 0, 0) ==
-        DateTime(dateTime.year, dateTime.month, dateTime.day, 0, 0)) {
-      return 'Yesterday';
-    } else {
-      return DateFormat('EEEE, d MMMM yyyy').format(dateTime);
-    }
-  }
-
   void showTransactionDetails(BuildContext context, Cycle cycle,
       {bool showButtons = true}) {
     showModalBottomSheet(

@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:my_finance_mate/extensions/date_time_extensions.dart';
 import 'package:provider/provider.dart';
 
 import '../models/qada_prayer.dart';
@@ -103,7 +103,7 @@ class _QadaPrayerTrackerPageState extends State<QadaPrayerTrackerPage> {
 
                                   // Last updated text
                                   Text(
-                                    "Last updated\n${DateFormat('EE, d MMM yyyy h:mm aa').format(prayer.updatedAt)}",
+                                    "Last updated\n${prayer.updatedAt.getDateText()}",
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 12,

@@ -36,6 +36,7 @@ import 'qada_prayer_tracker_page.dart';
 import 'transaction_form_page.dart';
 import 'transaction_list_page.dart';
 import 'cycle_page.dart';
+import '../extensions/date_time_extensions.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -537,7 +538,8 @@ class _DashboardPageState extends State<DashboardPage>
                                           Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
-                                              transaction.getDateText(),
+                                              transaction.dateTime
+                                                  .getDateText(),
                                               style: const TextStyle(
                                                   fontSize: 14,
                                                   color: Colors.grey),
