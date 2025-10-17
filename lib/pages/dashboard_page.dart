@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/account.dart';
 import '../models/category.dart';
@@ -71,14 +72,24 @@ class _DashboardPageState extends State<DashboardPage>
       // NOTE: This second action icon will only work on Android.
       // In a real world project keep the same file name for both platforms.
       const ShortcutItem(
+        type: 'kwsp_withdrawal_planner',
+        localizedTitle: 'KWSP Withdrawal Planner',
+        icon: 'kwsp_withdrawal_planner_icon',
+      ),
+      const ShortcutItem(
+        type: 'kwsp_growth_calculator',
+        localizedTitle: 'KWSP Growth Calculator',
+        icon: 'kwsp_growth_calculator_icon',
+      ),
+      const ShortcutItem(
         type: 'qada_prayer_tracker',
         localizedTitle: 'Qada Prayer Tracker',
-        icon: 'prayer_icon',
+        icon: 'qada_prayer_tracker_icon',
       ),
       const ShortcutItem(
         type: 'add_transaction',
         localizedTitle: 'Add Transaction',
-        icon: 'add_icon',
+        icon: 'add_transaction_icon',
       ),
     ]);
   }
@@ -218,6 +229,14 @@ class _DashboardPageState extends State<DashboardPage>
     if (!_quickActionsInitialized) {
       _quickActionsInitialized = true;
       quickActions.initialize((String shortcutType) {
+        if (shortcutType == 'kwsp_withdrawal_planner') {
+          launchUrl(
+              Uri.parse('https://my-finance-mate.com/kwsp-growth-calculator'));
+        }
+        if (shortcutType == 'kwsp_growth_calculator') {
+          launchUrl(
+              Uri.parse('https://my-finance-mate.com/kwsp-growth-calculator'));
+        }
         if (shortcutType == 'qada_prayer_tracker') {
           Navigator.push(
             context,
