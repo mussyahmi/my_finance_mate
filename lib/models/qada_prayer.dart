@@ -26,4 +26,16 @@ class QadaPrayer {
       'updated_at': Timestamp.fromDate(updatedAt),
     };
   }
+
+  QadaPrayer copyWith({
+    String? prayerName,
+    int? count,
+    DateTime? updatedAt,
+  }) {
+    return QadaPrayer(
+      prayerName: this.prayerName,
+      count: count ?? this.count,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

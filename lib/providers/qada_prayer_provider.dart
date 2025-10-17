@@ -61,6 +61,14 @@ class QadaPrayerProvider with ChangeNotifier {
     return prayers!;
   }
 
+  QadaPrayer? getPrayerByName(String name) {
+    try {
+      return prayers!.firstWhere((p) => p.prayerName == name);
+    } catch (_) {
+      return null;
+    }
+  }
+
   //* Initialize qada prayers for a new user
   Future<void> initializeQadaPrayers(String userId) async {
     final defaultPrayers = [
@@ -127,7 +135,15 @@ class QadaPrayerProvider with ChangeNotifier {
       'updated_at': now,
     });
 
-    await fetchQadaPrayers(context);
+    final index = prayers?.indexWhere((p) => p.prayerName == prayerName);
+    if (index != null && index != -1) {
+      prayers![index] = prayers![index].copyWith(
+        count: newCount,
+        updatedAt: now,
+      );
+    }
+
+    notifyListeners();
 
     EasyLoading.showSuccess("$prayerName count updated to $newCount");
   }
