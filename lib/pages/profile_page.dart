@@ -881,7 +881,7 @@ class ProfilePageState extends State<ProfilePage> {
           ..progressColor = Colors.blue
           ..maskColor = Colors.green.withAlpha(128)
           ..userInteractions = false
-          ..dismissOnTap = false;
+          ..dismissOnTap = true;
 
         await prefs.setInt('theme_color_index', index);
 

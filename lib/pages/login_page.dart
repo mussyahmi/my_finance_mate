@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
       ..progressColor = Colors.blue
       ..maskColor = Colors.green.withAlpha(128)
       ..userInteractions = false
-      ..dismissOnTap = false;
+      ..dismissOnTap = true;
 
     //* Initialize SizeConfig
     SizeConfig().init(context);
