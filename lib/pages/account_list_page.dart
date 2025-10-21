@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/account.dart';
+import '../models/person.dart';
 import '../providers/accounts_provider.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
@@ -46,6 +47,8 @@ class _AccountListPageState extends State<AccountListPage> {
 
   @override
   Widget build(BuildContext context) {
+    Person user = context.watch<PersonProvider>().user!;
+    
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -97,7 +100,7 @@ class _AccountListPageState extends State<AccountListPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: AccountSummary(account: account),
                         ),
-                        if (!context.read<PersonProvider>().user!.isPremium &&
+                        if (!user.isPremium &&
                             (index == 1 || index == 7 || index == 13))
                           AdContainer(
                             adCacheService: _adCacheService,

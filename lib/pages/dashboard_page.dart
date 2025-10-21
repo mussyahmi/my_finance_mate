@@ -257,25 +257,25 @@ class _DashboardPageState extends State<DashboardPage>
     super.didChangeAppLifecycleState(state);
 
     final Person user = context.read<PersonProvider>().user!;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? pauseCounter = prefs.getInt('pause_counter');
 
-    if (pauseCounter == null) {
-      await prefs.setInt('pause_counter', 0);
-      pauseCounter = 0;
-    }
+    if (!user.isPremium) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? pauseCounter = prefs.getInt('pause_counter');
 
-    if (state == AppLifecycleState.paused) {
-      await prefs.setInt('pause_counter', pauseCounter + 1);
-      print('Paused');
-    } else if (state == AppLifecycleState.resumed && pauseCounter >= 5) {
-      if (!user.isPremium) {
+      if (pauseCounter == null) {
+        await prefs.setInt('pause_counter', 0);
+        pauseCounter = 0;
+      }
+
+      if (state == AppLifecycleState.paused) {
+        pauseCounter++;
+        await prefs.setInt('pause_counter', pauseCounter);
+      } else if (state == AppLifecycleState.resumed && pauseCounter >= 5) {
         _showAppOpenAd(prefs);
       }
-      print('Resumed');
-    }
 
-    print('Pause counter: $pauseCounter');
+      print('Pause counter: $pauseCounter');
+    }
   }
 
   @override
