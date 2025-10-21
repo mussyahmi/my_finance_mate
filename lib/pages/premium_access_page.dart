@@ -35,8 +35,19 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
     _purchaseService.dispose();
     await _purchaseService.initialize(context);
 
+    List<String> productOrder = [
+      '1_day_access',
+      '1_week_access',
+      '1_month_access',
+      '1_year_access',
+      'monthly_access',
+      'yearly_access'
+    ];
+
     setState(() {
-      products = _purchaseService.products;
+      products = _purchaseService.products
+        ..sort((a, b) =>
+            productOrder.indexOf(a.id).compareTo(productOrder.indexOf(b.id)));
     });
   }
 
