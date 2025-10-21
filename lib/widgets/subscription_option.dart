@@ -62,6 +62,8 @@ class SubscriptionOption extends StatelessWidget {
           if (user.isPremium) {
             EasyLoading.showInfo('Your Premium access is still active.');
           } else {
+            EasyLoading.show(status: "Processing purchase...");
+
             final PurchaseParam purchaseParam =
                 PurchaseParam(productDetails: product);
 
