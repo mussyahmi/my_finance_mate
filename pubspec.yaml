@@ -69,6 +69,7 @@ dependencies:
   firebase_crashlytics: ^4.3.6
   showcaseview: ^4.0.1
   quick_actions: ^1.1.0
+  collection: ^1.19.0
 
 dev_dependencies:
   flutter_test:

@@ -262,7 +262,7 @@ class ProfilePageState extends State<ProfilePage> {
                     ),
                     Card(
                       child: ListTile(
-                        title: const Text('My Purchases'),
+                        title: const Text('Purchase History'),
                         trailing: const Icon(Icons.receipt_long),
                         onTap: () async {
                           await Navigator.push(

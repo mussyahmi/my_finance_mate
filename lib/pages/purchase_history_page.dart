@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -53,61 +54,125 @@ class _PurchaseHistoryPageState extends State<PurchaseHistoryPage> {
                   ),
                 ); //* Display a message for no purchases
               } else {
-                final purchases = snapshot.data!;
+                final purchases = snapshot.data!.cast<Purchase>();
 
-                return ListView.builder(
-                  itemCount: purchases.length,
-                  itemBuilder: (context, index) {
-                    Purchase purchase = purchases[index] as Purchase;
+                // Group by month-year
+                final groupedPurchases = groupBy(
+                  purchases,
+                  (Purchase p) =>
+                      DateFormat('MMMM yyyy').format(p.premiumStartDate),
+                );
 
-                    final isActive =
-                        DateTime.now().isBefore(purchase.premiumEndDate);
+                // Calculate totals per month
+                final monthTotals = groupedPurchases.map((month, items) {
+                  final total = items.fold<double>(
+                    0.0,
+                    (sum, p) => sum + (double.parse(p.rawPrice)),
+                  );
+                  return MapEntry(month, total);
+                });
 
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Card(
-                        child: ListTile(
-                          title: Row(
-                            children: [
-                              Text(
-                                  purchase.productId
-                                      .split('_')
-                                      .map((word) => word.capitalize())
-                                      .join(' '),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  )),
-                              const SizedBox(width: 8),
-                              Tag(title: isActive ? "active" : "expired"),
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(DateFormat('EE, d MMM yyyy h:mm aa')
-                                  .format(purchase.premiumStartDate)),
-                              Text(
-                                purchase.platform == 'Android'
-                                    ? 'Google Play'
-                                    : purchase.platform == 'iOS'
-                                        ? 'Apple App Store'
-                                        : purchase.platform.capitalize(),
-                                style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontSize: 12,
-                                ),
+                final entries = groupedPurchases.entries.toList();
+
+                return ListView(
+                  children: entries.asMap().entries.map(
+                    (entryMap) {
+                      final index = entryMap.key;
+                      final entry = entryMap.value;
+                      final monthYear = entry.key;
+                      final monthPurchases = entry.value;
+                      final total = monthTotals[monthYear]!;
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          children: [
+                            // Month header with total
+                            Container(
+                              padding: const EdgeInsets.all(8.0),
+                              margin:
+                                  const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    monthYear,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Total: ${monthPurchases.first.currencySymbol.trim()}${total.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          trailing: Text(
-                            '${purchase.currencySymbol.trim()}${purchase.rawPrice}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                            ),
+
+                            // Purchases in this month
+                            ...monthPurchases.map((purchase) {
+                              final isActive = DateTime.now()
+                                  .isBefore(purchase.premiumEndDate);
+
+                              return Card(
+                                child: ListTile(
+                                  title: Row(
+                                    children: [
+                                      Text(
+                                          purchase.productId
+                                              .split('_')
+                                              .map((word) => word.capitalize())
+                                              .join(' '),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          )),
+                                      const SizedBox(width: 8),
+                                      Tag(
+                                          title:
+                                              isActive ? "active" : "expired"),
+                                    ],
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(DateFormat('EE, d MMM yyyy h:mm aa')
+                                          .format(purchase.premiumStartDate)),
+                                      Text(
+                                        purchase.platform == 'Android'
+                                            ? 'Google Play'
+                                            : purchase.platform == 'iOS'
+                                                ? 'Apple App Store'
+                                                : purchase.platform
+                                                    .capitalize(),
+                                        style: const TextStyle(
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Text(
+                                    '${purchase.currencySymbol.trim()}${purchase.rawPrice}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              );
+                            }),
+
+                            if (index == entries.length - 1)
+                              const SizedBox(height: 40),
+                          ],
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ).toList(),
                 );
               }
             },
