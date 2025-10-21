@@ -1036,9 +1036,11 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
                         try {
                           EasyLoading.show(
-                              status: widget.action == 'Edit'
-                                  ? messageService.getRandomUpdateMessage()
-                                  : messageService.getRandomAddMessage());
+                            dismissOnTap: false,
+                            status: widget.action == 'Edit'
+                                ? messageService.getRandomUpdateMessage()
+                                : messageService.getRandomAddMessage(),
+                          );
 
                           //* Get the values from the form
                           String type = selectedType;

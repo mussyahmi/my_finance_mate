@@ -133,7 +133,10 @@ class _ProfileImageState extends State<ProfileImage> {
 
   Future<void> _checkFileSize(dynamic file, int fileSize) async {
     if (fileSize <= 5 * 1024 * 1024) {
-      EasyLoading.show(status: messageService.getRandomUpdateMessage());
+      EasyLoading.show(
+        dismissOnTap: false,
+        status: messageService.getRandomUpdateMessage(),
+      );
 
       await context.read<PersonProvider>().uploadProfileImage(file);
 

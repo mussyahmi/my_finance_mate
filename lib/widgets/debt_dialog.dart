@@ -179,9 +179,11 @@ class _DebtDialogState extends State<DebtDialog> {
               final MessageService messageService = MessageService();
 
               EasyLoading.show(
-                  status: widget.action == 'Edit'
-                      ? messageService.getRandomUpdateMessage()
-                      : messageService.getRandomAddMessage());
+                dismissOnTap: false,
+                status: widget.action == 'Edit'
+                    ? messageService.getRandomUpdateMessage()
+                    : messageService.getRandomAddMessage(),
+              );
 
               final name = nameController.text;
               final amount = amountController.text;

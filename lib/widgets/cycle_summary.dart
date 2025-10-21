@@ -227,6 +227,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                                 ),
                                 onPressed: () async {
                                   EasyLoading.show(
+                                    dismissOnTap: false,
                                     status: 'Recalculating...',
                                   );
 

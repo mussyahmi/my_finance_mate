@@ -233,7 +233,9 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                         //* Proceed only if the user confirmed
                         if (confirm == true) {
                           EasyLoading.show(
-                              status: 'Activating your free trial...');
+                            dismissOnTap: false,
+                            status: 'Activating your free trial...',
+                          );
 
                           await context
                               .read<PersonProvider>()

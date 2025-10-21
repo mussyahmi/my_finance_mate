@@ -71,7 +71,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
-              EasyLoading.show(status: messageService.getRandomUpdateMessage());
+              EasyLoading.show(
+                dismissOnTap: false,
+                status: messageService.getRandomUpdateMessage(),
+              );
 
               final String currentPassword =
                   _currentPasswordController.text.trim();

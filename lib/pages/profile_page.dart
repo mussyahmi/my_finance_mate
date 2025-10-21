@@ -713,8 +713,9 @@ class ProfilePageState extends State<ProfilePage> {
                           if (confirmDelete == true) {
                             try {
                               EasyLoading.show(
-                                  status:
-                                      messageService.getRandomDeleteMessage());
+                                dismissOnTap: false,
+                                status: messageService.getRandomDeleteMessage(),
+                              );
 
                               await FirebaseFirestore.instance
                                   .collection('users')
@@ -855,7 +856,10 @@ class ProfilePageState extends State<ProfilePage> {
           );
         }
 
-        EasyLoading.show(status: messageService.getRandomUpdateMessage());
+        EasyLoading.show(
+          dismissOnTap: false,
+          status: messageService.getRandomUpdateMessage(),
+        );
 
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(

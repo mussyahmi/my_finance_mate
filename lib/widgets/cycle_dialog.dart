@@ -106,7 +106,10 @@ class _CycleDialogState extends State<CycleDialog> {
             onPressed: () async {
               FocusManager.instance.primaryFocus?.unfocus();
 
-              EasyLoading.show(status: messageService.getRandomUpdateMessage());
+              EasyLoading.show(
+                dismissOnTap: false,
+                status: messageService.getRandomUpdateMessage(),
+              );
 
               if (widget.title == 'Cycle Name') {
                 final cycleName = _cycleNameController.text;

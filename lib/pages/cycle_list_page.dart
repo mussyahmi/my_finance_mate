@@ -258,8 +258,10 @@ class _CycleListPageState extends State<CycleListPage> {
                                               }
 
                                               EasyLoading.show(
-                                                  status:
-                                                      'Switching to the selected cycle...');
+                                                dismissOnTap: false,
+                                                status:
+                                                    'Switching to the selected cycle...',
+                                              );
 
                                               await context
                                                   .read<CycleProvider>()

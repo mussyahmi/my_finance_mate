@@ -34,7 +34,10 @@ class _AccountListPageState extends State<AccountListPage> {
     if (context.read<CycleProvider>().cycle!.isLastCycle &&
         context.read<AccountsProvider>().accounts!.isEmpty &&
         context.read<TransactionsProvider>().transactions!.isNotEmpty) {
-      EasyLoading.show(status: 'Moving your transactions... 🚀');
+      EasyLoading.show(
+        dismissOnTap: false,
+        status: 'Moving your transactions... 🚀',
+      );
 
       await context.read<AccountsProvider>().migrateAccountFeature(context);
 
@@ -48,7 +51,7 @@ class _AccountListPageState extends State<AccountListPage> {
   @override
   Widget build(BuildContext context) {
     Person user = context.watch<PersonProvider>().user!;
-    
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [

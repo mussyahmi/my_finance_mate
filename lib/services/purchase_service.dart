@@ -70,7 +70,10 @@ class PurchaseService {
           _handleInvalidPurchase(purchase);
         }
       } else if (purchase.status == PurchaseStatus.pending) {
-        EasyLoading.show(status: "Processing purchase... Please wait.");
+        EasyLoading.show(
+          dismissOnTap: false,
+          status: "Processing purchase... Please wait.",
+        );
       } else if (purchase.status == PurchaseStatus.error) {
         _handlePurchaseError(purchase.error);
       } else if (purchase.status == PurchaseStatus.canceled) {
@@ -95,7 +98,10 @@ class PurchaseService {
 
     String countryCode = await _iap.countryCode();
 
-    EasyLoading.show(status: "Activating premium access...");
+    EasyLoading.show(
+      dismissOnTap: false,
+      status: "Activating premium access...",
+    );
 
     await _context!.read<PersonProvider>().activatePremium(
           _context!,

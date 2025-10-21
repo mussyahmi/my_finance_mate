@@ -200,9 +200,11 @@ class AccountDialogState extends State<AccountDialog> {
               FocusManager.instance.primaryFocus?.unfocus();
 
               EasyLoading.show(
-                  status: widget.action == 'Edit'
-                      ? messageService.getRandomUpdateMessage()
-                      : messageService.getRandomAddMessage());
+                dismissOnTap: false,
+                status: widget.action == 'Edit'
+                    ? messageService.getRandomUpdateMessage()
+                    : messageService.getRandomAddMessage(),
+              );
 
               final message = _validate(
                   _nameController.text, _openingBalanceController.text);

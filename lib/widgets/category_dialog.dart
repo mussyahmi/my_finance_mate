@@ -411,9 +411,11 @@ class CategoryDialogState extends State<CategoryDialog> {
               final MessageService messageService = MessageService();
 
               EasyLoading.show(
-                  status: widget.action == 'Edit'
-                      ? messageService.getRandomUpdateMessage()
-                      : messageService.getRandomAddMessage());
+                dismissOnTap: false,
+                status: widget.action == 'Edit'
+                    ? messageService.getRandomUpdateMessage()
+                    : messageService.getRandomAddMessage(),
+              );
 
               final categoryName = _categoryNameController.text;
               final categoryBudget = _categoryBudgetController.text;

@@ -286,7 +286,10 @@ class CycleAddPageState extends State<CycleAddPage> {
   }
 
   Future<void> _addCycle() async {
-    EasyLoading.show(status: messageService.getRandomAddMessage());
+    EasyLoading.show(
+      dismissOnTap: false,
+      status: messageService.getRandomAddMessage(),
+    );
 
     //* Validate the form data
     final message = _validate(cycleNameController.text);

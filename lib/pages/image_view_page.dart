@@ -58,7 +58,10 @@ class _ImageViewPageState extends State<ImageViewPage> {
     if (type != 'url') return;
 
     try {
-      EasyLoading.show(status: 'Checking permissions...');
+      EasyLoading.show(
+        dismissOnTap: false,
+        status: 'Checking permissions...',
+      );
 
       bool isAndroid13OrAbove = false;
       if (Platform.isAndroid) {
@@ -80,7 +83,10 @@ class _ImageViewPageState extends State<ImageViewPage> {
         return;
       }
 
-      EasyLoading.show(status: 'Preparing download...');
+      EasyLoading.show(
+        dismissOnTap: false,
+        status: 'Preparing download...',
+      );
 
       final dir = await getExternalStorageDirectory();
       final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpeg";

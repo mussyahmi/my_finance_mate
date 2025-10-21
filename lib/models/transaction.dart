@@ -350,7 +350,9 @@ class Transaction {
                 final MessageService messageService = MessageService();
 
                 EasyLoading.show(
-                    status: messageService.getRandomDeleteMessage());
+                  dismissOnTap: false,
+                  status: messageService.getRandomDeleteMessage(),
+                );
 
                 //* Delete the item from Firestore here
                 final transactionId = id;

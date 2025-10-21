@@ -143,9 +143,11 @@ class WishlistDialogState extends State<WishlistDialog> {
               FocusManager.instance.primaryFocus?.unfocus();
 
               EasyLoading.show(
-                  status: widget.action == 'Edit'
-                      ? messageService.getRandomUpdateMessage()
-                      : messageService.getRandomAddMessage());
+                dismissOnTap: false,
+                status: widget.action == 'Edit'
+                    ? messageService.getRandomUpdateMessage()
+                    : messageService.getRandomAddMessage(),
+              );
 
               final wishlistName = _wishlistNameController.text;
               final wishlistNote = _wishlistNoteController.text;
