@@ -20,6 +20,8 @@ class PurchaseService {
   final Set<String> _productIds = {
     '1_day_access',
     '1_week_access',
+    '1_month_access',
+    '1_year_access',
     'monthly_access',
     'yearly_access'
   };

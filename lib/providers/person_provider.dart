@@ -76,6 +76,12 @@ class PersonProvider extends ChangeNotifier {
       case '1_week_access':
         subscriptionDuration = Duration(days: 7);
         break;
+      case '1_month_access':
+        subscriptionDuration = Duration(days: 30);
+        break;
+      case '1_year_access':
+        subscriptionDuration = Duration(days: 365);
+        break;
       case 'monthly_access':
         if (isEmulator()) {
           subscriptionDuration = Duration(minutes: 5);

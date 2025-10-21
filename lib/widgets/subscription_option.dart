@@ -24,14 +24,20 @@ class SubscriptionOption extends StatelessWidget {
     Person user = context.read<PersonProvider>().user!;
 
     return Card(
-      surfaceTintColor: Colors.orange,
+      surfaceTintColor:
+          (product.id == 'monthly_access' || product.id == 'yearly_access')
+              ? Colors.blue
+              : Colors.orange,
       child: ListTile(
         title: Text(
           _getTitle(),
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.orangeAccent,
+            color: (product.id == 'monthly_access' ||
+                    product.id == 'yearly_access')
+                ? Colors.blueAccent
+                : Colors.orangeAccent,
           ),
         ),
         subtitle: Text(
@@ -46,7 +52,10 @@ class SubscriptionOption extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: Colors.orangeAccent,
+            color: (product.id == 'monthly_access' ||
+                    product.id == 'yearly_access')
+                ? Colors.blueAccent
+                : Colors.orangeAccent,
           ),
         ),
         onTap: () async {
@@ -56,7 +65,10 @@ class SubscriptionOption extends StatelessWidget {
             final PurchaseParam purchaseParam =
                 PurchaseParam(productDetails: product);
 
-            if (product.id == '1_day_access' || product.id == '1_week_access') {
+            if (product.id == '1_day_access' ||
+                product.id == '1_week_access' ||
+                product.id == '1_month_access' ||
+                product.id == '1_year_access') {
               await InAppPurchase.instance
                   .buyConsumable(purchaseParam: purchaseParam);
             } else if (product.id == 'monthly_access' ||
