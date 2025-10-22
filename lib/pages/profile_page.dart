@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/transactions_provider.dart';
 import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
@@ -72,8 +73,6 @@ class ProfilePageState extends State<ProfilePage> {
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
-  bool showNetBalance = false;
-  bool showPinnedWishlist = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
   RewardedAd? _rewardedAd;
@@ -104,9 +103,6 @@ class ProfilePageState extends State<ProfilePage> {
         await SharedPreferences.getInstance();
     AdaptiveThemeMode? adaptiveThemeMode = await AdaptiveTheme.getThemeMode();
     final savedThemeColorIndex = sharedPreferences.getInt('theme_color_index');
-    final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
-    final savedShowPinnedWishlist =
-        sharedPreferences.getBool('show_pinned_wishlist');
     final savedCustomizeThemeColor =
         sharedPreferences.getInt('customize_theme_color');
     final savedSystemUiMode = sharedPreferences.getString('system_ui_mode');
@@ -117,8 +113,6 @@ class ProfilePageState extends State<ProfilePage> {
       themeColor = savedThemeColorIndex != null
           ? _themeColors[savedThemeColorIndex]
           : Colors.teal;
-      showNetBalance = savedShowNetBalance ?? false;
-      showPinnedWishlist = savedShowPinnedWishlist ?? false;
       customizeThemeColor = savedCustomizeThemeColor ?? 0;
       systemUiMode = savedSystemUiMode != null
           ? SystemUiMode.values
@@ -448,17 +442,15 @@ class ProfilePageState extends State<ProfilePage> {
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        trailing: Switch(
-                          value: showNetBalance,
-                          onChanged: (bool value) async {
-                            await prefs.setBool(
-                                'show_net_balance', !showNetBalance);
-
-                            setState(() {
-                              showNetBalance = !showNetBalance;
-                            });
-                          },
-                        ),
+                        trailing: Consumer<SettingsProvider>(
+                            builder: (context, provider, _) {
+                          return Switch(
+                            value: provider.showNetBalance,
+                            onChanged: (value) async {
+                              await provider.toggleShowNetBalance(value);
+                            },
+                          );
+                        }),
                       ),
                     ),
                     Card(
@@ -472,17 +464,15 @@ class ProfilePageState extends State<ProfilePage> {
                             fontStyle: FontStyle.italic,
                           ),
                         ),
-                        trailing: Switch(
-                          value: showPinnedWishlist,
-                          onChanged: (bool value) async {
-                            await prefs.setBool(
-                                'show_pinned_wishlist', !showPinnedWishlist);
-
-                            setState(() {
-                              showPinnedWishlist = !showPinnedWishlist;
-                            });
-                          },
-                        ),
+                        trailing: Consumer<SettingsProvider>(
+                            builder: (context, provider, _) {
+                          return Switch(
+                            value: provider.showPinnedWishlist,
+                            onChanged: (value) async {
+                              provider.toggleShowPinnedWishlist(value);
+                            },
+                          );
+                        }),
                       ),
                     ),
                     Card(

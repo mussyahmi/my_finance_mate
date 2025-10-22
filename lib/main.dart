@@ -20,6 +20,7 @@ import 'providers/cycles_provider.dart';
 import 'providers/debt_provider.dart';
 import 'providers/purchases_provider.dart';
 import 'providers/qada_prayer_provider.dart';
+import 'providers/settings_provider.dart';
 import 'providers/transactions_provider.dart';
 import 'providers/wishlist_provider.dart';
 import 'services/ad_cache_service.dart';
@@ -86,6 +87,9 @@ void main() async {
     providers: [
       Provider.value(value: adMobService),
       Provider.value(value: adCacheService),
+      ChangeNotifierProvider(
+        create: (context) => SettingsProvider(),
+      ),
       ChangeNotifierProvider(
         create: (context) => PersonProvider(),
       ),

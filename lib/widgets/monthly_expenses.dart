@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../providers/settings_provider.dart';
 import '../widgets/tag.dart';
 import '../models/account.dart';
 import '../models/category.dart';
@@ -22,7 +23,6 @@ class MonthlyExpenses extends StatefulWidget {
 class _MonthlyExpensesState extends State<MonthlyExpenses> {
   late SharedPreferences prefs;
   BudgetFilter currentFilter = BudgetFilter.all;
-  bool showNetBalance = false;
 
   @override
   void initState() {
@@ -34,7 +34,6 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
     SharedPreferences? sharedPreferences =
         await SharedPreferences.getInstance();
     final savedFilter = sharedPreferences.getString('forecast_filter');
-    final savedShowNetBalance = sharedPreferences.getBool('show_net_balance');
 
     setState(() {
       prefs = sharedPreferences;
@@ -46,13 +45,13 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
             )
           : BudgetFilter
               .all; //* Set a default filter if 'forecast_filter' is not saved
-      showNetBalance = savedShowNetBalance ?? false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     Cycle? cycle = context.watch<CycleProvider>().cycle;
+    final showNetBalance = context.watch<SettingsProvider>().showNetBalance;
 
     return Column(
       children: [

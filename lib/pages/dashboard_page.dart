@@ -451,7 +451,7 @@ class _DashboardPageState extends State<DashboardPage>
                           const SizedBox(height: 20),
                         ],
                       ),
-                    PinnedWishlist(),
+                    const PinnedWishlist(),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(

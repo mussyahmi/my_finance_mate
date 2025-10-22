@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cycle.dart';
 import '../models/wishlist.dart';
 import '../pages/wishlist_page.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/wishlist_provider.dart';
 
 class PinnedWishlist extends StatefulWidget {
@@ -17,30 +17,13 @@ class PinnedWishlist extends StatefulWidget {
 
 class _PinnedWishlistState extends State<PinnedWishlist>
     with AutomaticKeepAliveClientMixin<PinnedWishlist> {
-  bool showPinnedWishlist = false;
-
-  @override
-  void initState() {
-    super.initState();
-    initAsync();
-  }
-
-  Future<void> initAsync() async {
-    SharedPreferences? sharedPreferences =
-        await SharedPreferences.getInstance();
-    final savedShowPinnedWishlist =
-        sharedPreferences.getBool('show_pinned_wishlist');
-
-    setState(() {
-      showPinnedWishlist = savedShowPinnedWishlist ?? false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
     Cycle? cycle = context.watch<CycleProvider>().cycle;
+    final showPinnedWishlist =
+        context.watch<SettingsProvider>().showPinnedWishlist;
 
     return showPinnedWishlist
         ? Column(
