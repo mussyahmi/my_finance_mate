@@ -50,21 +50,58 @@ class CycleProvider extends ChangeNotifier {
         isLastCycle: true,
       );
 
-      if (cycle!.endDate.isBefore(now)) {
-        //* Last cycle has ended, redirect to add cycle page
-        await Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => CycleAddPage(cycle: cycle)),
-          (route) =>
-              false, //* This line removes all previous routes from the stack
-        );
-      }
-
       notifyListeners();
 
       await context
           .read<CyclesProvider>()
           .fetchCycles(context, refresh: refresh);
+
+      if (cycle!.endDate.isBefore(now) || true) {
+        //* Last cycle has ended, show confirmation dialog before creating a new cycle
+        final bool? confirm = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Create New Cycle'),
+              content: const Text(
+                'Your previous financial cycle has ended.\n\n'
+                'You can still add or edit transactions in the past cycle before starting a new one.\n\n'
+                'Once a new cycle is created, the previous cycle will be locked and no further changes can be made.\n\n'
+                'Do you want to proceed to create a new cycle?',
+              ),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop(true); // confirm
+                  },
+                  child: const Text('Yes, create new cycle'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false); // cancel
+                  },
+                  child: const Text('I want to add some transactions first'),
+                ),
+              ],
+            );
+          },
+        );
+
+        //* Proceed only if user confirms
+        if (confirm == true) {
+          await Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => CycleAddPage(cycle: cycle)),
+            (route) =>
+                false, //* This line removes all previous routes from the stack
+          );
+        }
+      }
     } else {
       //* No cycles found, redirect to add cycle page
       await Navigator.pushAndRemoveUntil(
