@@ -2,15 +2,13 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-// import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../services/purchase_service.dart';
 import '../widgets/premium_feature_tile.dart';
+import '../widgets/premium_status_card.dart';
 import '../widgets/subscription_option.dart';
 
 class PremiumSubscriptionPage extends StatefulWidget {
@@ -88,6 +86,7 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                PremiumStatusCard(user: user),
                 const SizedBox(height: 10),
                 Text(
                   'Upgrade to Premium and unlock additional tools and customizations to elevate your financial management experience:',
@@ -153,111 +152,6 @@ class _PremiumSubscriptionPageState extends State<PremiumSubscriptionPage> {
                                 ))
                             .toList(),
                       ),
-                const SizedBox(height: 30),
-                if (user.isPremium && user.premiumEndDate == null)
-                  Card(
-                    surfaceTintColor: Theme.of(context).colorScheme.primary,
-                    child: ListTile(
-                      title: Text(
-                        'You have Lifetime Premium Access!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Enjoy unlimited access - no expiry!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ),
-                if (user.isPremium &&
-                    user.premiumEndDate != null &&
-                    user.premiumEndDate!.isAfter(DateTime.now()))
-                  Card(
-                    surfaceTintColor: Theme.of(context).colorScheme.primary,
-                    child: ListTile(
-                      title: Text(
-                        'Your Premium access is active until ${DateFormat('EEEE, d MMMM yyyy h:mm aa').format(user.premiumEndDate!)}.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Enjoy the benefits while it lasts!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ),
-                if (!user.isPremium && user.premiumStartDate == null)
-                  Card(
-                    color: Theme.of(context).colorScheme.primary,
-                    child: ListTile(
-                      title: Text(
-                        'Start Free 1 Week Trial',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
-                      onTap: () async {
-                        final bool? confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Confirm Activation'),
-                              content: Text(
-                                  'Are you sure you want to start your free trial?'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop(false);
-                                  },
-                                  child: Text('Later'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.of(context).pop(true);
-                                  },
-                                  child: Text('Activate'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        //* Proceed only if the user confirmed
-                        if (confirm == true) {
-                          EasyLoading.show(
-                            dismissOnTap: false,
-                            status: 'Activating your free trial...',
-                          );
-
-                          await context
-                              .read<PersonProvider>()
-                              .activateFreeTrial();
-
-                          EasyLoading.showSuccess(
-                              "Trial activated! Enjoy your premium access");
-                        }
-                      },
-                    ),
-                  ),
                 // ElevatedButton(
                 //   onPressed: () async {
                 //     await InAppPurchase.instance.restorePurchases();

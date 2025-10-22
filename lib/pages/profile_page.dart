@@ -25,6 +25,7 @@ import '../services/ad_mob_service.dart';
 import '../services/message_services.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/package_info_summary.dart';
+import '../widgets/premium_status_card.dart';
 import '../widgets/profile_image.dart';
 import 'attachment_list_page.dart';
 import 'cumulative_trends_page.dart';
@@ -203,6 +204,7 @@ class ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                     ProfileImage(),
                     const SizedBox(height: 20),
+                    PremiumStatusCard(user: user),
                     card(user, 'User ID'),
                     card(user, 'Display Name'),
                     card(user, 'Email'),
@@ -481,6 +483,10 @@ class ProfilePageState extends State<ProfilePage> {
                         trailing: Switch(
                           value: savedThemeMode == AdaptiveThemeMode.dark,
                           onChanged: (bool value) async {
+                            EasyLoading.show(
+                                status: 'Applying theme...',
+                                dismissOnTap: false);
+
                             if (value) {
                               //* sets theme mode to dark
                               AdaptiveTheme.of(context).setDark();
@@ -489,12 +495,33 @@ class ProfilePageState extends State<ProfilePage> {
                               AdaptiveTheme.of(context).setLight();
                             }
 
-                            AdaptiveThemeMode? result =
+                            final theme = value
+                                ? AdaptiveTheme.of(context).darkTheme
+                                : AdaptiveTheme.of(context).lightTheme;
+
+                            EasyLoading.instance
+                              ..loadingStyle = EasyLoadingStyle.custom
+                              ..backgroundColor = theme.colorScheme.secondary
+                              ..indicatorType = EasyLoadingIndicatorType.ripple
+                              ..indicatorColor = theme.colorScheme.onSecondary
+                              ..textColor = theme.colorScheme.onSecondary
+                              ..progressColor = Colors.blue
+                              ..maskColor = Colors.green.withAlpha(128)
+                              ..userInteractions = false
+                              ..dismissOnTap = true;
+
+                            final AdaptiveThemeMode? result =
                                 await AdaptiveTheme.getThemeMode();
 
                             setState(() {
                               savedThemeMode = result;
                             });
+
+                            EasyLoading.showSuccess(
+                              value
+                                  ? 'Dark mode enabled'
+                                  : 'Light mode enabled',
+                            );
                           },
                         ),
                       ),
@@ -846,10 +873,7 @@ class ProfilePageState extends State<ProfilePage> {
           );
         }
 
-        EasyLoading.show(
-          dismissOnTap: false,
-          status: messageService.getRandomUpdateMessage(),
-        );
+        EasyLoading.show(status: 'Updating theme...', dismissOnTap: false);
 
         AdaptiveTheme.of(context).setTheme(
           light: ThemeData(
@@ -864,14 +888,14 @@ class ProfilePageState extends State<ProfilePage> {
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 250));
+        final newTheme = AdaptiveTheme.of(context).theme;
 
         EasyLoading.instance
           ..loadingStyle = EasyLoadingStyle.custom
-          ..backgroundColor = Theme.of(context).colorScheme.secondary
+          ..backgroundColor = newTheme.colorScheme.secondary
           ..indicatorType = EasyLoadingIndicatorType.ripple
-          ..indicatorColor = Theme.of(context).colorScheme.onSecondary
-          ..textColor = Theme.of(context).colorScheme.onSecondary
+          ..indicatorColor = newTheme.colorScheme.onSecondary
+          ..textColor = newTheme.colorScheme.onSecondary
           ..progressColor = Colors.blue
           ..maskColor = Colors.green.withAlpha(128)
           ..userInteractions = false
@@ -890,7 +914,7 @@ class ProfilePageState extends State<ProfilePage> {
           customizeThemeColor = customizeThemeColor;
         });
 
-        EasyLoading.showInfo('Your theme color have been changed.');
+        EasyLoading.showSuccess('Theme color changed');
       },
       child: Container(
         width: themeColor.withValues() == color.withValues() ? 26 : 20,
