@@ -56,7 +56,7 @@ class CycleProvider extends ChangeNotifier {
           .read<CyclesProvider>()
           .fetchCycles(context, refresh: refresh);
 
-      if (cycle!.endDate.isBefore(now) || true) {
+      if (cycle!.endDate.isBefore(now)) {
         //* Last cycle has ended, show confirmation dialog before creating a new cycle
         final bool? confirm = await showDialog<bool>(
           context: context,
