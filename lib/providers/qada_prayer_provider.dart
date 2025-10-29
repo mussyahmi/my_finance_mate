@@ -118,7 +118,7 @@ class QadaPrayerProvider with ChangeNotifier {
 
   Future<void> updatePrayerCount(
       BuildContext context, String prayerName, int newCount) async {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.lightImpact();
 
     final Person user = context.read<PersonProvider>().user!;
 
@@ -149,8 +149,6 @@ class QadaPrayerProvider with ChangeNotifier {
   }
 
   Future<void> updateDailyTarget(BuildContext context, int newTarget) async {
-    HapticFeedback.mediumImpact();
-
     final Person user = context.read<PersonProvider>().user!;
 
     //* Get current timestamp

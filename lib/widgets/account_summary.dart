@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,6 +103,7 @@ class _AccountSummaryState extends State<AccountSummary> {
               child: IconButton(
                 iconSize: 20,
                 onPressed: () async {
+                  HapticFeedback.lightImpact();
                   await prefs.setBool(
                       'is_account_summary_visible_${widget.account.name}',
                       !_isAmountVisible);

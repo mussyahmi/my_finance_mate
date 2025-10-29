@@ -2,6 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -265,6 +266,7 @@ class _CycleSummaryState extends State<CycleSummary> {
                 child: IconButton(
                   iconSize: 20,
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     await prefs.setBool(
                         'is_cycle_summary_visible', !_isAmountVisible);
 

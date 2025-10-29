@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:number_pad_keyboard/number_pad_keyboard.dart';
 
 import '../size_config.dart';
@@ -29,6 +30,8 @@ class _AmountInputPageState extends State<AmountInputPage> {
   }
 
   void _addDigit(int digit) {
+    HapticFeedback.lightImpact();
+
     setState(() {
       //* Get the current text, replacing anything that isn't a number or a decimal point.
       String currentText = _amount.replaceAll(RegExp(r'[^0-9]'), '');
@@ -44,6 +47,8 @@ class _AmountInputPageState extends State<AmountInputPage> {
   }
 
   void _backspace() {
+    HapticFeedback.lightImpact();
+
     setState(() {
       //* Get the current text, replacing anything that isn't a number or a decimal point.
       String currentText = _amount.replaceAll(RegExp(r'[^0-9]'), '');
@@ -89,6 +94,7 @@ class _AmountInputPageState extends State<AmountInputPage> {
               backspace: _backspace,
               enterButtonText: 'DONE',
               onEnter: () {
+                HapticFeedback.mediumImpact();
                 Navigator.of(context).pop(_amount);
               },
               backgroundColor: Theme.of(context).colorScheme.primary,
