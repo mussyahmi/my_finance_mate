@@ -40,7 +40,12 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
             actions: [
               IconButton(
                 icon: Icon(Icons.checklist_rtl),
-                onPressed: () {},
+                onPressed: () {
+                  EasyLoading.showInfo(
+                    'This feature is coming soon. Please check back later.',
+                    duration: const Duration(seconds: 2),
+                  );
+                },
               ),
             ],
           ),
