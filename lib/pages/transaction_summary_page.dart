@@ -32,10 +32,12 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
   double wantsTotal = 0;
   double savingsTotal = 0;
   double othersTotal = 0;
+  double balanceTotal = 0;
   double needsPercentage = 0;
   double wantsPercentage = 0;
   double savingsPercentage = 0;
   double othersPercentage = 0;
+  double balancePercentage = 0;
   bool _isLoading = false;
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
@@ -61,7 +63,8 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
       _savedThemeMode = adaptiveThemeMode;
     });
 
-    double spentTotal = double.parse(cycle.amountSpent);
+    double totalFunds =
+        double.parse(cycle.openingBalance) + double.parse(cycle.amountReceived);
     double needs = 0;
     double wants = 0;
     double savings = 0;
@@ -85,14 +88,16 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
 
     setState(() {
       totalTransaction = transactions.length;
-      needsPercentage = needs / spentTotal * 100;
-      wantsPercentage = wants / spentTotal * 100;
-      savingsPercentage = savings / spentTotal * 100;
-      othersPercentage = others / spentTotal * 100;
+      needsPercentage = needs / totalFunds * 100;
+      wantsPercentage = wants / totalFunds * 100;
+      savingsPercentage = savings / totalFunds * 100;
+      othersPercentage = others / totalFunds * 100;
+      balancePercentage = double.parse(cycle.amountBalance) / totalFunds * 100;
       needsTotal = needs;
       wantsTotal = wants;
       savingsTotal = savings;
       othersTotal = others;
+      balanceTotal = double.parse(cycle.amountBalance);
       _isLoading = false;
     });
   }
@@ -186,8 +191,8 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                                 sections: [
                                   _pieChartSectionData(
                                     _savedThemeMode == AdaptiveThemeMode.dark
-                                        ? Colors.green[900]!
-                                        : Colors.green[600]!,
+                                        ? Colors.orange[900]!
+                                        : Colors.orange[600]!,
                                     needsPercentage,
                                     'Needs',
                                   ),
@@ -200,17 +205,24 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                                   ),
                                   _pieChartSectionData(
                                     _savedThemeMode == AdaptiveThemeMode.dark
-                                        ? Colors.yellow[900]!
-                                        : Colors.yellow[600]!,
+                                        ? Colors.green[900]!
+                                        : Colors.green[600]!,
                                     savingsPercentage,
                                     'Savings',
                                   ),
                                   _pieChartSectionData(
                                     _savedThemeMode == AdaptiveThemeMode.dark
-                                        ? Colors.blueGrey[900]!
-                                        : Colors.blueGrey[600]!,
+                                        ? Colors.blueGrey[800]!
+                                        : Colors.grey[500]!,
                                     othersPercentage,
                                     'Others',
+                                  ),
+                                  _pieChartSectionData(
+                                    _savedThemeMode == AdaptiveThemeMode.dark
+                                        ? Colors.tealAccent[700]!
+                                        : Colors.teal[600]!,
+                                    balancePercentage,
+                                    'Balance',
                                   ),
                                 ],
                                 sectionsSpace: 3,
@@ -237,6 +249,7 @@ class _TransactionSummaryPageState extends State<TransactionSummaryPage> {
                 _card('savings', savingsPercentage, savingsTotal),
                 if (othersTotal > 0)
                   _card('others', othersPercentage, othersTotal),
+                _card('balance', balancePercentage, balanceTotal),
                 const SizedBox(height: 20),
               ],
             ),

@@ -67,24 +67,24 @@ class _TagState extends State<Tag> {
     switch (title) {
       case 'needs':
         return _savedThemeMode == AdaptiveThemeMode.dark
-            ? Colors.green[900]!
-            : Colors.green[600]!;
+            ? Colors.orange[900]!
+            : Colors.orange[600]!;
       case 'wants':
         return _savedThemeMode == AdaptiveThemeMode.dark
             ? Colors.blue[900]!
             : Colors.blue[600]!;
       case 'savings':
         return _savedThemeMode == AdaptiveThemeMode.dark
-            ? Colors.yellow[900]!
-            : Colors.yellow[600]!;
+            ? Colors.green[900]!
+            : Colors.green[600]!;
       case 'active':
         return Colors.green[100]!;
       case 'expired':
         return Colors.red[100]!;
       default:
         return _savedThemeMode == AdaptiveThemeMode.dark
-            ? Colors.blueGrey[900]!
-            : Colors.blueGrey[600]!;
+            ? Colors.blueGrey[800]!
+            : Colors.grey[500]!;
     }
   }
 
