@@ -34,9 +34,14 @@ class DebtProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Debt>> getDebts(BuildContext context) async {
+  Future<List<Debt>> getUnsettledDebts(BuildContext context) async {
     if (debts == null) return [];
-    return debts!;
+    return debts!.where((debt) => !debt.isSettled).toList();
+  }
+
+  Future<List<Debt>> getSettledDebts(BuildContext context) async {
+    if (debts == null) return [];
+    return debts!.where((debt) => debt.isSettled).toList();
   }
 
   Future<void> updateDebt(BuildContext context, String action,
@@ -81,7 +86,7 @@ class DebtProvider with ChangeNotifier {
     await fetchDebts(context);
   }
 
-  Future<void> deleteDebt(BuildContext context, String debtId) async {
+  Future<void> toggleSettleDebt(BuildContext context, Debt debt) async {
     final Person user = context.read<PersonProvider>().user!;
 
     //* Get current timestamp
@@ -91,7 +96,26 @@ class DebtProvider with ChangeNotifier {
         .collection('users')
         .doc(user.uid)
         .collection('debts')
-        .doc(debtId)
+        .doc(debt.id)
+        .update({
+      'isSettled': !debt.isSettled,
+      'updated_at': now,
+    });
+
+    await fetchDebts(context);
+  }
+
+  Future<void> deleteDebt(BuildContext context, Debt debt) async {
+    final Person user = context.read<PersonProvider>().user!;
+
+    //* Get current timestamp
+    final now = DateTime.now();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('debts')
+        .doc(debt.id)
         .update({
       'updated_at': now,
       'deleted_at': now,

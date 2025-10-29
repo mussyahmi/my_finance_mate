@@ -31,17 +31,23 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
       ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          const SliverAppBar(
+          SliverAppBar(
             title: Text('Debt Tracker'),
             centerTitle: true,
             scrolledUnderElevation: 9999,
             floating: true,
             snap: true,
+            actions: [
+              IconButton(
+                icon: Icon(Icons.checklist_rtl),
+                onPressed: () {},
+              ),
+            ],
           ),
         ],
         body: Center(
           child: FutureBuilder(
-            future: context.watch<DebtProvider>().getDebts(context),
+            future: context.watch<DebtProvider>().getUnsettledDebts(context),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -125,55 +131,119 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
                                           ),
                                         ],
                                       ),
-                                      trailing: IconButton(
-                                        icon: const Icon(
-                                            CupertinoIcons.check_mark_circled),
-                                        tooltip: "Mark as settled",
-                                        onPressed: () async {
-                                          final confirm =
-                                              await showDialog<bool>(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: const Text("Confirm"),
-                                              content: const Text(
-                                                  "Are you sure you want to mark this debt as settled?"),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(false),
-                                                  child: const Text("Cancel"),
-                                                ),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
-                                                    foregroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .onPrimary,
-                                                  ),
-                                                  onPressed: () =>
-                                                      Navigator.of(context)
-                                                          .pop(true),
-                                                  child: const Text("Yes"),
-                                                ),
-                                              ],
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              CupertinoIcons.check_mark_circled,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                             ),
-                                          );
+                                            onPressed: () async {
+                                              final confirm =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (context) =>
+                                                    AlertDialog(
+                                                  title: const Text("Confirm"),
+                                                  content: const Text(
+                                                      "Are you sure you want to mark this debt as settled?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(false),
+                                                      child:
+                                                          const Text("Cancel"),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .primary,
+                                                        foregroundColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .onPrimary,
+                                                      ),
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(true),
+                                                      child: const Text("Yes"),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
 
-                                          if (confirm == true) {
-                                            await context
-                                                .read<DebtProvider>()
-                                                .deleteDebt(context, debt.id);
+                                              if (confirm == true) {
+                                                await context
+                                                    .read<DebtProvider>()
+                                                    .toggleSettleDebt(
+                                                        context, debt);
 
-                                            EasyLoading.showSuccess(
-                                                "Debt marked as settled");
-                                          }
-                                        },
+                                                EasyLoading.showSuccess(
+                                                    "Debt marked as settled");
+                                              }
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              CupertinoIcons.delete_solid,
+                                              color: Colors.red,
+                                            ),
+                                            onPressed: () async {
+                                              final confirm =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (context) =>
+                                                    AlertDialog(
+                                                  title: const Text("Confirm"),
+                                                  content: const Text(
+                                                      "Are you sure you want to delete this debt?"),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(false),
+                                                      child:
+                                                          const Text("Cancel"),
+                                                    ),
+                                                    ElevatedButton(
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .primary,
+                                                        foregroundColor:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .onPrimary,
+                                                      ),
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(true),
+                                                      child: const Text("Yes"),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+                                                await context
+                                                    .read<DebtProvider>()
+                                                    .deleteDebt(context, debt);
+
+                                                EasyLoading.showSuccess(
+                                                    "Debt deleted");
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
                                       onTap: () async {
                                         await Debt.showDebtDialog(

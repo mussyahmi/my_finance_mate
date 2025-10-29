@@ -11,6 +11,7 @@ class Debt {
   final String amount;
   final DebtType type;
   final String note;
+  final bool isSettled;
   final DateTime createdAt;
 
   Debt({
@@ -19,6 +20,7 @@ class Debt {
     required this.amount,
     required this.type,
     required this.note,
+    required this.isSettled,
     required this.createdAt,
   });
 
@@ -29,6 +31,7 @@ class Debt {
       amount: data['amount'],
       type: data['type'] == 'iOwe' ? DebtType.iOwe : DebtType.theyOweMe,
       note: data['note'],
+      isSettled: data['isSettled'] ?? false,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
@@ -38,7 +41,9 @@ class Debt {
       'personName': personName,
       'amount': amount,
       'type': type == DebtType.iOwe ? 'iOwe' : 'theyOweMe',
+      'isSettled': isSettled,
       'note': note,
+      'createdAt': createdAt,
     };
   }
 
