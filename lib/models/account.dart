@@ -242,9 +242,6 @@ class Account {
                       .read<AccountsProvider>()
                       .deleteAccount(context, this);
 
-                  EasyLoading.showSuccess(
-                      messageService.getRandomDoneDeleteMessage());
-
                   Navigator.of(context).pop(true);
                 },
                 child: const Text('Delete'),

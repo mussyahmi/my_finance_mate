@@ -18,6 +18,7 @@ import '../services/ad_cache_service.dart';
 import '../services/ad_mob_service.dart';
 import '../widgets/ad_container.dart';
 import '../widgets/cycle_summary.dart';
+import 'cycle_add_page.dart';
 import 'cycle_list_page.dart';
 import 'premium_access_page.dart';
 
@@ -172,6 +173,33 @@ class _CyclePageState extends State<CyclePage> {
                     card('Cycle Name'),
                     card('Start Date'),
                     card('End Date'),
+                    if (cycle.endDate.isBefore(DateTime.now()))
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 10.0, left: 20.0, right: 20.0),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CycleAddPage(cycle: cycle)),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              child: const Text("Start New Cycle"),
+                            ),
+                          ),
+                        ],
+                      ),
                     const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),

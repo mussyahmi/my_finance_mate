@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
@@ -9,6 +10,7 @@ import '../models/account.dart';
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
+import '../services/message_services.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
 import 'person_provider.dart';
@@ -126,6 +128,12 @@ class AccountsProvider extends ChangeNotifier {
       //* Update cycle's data
       await context.read<CycleProvider>().updateCycleFromAccount(
           context, action, openingBalance, now, account);
+
+      final MessageService messageService = MessageService();
+
+      EasyLoading.showSuccess(action == 'Edit'
+          ? messageService.getRandomDoneUpdateMessage()
+          : messageService.getRandomDoneAddMessage());
 
       await context.read<CycleProvider>().fetchCycle(context);
       await fetchAccounts(context, cycle);
@@ -353,6 +361,10 @@ class AccountsProvider extends ChangeNotifier {
     //* Update cycle's data
     await context.read<CycleProvider>().updateCycleFromAccount(
         context, 'Delete', account.openingBalance, now, account);
+
+    final MessageService messageService = MessageService();
+
+    EasyLoading.showSuccess(messageService.getRandomDoneDeleteMessage());
 
     await context.read<CycleProvider>().fetchCycle(context);
 

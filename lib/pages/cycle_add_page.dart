@@ -79,183 +79,155 @@ class CycleAddPageState extends State<CycleAddPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Exit Confirmation'),
-              content: const Text('Are you sure you want to exit the app?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  onPressed: () => SystemNavigator.pop(),
-                  child: const Text('Exit'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      child: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false, //* Hide the back icon button
-            title: const Text('Create New Cycle'),
-            centerTitle: true,
-          ),
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ElevatedButton(
-                          onPressed: null,
-                          child: Text(
-                            'Start Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_startDate ?? DateTime.now())}',
-                          ),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false, //* Hide the back icon button
+          title: const Text('Create New Cycle'),
+          centerTitle: true,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton(
+                        onPressed: null,
+                        child: Text(
+                          'Start Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_startDate ?? DateTime.now())}',
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            await _showEndDateRecommendationDialog(context);
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await _showEndDateRecommendationDialog(context);
 
-                            final selectedDate = await showDatePicker(
+                          final selectedDate = await showDatePicker(
+                            context: context,
+                            initialDate: _endDate ?? DateTime.now(),
+                            firstDate: _startDate ?? DateTime.now(),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
+                          );
+
+                          if (selectedDate != null) {
+                            setState(() {
+                              _endDate = selectedDate
+                                  .add(const Duration(days: 1))
+                                  .subtract(const Duration(minutes: 1));
+                            });
+                          }
+                        },
+                        child: Text(
+                          'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Focus(
+                        onFocusChange: (hasFocus) {
+                          if (hasFocus && !_isAcknowledged) {
+                            showDialog(
                               context: context,
-                              initialDate: _endDate ?? DateTime.now(),
-                              firstDate: _startDate ?? DateTime.now(),
-                              lastDate:
-                                  DateTime.now().add(const Duration(days: 365)),
-                            );
-
-                            if (selectedDate != null) {
-                              setState(() {
-                                _endDate = selectedDate
-                                    .add(const Duration(days: 1))
-                                    .subtract(const Duration(minutes: 1));
-                              });
-                            }
-                          },
-                          child: Text(
-                            'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Focus(
-                          onFocusChange: (hasFocus) {
-                            if (hasFocus && !_isAcknowledged) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Cycle Name Info'),
-                                  content: const Text(
-                                    'Enter a descriptive name for your cycle. Mentioning your salary (e.g., "Nov 2024 Salary") helps you track your finances more clearly and relate each cycle to your income period.',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _isAcknowledged = true;
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
+                              builder: (context) => AlertDialog(
+                                title: const Text('Cycle Name Info'),
+                                content: const Text(
+                                  'Enter a descriptive name for your cycle. Mentioning your salary (e.g., "Nov 2024 Salary") helps you track your finances more clearly and relate each cycle to your income period.',
                                 ),
-                              );
-                            }
-                          },
-                          child: TextField(
-                            controller: cycleNameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Name',
-                              helperText: 'Example: Nov 2024 Salary',
-                              helperStyle: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                                fontStyle: FontStyle.italic,
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isAcknowledged = true;
+                                      });
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('OK'),
+                                  ),
+                                ],
                               ),
+                            );
+                          }
+                        },
+                        child: TextField(
+                          controller: cycleNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                            helperText: 'Example: Nov 2024 Salary',
+                            helperStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: openingBalanceController,
-                          keyboardType:
-                              TextInputType.number, //* Allow only numeric input
-                          decoration: InputDecoration(
-                            labelText:
-                                '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
-                            prefixText: 'RM',
-                          ),
-                          enabled: false,
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: openingBalanceController,
+                        keyboardType:
+                            TextInputType.number, //* Allow only numeric input
+                        decoration: InputDecoration(
+                          labelText:
+                              '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
+                          prefixText: 'RM',
                         ),
-                        const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () async {
-                            FocusManager.instance.primaryFocus?.unfocus();
+                        enabled: false,
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed: () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
 
-                            if (_isLoading) return;
+                          if (_isLoading) return;
 
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          try {
+                            await _addCycle();
+                          } finally {
                             setState(() {
-                              _isLoading = true;
+                              _isLoading = false;
                             });
-
-                            try {
-                              await _addCycle();
-                            } finally {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor:
-                                Theme.of(context).colorScheme.onPrimary,
-                          ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    strokeWidth: 2.0,
-                                  ),
-                                )
-                              : const Text('Submit'),
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
                         ),
-                      ],
-                    ),
+                        child: _isLoading
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : const Text('Submit'),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              if (!context.read<PersonProvider>().user!.isPremium)
-                AdContainer(
-                  adCacheService: _adCacheService,
-                  number: 1,
-                  adSize: AdSize.banner,
-                  adUnitId: _adMobService.bannerCycleAddAdUnitId!,
-                  height: 50.0,
-                ),
-            ],
-          ),
+            ),
+            if (!context.read<PersonProvider>().user!.isPremium)
+              AdContainer(
+                adCacheService: _adCacheService,
+                number: 1,
+                adSize: AdSize.banner,
+                adUnitId: _adMobService.bannerCycleAddAdUnitId!,
+                height: 50.0,
+              ),
+          ],
         ),
       ),
     );

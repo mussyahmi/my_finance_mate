@@ -63,12 +63,12 @@ class CycleProvider extends ChangeNotifier {
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Create New Cycle'),
+              title: const Text('Start New Cycle'),
               content: const Text(
-                'Your previous financial cycle has ended.\n\n'
-                'You can still add or edit transactions in the past cycle before starting a new one.\n\n'
-                'Once a new cycle is created, the previous cycle will be locked and no further changes can be made.\n\n'
-                'Do you want to proceed to create a new cycle?',
+                'Your last cycle has ended.\n\n'
+                'You can still add or edit transactions before starting a new one.\n\n'
+                'After a new cycle starts, the old one will be locked and view-only.\n\n'
+                'Start a new cycle now, or do it later from the Cycle page.',
               ),
               actions: [
                 ElevatedButton(
@@ -79,13 +79,13 @@ class CycleProvider extends ChangeNotifier {
                   onPressed: () {
                     Navigator.of(context).pop(true); // confirm
                   },
-                  child: const Text('Yes, create new cycle'),
+                  child: const Text('Start new cycle'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(false); // cancel
                   },
-                  child: const Text('I want to add some transactions first'),
+                  child: const Text('I still have things to do'),
                 ),
               ],
             );
@@ -94,11 +94,9 @@ class CycleProvider extends ChangeNotifier {
 
         //* Proceed only if user confirms
         if (confirm == true) {
-          await Navigator.pushAndRemoveUntil(
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CycleAddPage(cycle: cycle)),
-            (route) =>
-                false, //* This line removes all previous routes from the stack
           );
         }
       }

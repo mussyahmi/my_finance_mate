@@ -1104,10 +1104,6 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 widget.transaction,
                               );
 
-                          EasyLoading.showSuccess(widget.action == 'Edit'
-                              ? messageService.getRandomDoneUpdateMessage()
-                              : messageService.getRandomDoneAddMessage());
-
                           Navigator.of(context).pop(true);
                         } finally {
                           setState(() {

@@ -364,9 +364,6 @@ class Transaction {
                     .read<TransactionsProvider>()
                     .deleteTransaction(context, transactionId);
 
-                EasyLoading.showSuccess(
-                    messageService.getRandomDoneDeleteMessage());
-
                 Navigator.of(context).pop(true);
               },
               child: const Text('Delete'),

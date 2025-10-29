@@ -225,10 +225,6 @@ class AccountDialogState extends State<AccountDialog> {
                     account: widget.account,
                   );
 
-              EasyLoading.showSuccess(widget.action == 'Edit'
-                  ? messageService.getRandomDoneUpdateMessage()
-                  : messageService.getRandomDoneAddMessage());
-
               Navigator.of(context).pop(true);
             },
             child: Text(widget.action == 'Edit' ? 'Save' : widget.action),
