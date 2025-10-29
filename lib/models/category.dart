@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../pages/transaction_form_page.dart';
 import '../pages/transaction_list_page.dart';
 import '../providers/categories_provider.dart';
 import '../providers/transactions_provider.dart';
@@ -71,36 +72,69 @@ class Category {
               Row(
                 children: [
                   if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await _deleteHandler(context);
+                    Row(
+                      children: [
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final result = await _deleteHandler(context);
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: const Icon(
-                        CupertinoIcons.delete_solid,
-                        color: Colors.red,
-                      ),
-                    ),
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await showCategoryDialog(
-                          context,
-                          'Edit',
-                          category: this,
-                        );
+                            if (result) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: const Icon(
+                            CupertinoIcons.delete_solid,
+                            color: Colors.red,
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final result = await showCategoryDialog(
+                              context,
+                              'Edit',
+                              category: this,
+                            );
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: Icon(
-                        CupertinoIcons.pencil,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                            if (result) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: Icon(
+                            CupertinoIcons.pencil,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final bool? result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ShowCaseWidget(
+                                  builder: (showcaseContext) =>
+                                      TransactionFormPage(
+                                    action: 'Add',
+                                    selectedCategoryId: id,
+                                    isTourMode: false,
+                                    showcaseContext: context,
+                                  ),
+                                ),
+                              ),
+                            );
+
+                            if (result == null) {
+                              return;
+                            }
+
+                            if (result) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: Icon(
+                            Icons.format_list_bulleted_add,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   IconButton.filledTonal(
                     onPressed: () async {
@@ -113,7 +147,7 @@ class Category {
                       );
                     },
                     icon: const Icon(
-                      CupertinoIcons.list_bullet,
+                      Icons.format_list_bulleted,
                     ),
                   ),
                 ],

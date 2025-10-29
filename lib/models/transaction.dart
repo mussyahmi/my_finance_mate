@@ -89,50 +89,53 @@ class Transaction {
                 Row(
                   children: [
                     if (cycle.isLastCycle)
-                      IconButton.filledTonal(
-                        onPressed: () async {
-                          final result = await _deleteHandler(context);
+                      Row(
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final result = await _deleteHandler(context);
 
-                          if (result) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        icon: const Icon(
-                          CupertinoIcons.delete_solid,
-                          color: Colors.red,
-                        ),
-                      ),
-                    if (cycle.isLastCycle)
-                      IconButton.filledTonal(
-                        onPressed: () async {
-                          //* Edit action
-                          final bool? result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ShowCaseWidget(
-                                builder: (showcaseContext) =>
-                                    TransactionFormPage(
-                                  action: 'Edit',
-                                  transaction: this,
-                                  isTourMode: false,
-                                  showcaseContext: showcaseContext,
-                                ),
-                              ),
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: const Icon(
+                              CupertinoIcons.delete_solid,
+                              color: Colors.red,
                             ),
-                          );
+                          ),
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              //* Edit action
+                              final bool? result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ShowCaseWidget(
+                                    builder: (showcaseContext) =>
+                                        TransactionFormPage(
+                                      action: 'Edit',
+                                      transaction: this,
+                                      isTourMode: false,
+                                      showcaseContext: showcaseContext,
+                                    ),
+                                  ),
+                                ),
+                              );
 
-                          if (result == null) {
-                            return;
-                          }
+                              if (result == null) {
+                                return;
+                              }
 
-                          if (result) {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        icon: Icon(
-                          CupertinoIcons.pencil,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: Icon(
+                              CupertinoIcons.pencil,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 )

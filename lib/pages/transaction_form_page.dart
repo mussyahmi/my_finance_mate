@@ -38,6 +38,7 @@ import 'premium_access_page.dart';
 
 class TransactionFormPage extends StatefulWidget {
   final String action;
+  final String? selectedCategoryId;
   final t.Transaction? transaction;
   final bool? isTourMode;
   final BuildContext showcaseContext;
@@ -45,6 +46,7 @@ class TransactionFormPage extends StatefulWidget {
   const TransactionFormPage({
     super.key,
     required this.action,
+    this.selectedCategoryId,
     this.transaction,
     required this.isTourMode,
     required this.showcaseContext,
@@ -102,6 +104,10 @@ class TransactionFormPageState extends State<TransactionFormPage> {
 
   Future<void> initAsync() async {
     await _fetchCategories();
+
+    if (widget.selectedCategoryId != null) {
+      selectedCategoryId = widget.selectedCategoryId;
+    }
 
     if (widget.transaction != null) {
       selectedType = widget.transaction!.type;

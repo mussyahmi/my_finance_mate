@@ -53,37 +53,40 @@ class Account {
               Row(
                 children: [
                   if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await _deleteHandler(context);
+                    Row(
+                      children: [
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final result = await _deleteHandler(context);
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: const Icon(
-                        CupertinoIcons.delete_solid,
-                        color: Colors.red,
-                      ),
-                    ),
-                  if (cycle.isLastCycle)
-                    IconButton.filledTonal(
-                      onPressed: () async {
-                        final result = await showAccountDialog(
-                          context,
-                          cycle,
-                          'Edit',
-                          account: this,
-                        );
+                            if (result) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: const Icon(
+                            CupertinoIcons.delete_solid,
+                            color: Colors.red,
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final result = await showAccountDialog(
+                              context,
+                              cycle,
+                              'Edit',
+                              account: this,
+                            );
 
-                        if (result) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      icon: Icon(
-                        CupertinoIcons.pencil,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                            if (result) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          icon: Icon(
+                            CupertinoIcons.pencil,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   IconButton.filledTonal(
                     onPressed: () async {
@@ -96,7 +99,7 @@ class Account {
                       );
                     },
                     icon: const Icon(
-                      CupertinoIcons.list_bullet,
+                      Icons.format_list_bulleted,
                     ),
                   ),
                 ],
