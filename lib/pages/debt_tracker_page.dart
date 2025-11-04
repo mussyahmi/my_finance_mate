@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../models/debt.dart';
 import '../providers/debt_provider.dart';
 import '../widgets/debt_summary.dart';
+import 'debt_history_page.dart';
 
 class DebtTrackerPage extends StatefulWidget {
   const DebtTrackerPage({super.key});
@@ -39,11 +40,13 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
             snap: true,
             actions: [
               IconButton(
-                icon: Icon(Icons.checklist_rtl),
+                icon: const Icon(Icons.checklist_rtl),
+                tooltip: 'View Settled Debts',
                 onPressed: () {
-                  EasyLoading.showInfo(
-                    'This feature is coming soon. Please check back later.',
-                    duration: const Duration(seconds: 2),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const DebtHistoryPage()),
                   );
                 },
               ),
@@ -208,7 +211,7 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
                                                     AlertDialog(
                                                   title: const Text("Confirm"),
                                                   content: const Text(
-                                                      "Are you sure you want to delete this debt?"),
+                                                      "Are you sure you want to permanently delete this debt?"),
                                                   actions: [
                                                     TextButton(
                                                       onPressed: () =>
