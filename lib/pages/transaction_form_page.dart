@@ -389,7 +389,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                         ),
                         popupProps: PopupProps.menu(
                           showSearchBox: true,
-                          searchDelay: const Duration(milliseconds: 500),
+                          searchDelay: const Duration(seconds: 0),
                           menuProps: MenuProps(surfaceTintColor: Colors.grey),
                           searchFieldProps: TextFieldProps(
                             decoration: InputDecoration(
@@ -478,7 +478,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               ),
                               popupProps: PopupProps.menu(
                                 showSearchBox: true,
-                                searchDelay: const Duration(milliseconds: 500),
+                                searchDelay: const Duration(seconds: 0),
                                 menuProps:
                                     MenuProps(surfaceTintColor: Colors.grey),
                                 searchFieldProps: TextFieldProps(
@@ -558,7 +558,7 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                             ),
                             popupProps: PopupProps.menu(
                               showSearchBox: true,
-                              searchDelay: const Duration(milliseconds: 500),
+                              searchDelay: const Duration(seconds: 0),
                               menuProps:
                                   MenuProps(surfaceTintColor: Colors.grey),
                               searchFieldProps: TextFieldProps(

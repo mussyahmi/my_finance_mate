@@ -232,7 +232,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             ),
                             popupProps: PopupProps.menu(
                               showSearchBox: true,
-                              searchDelay: const Duration(milliseconds: 500),
+                              searchDelay: const Duration(seconds: 0),
                               menuProps:
                                   MenuProps(surfaceTintColor: Colors.grey),
                               itemBuilder:
@@ -280,7 +280,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               ),
                               popupProps: PopupProps.menu(
                                 showSearchBox: true,
-                                searchDelay: const Duration(milliseconds: 500),
+                                searchDelay: const Duration(seconds: 0),
                                 menuProps:
                                     MenuProps(surfaceTintColor: Colors.grey),
                                 itemBuilder:
@@ -325,7 +325,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               ),
                               popupProps: PopupProps.menu(
                                 showSearchBox: true,
-                                searchDelay: const Duration(milliseconds: 500),
+                                searchDelay: const Duration(seconds: 0),
                                 menuProps:
                                     MenuProps(surfaceTintColor: Colors.grey),
                                 itemBuilder:
