@@ -33,6 +33,7 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
   List<FlSpot> _spentSpots = [];
   List<FlSpot> _receivedSpots = [];
   bool _isLoading = true;
+  bool _isNotEnoughData = false;
   DateTime _startDate = DateTime.now();
   late AdMobService _adMobService;
   late AdCacheService _adCacheService;
@@ -68,6 +69,19 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
     }
 
     DateTime startDate = transactions.first.dateTime;
+    DateTime emdDate = transactions.last.dateTime;
+
+    // day difference between startDate and endDate
+    int totalDays = emdDate.difference(startDate).inDays;
+
+    if (totalDays < 3) {
+      setState(() {
+        _isLoading = false;
+        _isNotEnoughData = true;
+      });
+
+      return;
+    }
 
     for (var transaction in transactions) {
       double amount = double.tryParse(transaction.amount) ?? 0;
@@ -113,7 +127,11 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _transactions.isEmpty
-                ? const Center(child: Text('No transactions found.'))
+                ? Center(
+                    child: Text(_isNotEnoughData
+                        ? 'Not enough data to display trends.'
+                        : 'No transactions found.'),
+                  )
                 : SingleChildScrollView(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -346,7 +364,8 @@ class _CumulativeTrendsPageState extends State<CumulativeTrendsPage> {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: Text(
-                                                transaction.dateTime.getDateText(),
+                                                transaction.dateTime
+                                                    .getDateText(),
                                                 style: const TextStyle(
                                                     fontSize: 14,
                                                     color: Colors.grey),
