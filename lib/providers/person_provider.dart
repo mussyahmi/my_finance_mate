@@ -18,6 +18,7 @@ import 'package:showcaseview/showcaseview.dart';
 import '../models/person.dart';
 // import '../services/purchase_service.dart';
 import '../pages/dashboard_page.dart';
+import '../pages/welcome_page.dart';
 import 'accounts_provider.dart';
 import 'categories_provider.dart';
 import 'cycle_provider.dart';
@@ -327,6 +328,21 @@ class PersonProvider extends ChangeNotifier {
 
     if (forceRefresh) await resetForceRefresh();
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool introSeen = prefs.getBool('intro_seen') ?? false;
+
+    if (!introSeen) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const WelcomePage(),
+        ),
+        (route) => false,
+      );
+
+      return;
+    }
+
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -354,7 +370,7 @@ class PersonProvider extends ChangeNotifier {
           ),
         ),
       ),
-      (route) => false, //* This line removes all previous routes from the stack
+      (route) => false,
     );
   }
 

@@ -70,6 +70,8 @@ dependencies:
   showcaseview: ^4.0.1
   quick_actions: ^1.1.0
   collection: ^1.19.0
+  introduction_screen: ^4.0.0
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -96,6 +98,11 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icon/icon.png
+    - assets/lottie/welcome.json
+    - assets/lottie/money-tracking.json
+    - assets/lottie/financial-goals.json
+    - assets/lottie/security.json
+    - assets/lottie/success-celebration.json
     # - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
