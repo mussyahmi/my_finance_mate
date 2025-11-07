@@ -342,7 +342,7 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'email');
 
-        Person person = Person(
+        final Person person = Person(
           uid: userDoc.id,
           displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],
@@ -455,25 +455,26 @@ class _LoginPageState extends State<LoginPage> {
         bool isDiffDevice = false;
 
         if (!userDoc.exists) {
-          //* Add the user to the collection with UID as the document ID
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(authResult.user!.uid)
-              .set({
-            'created_at': now,
-            'updated_at': now,
-            'deleted_at': null,
-            'email': authResult.user!.email,
-            'display_name': authResult.user!.displayName,
-            'last_login': now,
-            'image_url': authResult.user!.photoURL,
-            'device_info_json': deviceInfoJson,
-            'daily_transactions_made': 0,
-            'force_refresh': true,
-            'is_premium': false,
-            'premium_start_date': null,
-            'premium_end_date': null,
-          });
+          //* The user signed in with Google but has no My Finance Mate account
+          await GoogleSignIn().signOut();
+          await FirebaseAuth.instance.signOut();
+
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('No Account Found'),
+              content: const Text(
+                  "This Google account isn't connected to a My Finance Mate account. "
+                  "Please register first."),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+          return;
         } else {
           final String prevDeviceInfoJson = userDoc['device_info_json'];
 
@@ -499,7 +500,7 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
 
-        Person person = Person(
+        final Person person = Person(
           uid: userDoc.id,
           displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],

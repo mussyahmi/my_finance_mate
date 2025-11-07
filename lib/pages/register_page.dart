@@ -10,12 +10,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/person.dart';
 import '../providers/person_provider.dart';
 import '../extensions/firestore_extensions.dart';
+import '../size_config.dart';
+import '../widgets/package_info_summary.dart';
 import 'email_verification_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -32,121 +35,208 @@ class RegisterPageState extends State<RegisterPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   bool _isLoading = false;
+  bool _isLoading2 = false;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _displayNameController,
-              decoration: const InputDecoration(
-                labelText: 'Display Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              obscureText: !_isPasswordVisible,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isPasswordVisible
-                        ? CupertinoIcons.eye_fill
-                        : CupertinoIcons.eye_slash_fill,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    //* Toggle the password visibility when the button is pressed
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: !_isConfirmPasswordVisible,
-              decoration: InputDecoration(
-                labelText: 'Confirm Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isConfirmPasswordVisible
-                        ? CupertinoIcons.eye_fill
-                        : CupertinoIcons.eye_slash_fill,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    //* Toggle the password visibility when the button is pressed
-                    setState(() {
-                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () async {
-                if (_isLoading) return;
-
-                setState(() {
-                  _isLoading = true;
-                });
-
-                try {
-                  await _register(
-                    _displayNameController.text.trim(),
-                    _emailController.text.trim(),
-                    _passwordController.text.trim(),
-                    _confirmPasswordController.text.trim(),
-                  );
-                } finally {
-                  setState(() {
-                    _isLoading = false;
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              ),
-              child: _isLoading
-                  ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        strokeWidth: 2.0,
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: SizeConfig.screenHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            image: DecorationImage(
+                              image: AssetImage('assets/icon/icon.png'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                       ),
-                    )
-                  : const Text('Register'),
+                      const SizedBox(height: 10),
+                      const Text('Create your My Finance Mate account',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          )),
+                      const SizedBox(height: 30),
+                      TextField(
+                        controller: _displayNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Display Name',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? CupertinoIcons.eye_fill
+                                  : CupertinoIcons.eye_slash_fill,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            onPressed: () {
+                              //* Toggle the password visibility when the button is pressed
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16.0),
+                      TextField(
+                        controller: _confirmPasswordController,
+                        obscureText: !_isConfirmPasswordVisible,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isConfirmPasswordVisible
+                                  ? CupertinoIcons.eye_fill
+                                  : CupertinoIcons.eye_slash_fill,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            onPressed: () {
+                              //* Toggle the password visibility when the button is pressed
+                              setState(() {
+                                _isConfirmPasswordVisible =
+                                    !_isConfirmPasswordVisible;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20.0),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (_isLoading) return;
+
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          try {
+                            await _register(
+                              _displayNameController.text.trim(),
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                              _confirmPasswordController.text.trim(),
+                            );
+                          } finally {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        child: _isLoading
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : const Text('Register'),
+                      ),
+                      const SizedBox(height: 10),
+                      const Row(
+                        children: [
+                          Expanded(
+                              child: Divider(color: Colors.grey, height: 36)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text('Or sign up with'),
+                          ),
+                          Expanded(
+                              child: Divider(color: Colors.grey, height: 36)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (_isLoading || _isLoading2) return;
+                          setState(() => _isLoading2 = true);
+                          try {
+                            await _signUpWithGoogle(context);
+                          } finally {
+                            setState(() => _isLoading2 = false);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        child: _isLoading2
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  strokeWidth: 2.0,
+                                ),
+                              )
+                            : const Text('Google'),
+                      ),
+                    ],
+                  ),
+                ),
+                PackageInfoSummary(canPress: false),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Already have an account?'),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Login'))
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -276,7 +366,7 @@ class RegisterPageState extends State<RegisterPage> {
             .getSavy(refresh: true);
         print('register - userDoc: 1');
 
-        Person person = Person(
+        final Person person = Person(
           uid: userDoc.id,
           displayName: userDoc['display_name'] ?? '',
           email: userDoc['email'],
@@ -311,23 +401,81 @@ class RegisterPageState extends State<RegisterPage> {
         await context.read<PersonProvider>().fetchData(context);
       }
     } on FirebaseAuthException catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Registration Failed!'),
-            content: Text(e.message ?? 'An unknown error occurred.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
+      _showErrorDialog('Registration Failed', e.message ?? 'An error occurred');
+    }
+  }
+
+  Future<void> _signUpWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount =
+          await GoogleSignIn().signIn();
+      if (googleSignInAccount == null) return; // cancelled
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleSignInAccount.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
+
+      final UserCredential authResult =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final user = authResult.user!;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        await FirebaseAuth.instance.signOut();
+        await GoogleSignIn().signOut();
+
+        _showErrorDialog(
+          'Already Registered',
+          'This Google account is already connected to a My Finance Mate account.',
+        );
+        return;
+      }
+
+      final now = DateTime.now();
+      final deviceInfoJson = await _getDeviceInfoJson();
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'created_at': now,
+        'updated_at': now,
+        'deleted_at': null,
+        'email': user.email,
+        'display_name': user.displayName,
+        'last_login': now,
+        'image_url': user.photoURL,
+        'device_info_json': deviceInfoJson,
+        'daily_transactions_made': 0,
+        'force_refresh': true,
+        'is_premium': false,
+        'premium_start_date': null,
+        'premium_end_date': null,
+      });
+
+      final Person person = Person(
+        uid: user.uid,
+        displayName: user.displayName ?? '',
+        email: user.email ?? '',
+        imageUrl: user.photoURL ?? '',
+        lastLogin: now,
+        dailyTransactionsMade: 0,
+        forceRefresh: true,
+        isPremium: false,
+        premiumStartDate: null,
+        premiumEndDate: null,
+        deviceInfoJson: deviceInfoJson,
+      );
+
+      context.read<PersonProvider>().setUser(newUser: person);
+      await context.read<PersonProvider>().fetchData(context);
+    } catch (e) {
+      _showErrorDialog('Registration Failed', e.toString());
     }
   }
 
@@ -386,5 +534,21 @@ class RegisterPageState extends State<RegisterPage> {
 
     //* If all validations pass, return an empty string (indicating no errors)
     return '';
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 }
