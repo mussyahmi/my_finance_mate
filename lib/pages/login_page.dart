@@ -452,7 +452,6 @@ class _LoginPageState extends State<LoginPage> {
 
         //* Get device information
         final deviceInfoJson = await _getDeviceInfoJson();
-        bool isDiffDevice = false;
 
         if (!userDoc.exists) {
           //* The user signed in with Google but has no My Finance Mate account
@@ -476,8 +475,6 @@ class _LoginPageState extends State<LoginPage> {
           );
           return;
         } else {
-          final String prevDeviceInfoJson = userDoc['device_info_json'];
-
           //* User already exists, update last_login and device_info_json
           await FirebaseFirestore.instance
               .collection('users')
@@ -487,8 +484,6 @@ class _LoginPageState extends State<LoginPage> {
             'last_login': now,
             'device_info_json': deviceInfoJson,
           });
-
-          isDiffDevice = prevDeviceInfoJson != deviceInfoJson;
         }
 
         userDoc = await FirebaseFirestore.instance
@@ -509,7 +504,7 @@ class _LoginPageState extends State<LoginPage> {
           dailyTransactionsMade: userDoc['daily_transactions_made'],
           forceRefresh: userDoc['force_refresh'] ||
               prefs.getString('last_login_with') == null ||
-              isDiffDevice,
+              userDoc['device_info_json'] != deviceInfoJson,
           isPremium: userDoc['is_premium'],
           premiumStartDate: userDoc['premium_start_date'] != null
               ? (userDoc['premium_start_date'] as Timestamp).toDate()
