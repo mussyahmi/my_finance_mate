@@ -294,43 +294,6 @@ class _LoginPageState extends State<LoginPage> {
                                   )
                                 : const Text('Google'),
                           ),
-                          if (kIsWeb && _isInAppBrowser)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const SizedBox(height: 10),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: const [
-                                      Text(
-                                        'Google Login Unavailable',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.redAccent,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Tap the ••• menu and choose "Open in Browser".',
-                                        style:
-                                            TextStyle(color: Colors.redAccent),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
                         ],
                       ),
                     ),
