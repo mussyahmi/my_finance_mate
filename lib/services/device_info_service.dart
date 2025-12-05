@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io' show Platform;
 
-Future<String> getDeviceInfoJson() async {
-  String deviceInfoJson = '';
+Future<Map<String, dynamic>> getDeviceInfoJson() async {
   Map<String, dynamic> deviceInfoMap = {};
 
   final deviceInfoPlugin = DeviceInfoPlugin();
@@ -56,6 +54,5 @@ Future<String> getDeviceInfoJson() async {
     }
   }
 
-  deviceInfoJson = jsonEncode(deviceInfoMap);
-  return deviceInfoJson;
+  return deviceInfoMap;
 }

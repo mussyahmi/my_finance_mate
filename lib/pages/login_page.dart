@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:email_validator/email_validator.dart';
@@ -44,6 +45,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _isRememberMeChecked = false;
   AdMobService? _adMobService;
   bool _adMobServiceInit = false;
+  Map<String, dynamic> _deviceInfoMap = {};
+  bool _isInAppBrowser = false;
 
   @override
   void didChangeDependencies() {
@@ -68,6 +71,17 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     if (kIsWeb) _loadSavedCredentials();
+
+    getDeviceInfoJson().then((value) {
+      _deviceInfoMap = value;
+
+      final String ua = _deviceInfoMap['userAgent'];
+
+      _isInAppBrowser = RegExp(
+              r'(IABMV|Barcelona|FBAN|FBAV|Instagram|Line|MicroMessenger|wv)',
+              caseSensitive: false)
+          .hasMatch(ua);
+    });
   }
 
   @override
@@ -280,6 +294,43 @@ class _LoginPageState extends State<LoginPage> {
                                   )
                                 : const Text('Google'),
                           ),
+                          if (kIsWeb && _isInAppBrowser)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 10),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: const [
+                                      Text(
+                                        'Google Login Unavailable',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.redAccent,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Tap the ••• menu and choose "Open in Browser".',
+                                        style:
+                                            TextStyle(color: Colors.redAccent),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -336,7 +387,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         //* Get device information
-        final deviceInfoJson = await getDeviceInfoJson();
+        final deviceInfoJson = jsonEncode(_deviceInfoMap);
 
         //* User already exists, you can choose to update any information if needed
         final now = DateTime.now();
@@ -447,6 +498,26 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
+      if (kIsWeb && _isInAppBrowser) {
+        return showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('In-App Browser Not Supported'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: SelectableText(
+                  "Google Login isn't supported inside this app. Please open in Chrome or Safari."),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+
       final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn(
         clientId: kIsWeb
             ? "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com"
@@ -473,7 +544,7 @@ class _LoginPageState extends State<LoginPage> {
         final now = DateTime.now();
 
         //* Get device information
-        final deviceInfoJson = await getDeviceInfoJson();
+        final deviceInfoJson = jsonEncode(_deviceInfoMap);
 
         if (!userDoc.exists) {
           //* The user signed in with Google but has no My Finance Mate account

@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'dart:convert';
 
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
@@ -37,6 +38,24 @@ class RegisterPageState extends State<RegisterPage> {
   bool _isLoading2 = false;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  Map<String, dynamic> _deviceInfoMap = {};
+  bool _isInAppBrowser = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    getDeviceInfoJson().then((value) {
+      _deviceInfoMap = value;
+
+      final String ua = _deviceInfoMap['userAgent'];
+
+      _isInAppBrowser = RegExp(
+              r'(IABMV|Barcelona|FBAN|FBAV|Instagram|Line|MicroMessenger|wv)',
+              caseSensitive: false)
+          .hasMatch(ua);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +244,43 @@ class RegisterPageState extends State<RegisterPage> {
                                   )
                                 : const Text('Google'),
                           ),
+                          if (kIsWeb && _isInAppBrowser)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 10),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: const [
+                                      Text(
+                                        'Google Login Unavailable',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.redAccent,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Tap the ••• menu and choose "Open in Browser".',
+                                        style:
+                                            TextStyle(color: Colors.redAccent),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -279,7 +335,7 @@ class RegisterPageState extends State<RegisterPage> {
         final now = DateTime.now();
 
         //* Get device information
-        final deviceInfoJson = await getDeviceInfoJson();
+        final deviceInfoJson = jsonEncode(_deviceInfoMap);
 
         //* Add the user to the collection with UID as the document ID
         await FirebaseFirestore.instance
@@ -349,6 +405,26 @@ class RegisterPageState extends State<RegisterPage> {
 
   Future<void> _signUpWithGoogle(BuildContext context) async {
     try {
+      if (kIsWeb && _isInAppBrowser) {
+        return showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('In-App Browser Not Supported'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: SelectableText(
+                  "Google SIgn Up isn't supported inside this app. Please open in Chrome or Safari."),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+
       final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn(
         clientId: kIsWeb
             ? "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com"
@@ -385,7 +461,7 @@ class RegisterPageState extends State<RegisterPage> {
       }
 
       final now = DateTime.now();
-      final deviceInfoJson = await getDeviceInfoJson();
+      final deviceInfoJson = jsonEncode(_deviceInfoMap);
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'created_at': now,
