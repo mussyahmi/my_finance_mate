@@ -102,11 +102,14 @@ class _QadaPrayerSummaryState extends State<QadaPrayerSummary> {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text("Set Daily Target"),
-                          content: TextField(
-                            controller: controller,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: "Prayers per day",
+                          content: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 500),
+                            child: TextField(
+                              controller: controller,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: "Prayers per day",
+                              ),
                             ),
                           ),
                           actions: [

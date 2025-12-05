@@ -70,25 +70,28 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                   showModalBottomSheet(
                     context: context,
                     builder: (context) {
-                      return CustomDraggableScrollableSheet(
-                        initialSize: 0.8,
-                        title: const Column(
-                          children: [
-                            Text(
-                              'Select Filter',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18),
-                            ),
-                            SizedBox(height: 10),
-                          ],
-                        ),
-                        contents: Column(
-                          children: [
-                            _listTile('all'),
-                            _listTile('ongoing'),
-                            _listTile('exceeded'),
-                            _listTile('completed'),
-                          ],
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 500),
+                        child: CustomDraggableScrollableSheet(
+                          initialSize: 0.8,
+                          title: const Column(
+                            children: [
+                              Text(
+                                'Select Filter',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              SizedBox(height: 10),
+                            ],
+                          ),
+                          contents: Column(
+                            children: [
+                              _listTile('all'),
+                              _listTile('ongoing'),
+                              _listTile('exceeded'),
+                              _listTile('completed'),
+                            ],
+                          ),
                         ),
                       );
                     },

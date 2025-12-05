@@ -64,11 +64,14 @@ class QadaPrayerCard extends StatelessWidget {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: Text("Set ${prayer.prayerName} count"),
-                              content: TextField(
-                                controller: controller,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                    labelText: "Enter count"),
+                              content: ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 500),
+                                child: TextField(
+                                  controller: controller,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                      labelText: "Enter count"),
+                                ),
                               ),
                               actions: [
                                 TextButton(

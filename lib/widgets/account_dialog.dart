@@ -74,113 +74,117 @@ class AccountDialogState extends State<AccountDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text('${widget.action} Account'),
-        content: SingleChildScrollView(
-          child: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Showcase(
-                  key: _tourAccountDialog1,
-                  description:
-                      'Account name can be anything you want. It can be your bank account, cash, or any other type of account. For example, "Cash", "Maybank", "CIMB", etc.',
-                  disableBarrierInteraction: true,
-                  disposeOnTap: false,
-                  onTargetClick: () {},
-                  tooltipActions: [
-                    TooltipActionButton(
-                      type: TooltipDefaultActionType.next,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      textStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: SingleChildScrollView(
+            child: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Showcase(
+                    key: _tourAccountDialog1,
+                    description:
+                        'Account name can be anything you want. It can be your bank account, cash, or any other type of account. For example, "Cash", "Maybank", "CIMB", etc.',
+                    disableBarrierInteraction: true,
+                    disposeOnTap: false,
+                    onTargetClick: () {},
+                    tooltipActions: [
+                      TooltipActionButton(
+                        type: TooltipDefaultActionType.next,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ],
+                    tooltipActionConfig: TooltipActionConfig(
+                      position: TooltipActionPosition.outside,
+                      alignment: MainAxisAlignment.end,
+                    ),
+                    child: TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
                       ),
                     ),
-                  ],
-                  tooltipActionConfig: TooltipActionConfig(
-                    position: TooltipActionPosition.outside,
-                    alignment: MainAxisAlignment.end,
                   ),
-                  child: TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Showcase(
-                  key: _tourAccountDialog2,
-                  description:
-                      'Opening balance is the current amount of money in the account. It can be any amount you want, but it must be a positive number.',
-                  disableBarrierInteraction: true,
-                  disposeOnTap: false,
-                  onTargetClick: () {},
-                  tooltipActions: [
-                    TooltipActionButton(
-                      type: TooltipDefaultActionType.previous,
-                      backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                      textStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
+                  const SizedBox(height: 20),
+                  Showcase(
+                    key: _tourAccountDialog2,
+                    description:
+                        'Opening balance is the current amount of money in the account. It can be any amount you want, but it must be a positive number.',
+                    disableBarrierInteraction: true,
+                    disposeOnTap: false,
+                    onTargetClick: () {},
+                    tooltipActions: [
+                      TooltipActionButton(
+                        type: TooltipDefaultActionType.previous,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
-                    ),
-                    TooltipActionButton(
-                      name: 'Got it',
-                      type: TooltipDefaultActionType.next,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      textStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
+                      TooltipActionButton(
+                        name: 'Got it',
+                        type: TooltipDefaultActionType.next,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        onTap: () => Navigator.of(context).pop(true),
                       ),
-                      onTap: () => Navigator.of(context).pop(true),
+                    ],
+                    tooltipActionConfig: TooltipActionConfig(
+                      position: TooltipActionPosition.outside,
                     ),
-                  ],
-                  tooltipActionConfig: TooltipActionConfig(
-                    position: TooltipActionPosition.outside,
-                  ),
-                  child: GestureDetector(
-                    onTap: _canEditOpeningBalance
-                        ? () async {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AmountInputPage(
-                                  amount: _openingBalanceController.text,
+                    child: GestureDetector(
+                      onTap: _canEditOpeningBalance
+                          ? () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AmountInputPage(
+                                    amount: _openingBalanceController.text,
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
 
-                            if (result != null && result is String) {
-                              _openingBalanceController.text = result;
+                              if (result != null && result is String) {
+                                _openingBalanceController.text = result;
+                              }
                             }
-                          }
-                        : null,
-                    child: AbsorbPointer(
-                      child: TextField(
-                        controller: _openingBalanceController,
-                        keyboardType:
-                            TextInputType.number, //* Allow only numeric input
-                        decoration: InputDecoration(
-                          labelText: 'Opening Balance',
-                          prefixText: 'RM',
+                          : null,
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: _openingBalanceController,
+                          keyboardType:
+                              TextInputType.number, //* Allow only numeric input
+                          decoration: InputDecoration(
+                            labelText: 'Opening Balance',
+                            prefixText: 'RM',
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text('Exclude from net balance'),
-                    Checkbox(
-                      value: _isExcluded,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isExcluded = value ?? false;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Text('Exclude from net balance'),
+                      Checkbox(
+                        value: _isExcluded,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isExcluded = value ?? false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

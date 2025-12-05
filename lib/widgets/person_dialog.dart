@@ -23,7 +23,6 @@ class PersonDialog extends StatefulWidget {
 class _PersonDialogState extends State<PersonDialog> {
   final MessageService messageService = MessageService();
   final TextEditingController _displayNameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -43,20 +42,21 @@ class _PersonDialogState extends State<PersonDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text('Edit Display Name'),
-        content: SingleChildScrollView(
-          child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: _displayNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Display Name',
-                    ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _displayNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Display Name',
                   ),
-                ],
-              )),
+                ),
+              ],
+            ),
+          ),
         ),
         actions: [
           TextButton(

@@ -210,8 +210,11 @@ class _CycleSummaryState extends State<CycleSummary> {
                         builder: (context) {
                           return AlertDialog(
                             title: const Text('Recalculate Cycle Amounts'),
-                            content: const Text(
-                                'Are you sure you want to recalculate the cycle amounts?'),
+                            content: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 500),
+                              child: const Text(
+                                  'Are you sure you want to recalculate the cycle amounts?'),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () {

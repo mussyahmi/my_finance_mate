@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -24,8 +25,8 @@ class AccountListPage extends StatefulWidget {
 }
 
 class _AccountListPageState extends State<AccountListPage> {
-  late AdMobService _adMobService;
-  late AdCacheService _adCacheService;
+  AdMobService? _adMobService;
+  AdCacheService? _adCacheService;
 
   @override
   void didChangeDependencies() async {
@@ -44,8 +45,10 @@ class _AccountListPageState extends State<AccountListPage> {
       EasyLoading.showSuccess('Done! Transactions moved. 🏁');
     }
 
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
+    }
   }
 
   @override
@@ -103,13 +106,14 @@ class _AccountListPageState extends State<AccountListPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: AccountSummary(account: account),
                         ),
-                        if (!user.isPremium &&
+                        if (_adCacheService != null &&
+                            !user.isPremium &&
                             (index == 1 || index == 7 || index == 13))
                           AdContainer(
-                            adCacheService: _adCacheService,
+                            adCacheService: _adCacheService!,
                             number: index,
                             adSize: AdSize.largeBanner,
-                            adUnitId: _adMobService.bannerAccountListAdUnitId!,
+                            adUnitId: _adMobService!.bannerAccountListAdUnitId!,
                             height: 100.0,
                           ),
                         if (index == accounts.length - 1)

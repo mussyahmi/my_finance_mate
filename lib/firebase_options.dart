@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -51,7 +48,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBV7BkBbt6ARJcxfXYEJ0y1s0T-qGNZaT0',
-    appId: '1:301321629117:android:cfba74e7b82337b8f376d4',
+    appId: '1:301321629117:android:72b6ad18b362277cf376d4',
     messagingSenderId: '301321629117',
     projectId: 'my-finance-mate',
     storageBucket: 'my-finance-mate.appspot.com',
@@ -59,12 +56,23 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCfVgsZ0-xDGwsBUnD7qWsgCMqzW_ICDic',
-    appId: '1:301321629117:ios:f776aedbf867a072f376d4',
+    appId: '1:301321629117:ios:7a3349c0d82f26d5f376d4',
     messagingSenderId: '301321629117',
     projectId: 'my-finance-mate',
     storageBucket: 'my-finance-mate.appspot.com',
-    iosClientId:
-        '301321629117-7rt8vlq8tgmnp3o6uhcnij83nqknfjd7.apps.googleusercontent.com',
-    iosBundleId: 'com.example.myFinanceMate',
+    androidClientId: '301321629117-16vs78ajniv94k4qv3s4mk7gg545adia.apps.googleusercontent.com',
+    iosClientId: '301321629117-49v7numbttskobsd5689pmchj4mt6d9m.apps.googleusercontent.com',
+    iosBundleId: 'com.mustafasyahmi.myfinancemate',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBYt2T25d6tUcWCYuKTuDbo0tn80r7Cmu8',
+    appId: '1:301321629117:web:67b7383f97617d73f376d4',
+    messagingSenderId: '301321629117',
+    projectId: 'my-finance-mate',
+    authDomain: 'my-finance-mate.firebaseapp.com',
+    storageBucket: 'my-finance-mate.appspot.com',
+    measurementId: 'G-0RNBC8GB0T',
+  );
+
 }

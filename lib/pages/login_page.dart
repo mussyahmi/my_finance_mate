@@ -1,17 +1,17 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:my_finance_mate/services/device_info_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading2 = false;
   bool _isPasswordVisible = false;
   bool _isRememberMeChecked = false;
-  late AdMobService _adMobService;
+  AdMobService? _adMobService;
   bool _adMobServiceInit = false;
 
   @override
@@ -50,10 +50,10 @@ class _LoginPageState extends State<LoginPage> {
     super.didChangeDependencies();
 
     //* Initialize AdMobService only once
-    if (!_adMobServiceInit) {
+    if (!kIsWeb && !_adMobServiceInit) {
       _adMobService = context.read<AdMobService>();
 
-      _adMobService.initialization.then((value) {
+      _adMobService!.initialization.then((value) {
         setState(() {
           _adMobServiceInit = true;
         });
@@ -66,6 +66,8 @@ class _LoginPageState extends State<LoginPage> {
         EasyLoading.showError('Failed to initialize AdMob. Error: $e');
       });
     }
+
+    if (kIsWeb) _loadSavedCredentials();
   }
 
   @override
@@ -86,211 +88,220 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        child: SizedBox(
-          height: SizeConfig.screenHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            image: DecorationImage(
-                              image: AssetImage('assets/icon/icon.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Welcome to My Finance Mate!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                          )),
-                      const SizedBox(height: 30),
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? CupertinoIcons.eye_fill
-                                  : CupertinoIcons.eye_slash_fill,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: () {
-                              //* Toggle the password visibility when the button is pressed
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SizedBox(
+              height: SizeConfig.screenHeight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _isRememberMeChecked,
-                                onChanged: (value) {
+                          Center(
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.0),
+                                image: DecorationImage(
+                                  image: AssetImage('assets/icon/icon.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Welcome to My Finance Mate!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              )),
+                          const SizedBox(height: 30),
+                          TextField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? CupertinoIcons.eye_fill
+                                      : CupertinoIcons.eye_slash_fill,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: () {
+                                  //* Toggle the password visibility when the button is pressed
                                   setState(() {
-                                    _isRememberMeChecked = value!;
+                                    _isPasswordVisible = !_isPasswordVisible;
                                   });
                                 },
                               ),
-                              const Text('Remember me'),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _isRememberMeChecked,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isRememberMeChecked = value!;
+                                      });
+                                    },
+                                  ),
+                                  const Text('Remember me'),
+                                ],
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    _showForgotPasswordDialog(context),
+                                child: Text(
+                                  'Forgot password?',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
                             ],
                           ),
-                          TextButton(
-                            onPressed: () => _showForgotPasswordDialog(context),
-                            child: Text(
-                              'Forgot password?',
-                              style: TextStyle(color: Colors.grey),
+
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (_isLoading || _isLoading2) return;
+
+                              setState(() {
+                                _isLoading = true;
+                              });
+
+                              try {
+                                await _signInWithEmailAndPassword(
+                                  _emailController.text.trim(),
+                                  _passwordController.text.trim(),
+                                );
+                              } finally {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
                             ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      strokeWidth: 2.0,
+                                    ),
+                                  )
+                                : const Text('Login'),
+                          ),
+                          const SizedBox(height: 10),
+                          const Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: Colors.grey,
+                                  height: 36,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text('Or login with'),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: Colors.grey,
+                                  height: 36,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          //* Show a circular progress indicator while loading
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (_isLoading || _isLoading2) return;
+
+                              setState(() {
+                                _isLoading2 =
+                                    true; //* Set loading state to true
+                              });
+
+                              try {
+                                //* Use the context from the Builder widget
+                                await _signInWithGoogle(context);
+                              } finally {
+                                setState(() {
+                                  _isLoading2 =
+                                      false; //* Set loading state to false
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isLoading2
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      strokeWidth: 2.0,
+                                    ),
+                                  )
+                                : const Text('Google'),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_isLoading || _isLoading2) return;
-
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          try {
-                            await _signInWithEmailAndPassword(
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                            );
-                          } finally {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: _isLoading
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            : const Text('Login'),
-                      ),
-                      const SizedBox(height: 10),
-                      const Row(
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey,
-                              height: 36,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Or login with'),
-                          ),
-                          Expanded(
-                            child: Divider(
-                              color: Colors.grey,
-                              height: 36,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      //* Show a circular progress indicator while loading
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_isLoading || _isLoading2) return;
-
-                          setState(() {
-                            _isLoading2 = true; //* Set loading state to true
-                          });
-
-                          try {
-                            //* Use the context from the Builder widget
-                            await _signInWithGoogle(context);
-                          } finally {
-                            setState(() {
-                              _isLoading2 =
-                                  false; //* Set loading state to false
-                            });
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: _isLoading2
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            : const Text('Google'),
-                      ),
-                    ],
-                  ),
-                ),
-                PackageInfoSummary(canPress: false),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Don\'t have an account?'),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const RegisterPage()),
-                          );
-                        },
-                        child: const Text('Register'))
+                    ),
+                    PackageInfoSummary(canPress: false),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Don\'t have an account?'),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const RegisterPage()),
+                              );
+                            },
+                            child: const Text('Register'))
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -325,7 +336,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         //* Get device information
-        final deviceInfoJson = await _getDeviceInfoJson();
+        final deviceInfoJson = await getDeviceInfoJson();
 
         //* User already exists, you can choose to update any information if needed
         final now = DateTime.now();
@@ -394,7 +405,10 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Login Failed'),
-          content: Text(errorMessage),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SelectableText(errorMessage),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -404,17 +418,22 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } catch (e, stackTrace) {
-      // Record the error in Crashlytics
-      await FirebaseCrashlytics.instance.recordError(e, stackTrace);
+      if (!kIsWeb) {
+        // Record the error in Crashlytics
+        await FirebaseCrashlytics.instance.recordError(e, stackTrace);
 
-      // Optionally: also log custom messages for more context
-      FirebaseCrashlytics.instance.log("Email/Password sign-in failed");
+        // Optionally: also log custom messages for more context
+        FirebaseCrashlytics.instance.log("Email/Password sign-in failed");
+      }
 
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Login Failed'),
-          content: Text('Failed to login. Error: $e'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SelectableText('Failed to login. Error: $e'),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -428,8 +447,11 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn(
+        clientId: kIsWeb
+            ? "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com"
+            : null,
+      ).signIn();
       if (googleSignInAccount != null) {
         final GoogleSignInAuthentication googleSignInAuth =
             await googleSignInAccount.authentication;
@@ -451,7 +473,7 @@ class _LoginPageState extends State<LoginPage> {
         final now = DateTime.now();
 
         //* Get device information
-        final deviceInfoJson = await _getDeviceInfoJson();
+        final deviceInfoJson = await getDeviceInfoJson();
 
         if (!userDoc.exists) {
           //* The user signed in with Google but has no My Finance Mate account
@@ -462,9 +484,12 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('No Account Found'),
-              content: const Text(
-                  "This Google account isn't connected to a My Finance Mate account. "
-                  "Please register first."),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: const Text(
+                    "This Google account isn't connected to a My Finance Mate account. "
+                    "Please register first."),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -524,17 +549,22 @@ class _LoginPageState extends State<LoginPage> {
         print('Google Sign-In Cancelled');
       }
     } catch (e, stackTrace) {
-      // Record the error in Crashlytics
-      await FirebaseCrashlytics.instance.recordError(e, stackTrace);
+      if (!kIsWeb) {
+        // Record the error in Crashlytics
+        await FirebaseCrashlytics.instance.recordError(e, stackTrace);
 
-      // Optionally: also log custom messages for more context
-      FirebaseCrashlytics.instance.log("Google sign-in failed");
+        // Optionally: also log custom messages for more context
+        FirebaseCrashlytics.instance.log("Google sign-in failed");
+      }
 
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Login Failed'),
-          content: Text('Failed to login. Error: $e'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SelectableText('Failed to login. Error: $e'),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -544,72 +574,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     }
-  }
-
-  Future<String> _getDeviceInfoJson() async {
-    //* Get device information
-    String deviceInfoJson = '';
-    Map<String, dynamic> deviceInfoMap = {};
-
-    if (Platform.isAndroid) {
-      AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
-
-      deviceInfoMap = {
-        'version': {
-          'baseOS': deviceInfo.version.baseOS,
-          'codename': deviceInfo.version.codename,
-          'incremental': deviceInfo.version.incremental,
-          'previewSdkInt': deviceInfo.version.previewSdkInt,
-          'release': deviceInfo.version.release,
-          'sdkInt': deviceInfo.version.sdkInt,
-          'securityPatch': deviceInfo.version.securityPatch,
-        },
-        'board': deviceInfo.board,
-        'bootloader': deviceInfo.bootloader,
-        'brand': deviceInfo.brand,
-        'device': deviceInfo.device,
-        'display': deviceInfo.display,
-        'fingerprint': deviceInfo.fingerprint,
-        'hardware': deviceInfo.hardware,
-        'host': deviceInfo.host,
-        'id': deviceInfo.id,
-        'manufacturer': deviceInfo.manufacturer,
-        'model': deviceInfo.model,
-        'product': deviceInfo.product,
-        'tags': deviceInfo.tags,
-        'type': deviceInfo.type,
-        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'serialNumber': deviceInfo.serialNumber,
-        'isLowRamDevice': deviceInfo.isLowRamDevice,
-      };
-
-      //* Convert device info to JSON
-      deviceInfoJson = jsonEncode(deviceInfoMap);
-    } else if (Platform.isIOS) {
-      IosDeviceInfo deviceInfo = await DeviceInfoPlugin().iosInfo;
-
-      deviceInfoMap = {
-        'name': deviceInfo.name,
-        'systemName': deviceInfo.systemName,
-        'systemVersion': deviceInfo.systemVersion,
-        'model': deviceInfo.model,
-        'localizedModel': deviceInfo.localizedModel,
-        'identifierForVendor': deviceInfo.identifierForVendor,
-        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'utsname': {
-          'sysname': deviceInfo.utsname.sysname,
-          'nodename': deviceInfo.utsname.nodename,
-          'release': deviceInfo.utsname.release,
-          'version': deviceInfo.utsname.version,
-          'machine': deviceInfo.utsname.machine,
-        },
-      };
-
-      //* Convert device info to JSON
-      deviceInfoJson = jsonEncode(deviceInfoMap);
-    }
-
-    return deviceInfoJson;
   }
 
   void _saveLoginCredentials(String email, String password) async {
@@ -637,7 +601,7 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
 
-    await _checkCurrentVersion();
+    if (!kIsWeb) await _checkCurrentVersion();
 
     _autoLogin();
   }
@@ -668,8 +632,11 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context) {
             return AlertDialog(
               title: const Text('Update Available'),
-              content: const Text(
-                  'A new version is available. Please update the app.'),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: const Text(
+                    'A new version is available. Please update the app.'),
+              ),
               actions: [
                 if (_getExtendedVersionNumber(currentVersion) >=
                     _getExtendedVersionNumber(minimumVersion))
@@ -747,12 +714,15 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Reset Password'),
-          content: TextField(
-            controller: _forgotPasswordEmailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: TextField(
+              controller: _forgotPasswordEmailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+              ),
+              keyboardType: TextInputType.emailAddress,
             ),
-            keyboardType: TextInputType.emailAddress,
           ),
           actions: [
             TextButton(

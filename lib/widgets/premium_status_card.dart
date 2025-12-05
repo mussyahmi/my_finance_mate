@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
@@ -64,7 +65,7 @@ class PremiumStatusCard extends StatelessWidget {
           ),
         ),
       );
-    } else if (!user.isPremium && user.premiumStartDate == null) {
+    } else if (!kIsWeb && !user.isPremium && user.premiumStartDate == null) {
       // 🟠 Free Trial Available
       card = Card(
         color: Theme.of(context).colorScheme.primary,
@@ -84,8 +85,11 @@ class PremiumStatusCard extends StatelessWidget {
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: const Text('Confirm Activation'),
-                  content: const Text(
-                    'Are you sure you want to start your free trial?',
+                  content: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 500),
+                    child: const Text(
+                      'Are you sure you want to start your free trial?',
+                    ),
                   ),
                   actions: <Widget>[
                     TextButton(

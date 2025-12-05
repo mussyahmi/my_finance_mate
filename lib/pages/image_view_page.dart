@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:gal/gal.dart';
@@ -31,8 +32,8 @@ class ImageViewPage extends StatefulWidget {
 }
 
 class _ImageViewPageState extends State<ImageViewPage> {
-  late AdMobService _adMobService;
-  late AdCacheService _adCacheService;
+  AdMobService? _adMobService;
+  AdCacheService? _adCacheService;
   late PageController _pageController;
   late int _currentIndex;
 
@@ -46,8 +47,11 @@ class _ImageViewPageState extends State<ImageViewPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
+
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
+    }
   }
 
   Future<void> _downloadImage() async {
@@ -119,7 +123,10 @@ class _ImageViewPageState extends State<ImageViewPage> {
           builder: (context) {
             return AlertDialog(
               title: const Text('Download Failed!'),
-              content: Text(e.type.message),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: Text(e.type.message),
+              ),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -140,7 +147,10 @@ class _ImageViewPageState extends State<ImageViewPage> {
         builder: (context) {
           return AlertDialog(
             title: const Text('Download Failed!'),
-            content: Text(e.toString()),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: Text(e.toString()),
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -225,12 +235,13 @@ class _ImageViewPageState extends State<ImageViewPage> {
               ],
             ),
           ),
-          if (!context.read<PersonProvider>().user!.isPremium)
+          if (_adMobService != null &&
+              !context.read<PersonProvider>().user!.isPremium)
             AdContainer(
-              adCacheService: _adCacheService,
+              adCacheService: _adCacheService!,
               number: 1,
               adSize: AdSize.banner,
-              adUnitId: _adMobService.bannerImageViewAdUnitId!,
+              adUnitId: _adMobService!.bannerImageViewAdUnitId!,
               height: 50.0,
             ),
         ],

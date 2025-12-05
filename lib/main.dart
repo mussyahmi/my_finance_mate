@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -72,21 +73,27 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final initAdFuture = MobileAds.instance.initialize();
-  final adMobService = AdMobService(initAdFuture);
-  final adCacheService = AdCacheService();
+  AdMobService? adMobService;
+  AdCacheService? adCacheService;
 
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  if (!kIsWeb) {
+    final initAdFuture = MobileAds.instance.initialize();
+    adMobService = AdMobService(initAdFuture);
+    adCacheService = AdCacheService();
 
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
 
   runApp(MultiProvider(
     providers: [
-      Provider.value(value: adMobService),
-      Provider.value(value: adCacheService),
+      if (!kIsWeb) ...[
+        Provider.value(value: adMobService),
+        Provider.value(value: adCacheService),
+      ],
       ChangeNotifierProvider(
         create: (context) => SettingsProvider(),
       ),

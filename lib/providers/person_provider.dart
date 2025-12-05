@@ -158,8 +158,11 @@ class PersonProvider extends ChangeNotifier {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Purchase Successful'),
-            content: Text(
-                'Enjoy your premium access! Your Premium access is active until ${DateFormat('EEEE, d MMMM yyyy h:mm aa').format(premiumEndDate)}'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: Text(
+                  'Enjoy your premium access! Your Premium access is active until ${DateFormat('EEEE, d MMMM yyyy h:mm aa').format(premiumEndDate)}'),
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

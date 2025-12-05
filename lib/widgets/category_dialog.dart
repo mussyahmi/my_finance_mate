@@ -33,7 +33,6 @@ class CategoryDialog extends StatefulWidget {
 }
 
 class CategoryDialogState extends State<CategoryDialog> {
-  final _formKey = GlobalKey<FormState>();
   final TextEditingController _categoryNameController = TextEditingController();
   final TextEditingController _categoryBudgetController =
       TextEditingController();
@@ -88,50 +87,102 @@ class CategoryDialogState extends State<CategoryDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text('${widget.action} Category'),
-        content: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Showcase(
-                      key: _tourCategoryDialog1,
-                      description:
-                          'Category name can be anything you want. It is used to identify the category. For example, you can use "Groceries", "Utilities", or "Entertainment".',
-                      disableBarrierInteraction: true,
-                      disposeOnTap: false,
-                      onTargetClick: () {},
-                      tooltipActions: [
-                        TooltipActionButton(
-                          type: TooltipDefaultActionType.next,
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          textStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: SingleChildScrollView(
+            child: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Showcase(
+                    key: _tourCategoryDialog1,
+                    description:
+                        'Category name can be anything you want. It is used to identify the category. For example, you can use "Groceries", "Utilities", or "Entertainment".',
+                    disableBarrierInteraction: true,
+                    disposeOnTap: false,
+                    onTargetClick: () {},
+                    tooltipActions: [
+                      TooltipActionButton(
+                        type: TooltipDefaultActionType.next,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
-                      ],
-                      tooltipActionConfig: TooltipActionConfig(
-                        position: TooltipActionPosition.outside,
-                        alignment: MainAxisAlignment.end,
                       ),
-                      child: TextFormField(
-                        controller: _categoryNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                        ),
+                    ],
+                    tooltipActionConfig: TooltipActionConfig(
+                      position: TooltipActionPosition.outside,
+                      alignment: MainAxisAlignment.end,
+                    ),
+                    child: TextFormField(
+                      controller: _categoryNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
                       ),
                     ),
+                  ),
+                  Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      Showcase(
+                        key: _tourCategoryDialog2,
+                        description:
+                            'You can select the type of category. It can be either "Spent" or "Received".',
+                        disableBarrierInteraction: true,
+                        disposeOnTap: false,
+                        onTargetClick: () {},
+                        tooltipActions: [
+                          TooltipActionButton(
+                            type: TooltipDefaultActionType.previous,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            textStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          TooltipActionButton(
+                            type: TooltipDefaultActionType.next,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            textStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ],
+                        tooltipActionConfig: TooltipActionConfig(
+                          position: TooltipActionPosition.outside,
+                        ),
+                        child: DropdownButtonFormField(
+                          dropdownColor:
+                              Theme.of(context).colorScheme.onSecondary,
+                          value: _selectedType,
+                          decoration: const InputDecoration(
+                            labelText: 'Type',
+                          ),
+                          items: ['spent', 'received']
+                              .map((String type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type.capitalize()),
+                                  ))
+                              .toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedType = newValue!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_selectedType == 'spent')
                     Column(
                       children: [
                         const SizedBox(height: 10),
                         Showcase(
-                          key: _tourCategoryDialog2,
+                          key: _tourCategoryDialog3,
                           description:
-                              'You can select the type of category. It can be either "Spent" or "Received".',
+                              'For spent categories, you can select a sub type. This is optional and can be used to further categorize your spending. For example, you can use "Needs", "Wants", "Savings", or "Others".',
                           disableBarrierInteraction: true,
                           disposeOnTap: false,
                           onTargetClick: () {},
@@ -159,161 +210,62 @@ class CategoryDialogState extends State<CategoryDialog> {
                           child: DropdownButtonFormField(
                             dropdownColor:
                                 Theme.of(context).colorScheme.onSecondary,
-                            value: _selectedType,
+                            value: _selectedSubType,
                             decoration: const InputDecoration(
-                              labelText: 'Type',
+                              labelText: 'Sub Type',
                             ),
-                            items: ['spent', 'received']
-                                .map((String type) => DropdownMenuItem(
-                                      value: type,
-                                      child: Text(type.capitalize()),
+                            items: ['needs', 'wants', 'savings', 'others']
+                                .map((String subType) => DropdownMenuItem(
+                                      value: subType,
+                                      child: Text(subType.capitalize()),
                                     ))
                                 .toList(),
                             onChanged: (String? newValue) {
                               setState(() {
-                                _selectedType = newValue!;
+                                _selectedSubType = newValue!;
                               });
                             },
                           ),
                         ),
                       ],
                     ),
-                    if (_selectedType == 'spent')
-                      Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          Showcase(
-                            key: _tourCategoryDialog3,
-                            description:
-                                'For spent categories, you can select a sub type. This is optional and can be used to further categorize your spending. For example, you can use "Needs", "Wants", "Savings", or "Others".',
-                            disableBarrierInteraction: true,
-                            disposeOnTap: false,
-                            onTargetClick: () {},
-                            tooltipActions: [
-                              TooltipActionButton(
-                                type: TooltipDefaultActionType.previous,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.onPrimary,
-                                textStyle: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
+                  if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
+                    Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AmountInputPage(
+                                  amount: _categoryBudgetController.text,
                                 ),
                               ),
-                              TooltipActionButton(
-                                type: TooltipDefaultActionType.next,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                textStyle: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                              ),
-                            ],
-                            tooltipActionConfig: TooltipActionConfig(
-                              position: TooltipActionPosition.outside,
-                            ),
-                            child: DropdownButtonFormField(
-                              dropdownColor:
-                                  Theme.of(context).colorScheme.onSecondary,
-                              value: _selectedSubType,
-                              decoration: const InputDecoration(
-                                labelText: 'Sub Type',
-                              ),
-                              items: ['needs', 'wants', 'savings', 'others']
-                                  .map((String subType) => DropdownMenuItem(
-                                        value: subType,
-                                        child: Text(subType.capitalize()),
-                                      ))
-                                  .toList(),
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  _selectedSubType = newValue!;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (_isBudgetEnabled) //* Show budget field only when the checkbox is checked
-                      Column(
-                        children: [
-                          const SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AmountInputPage(
-                                    amount: _categoryBudgetController.text,
-                                  ),
-                                ),
-                              );
+                            );
 
-                              if (result != null && result is String) {
-                                _categoryBudgetController.text = result;
-                              }
-                            },
-                            child: AbsorbPointer(
-                              child: TextField(
-                                controller: _categoryBudgetController,
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Budget',
-                                  prefixText: 'RM',
-                                ),
+                            if (result != null && result is String) {
+                              _categoryBudgetController.text = result;
+                            }
+                          },
+                          child: AbsorbPointer(
+                            child: TextField(
+                              controller: _categoryBudgetController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Budget',
+                                prefixText: 'RM',
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    if (_selectedType == 'spent')
-                      Showcase(
-                        key: _tourCategoryDialog4,
-                        description:
-                            'For spent categories, you can set a budget. This will help you track your spending against your budget.',
-                        disableBarrierInteraction: true,
-                        disposeOnTap: false,
-                        onTargetClick: () {},
-                        tooltipActions: [
-                          TooltipActionButton(
-                            type: TooltipDefaultActionType.previous,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.onPrimary,
-                            textStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          TooltipActionButton(
-                            type: TooltipDefaultActionType.next,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            textStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                        ],
-                        tooltipActionConfig: TooltipActionConfig(
-                          position: TooltipActionPosition.outside,
                         ),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: _isBudgetEnabled,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  _isBudgetEnabled = value ?? false;
-                                });
-                              },
-                            ),
-                            const Text('Set a Budget'),
-                          ],
-                        ),
-                      ),
-                    if (_selectedType == 'spent') const SizedBox(height: 10),
-                    if (_selectedType == 'received') const SizedBox(height: 20),
+                      ],
+                    ),
+                  if (_selectedType == 'spent')
                     Showcase(
-                      key: _tourCategoryDialog5,
+                      key: _tourCategoryDialog4,
                       description:
-                          'You can add a note to the category. This can be used to add more details about the category.',
+                          'For spent categories, you can set a budget. This will help you track your spending against your budget.',
                       disableBarrierInteraction: true,
                       disposeOnTap: false,
                       onTargetClick: () {},
@@ -327,68 +279,109 @@ class CategoryDialogState extends State<CategoryDialog> {
                           ),
                         ),
                         TooltipActionButton(
-                          name: 'Got it',
                           type: TooltipDefaultActionType.next,
                           backgroundColor:
                               Theme.of(context).colorScheme.primary,
                           textStyle: TextStyle(
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
-                          onTap: () => Navigator.of(context).pop(true),
                         ),
                       ],
                       tooltipActionConfig: TooltipActionConfig(
                         position: TooltipActionPosition.outside,
                       ),
-                      child: Card(
-                        child: ListTile(
-                          onTap: () async {
-                            final String? note = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NoteInputPage(
-                                  note: _categoryNoteController.text,
-                                ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _isBudgetEnabled,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                _isBudgetEnabled = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text('Set a Budget'),
+                        ],
+                      ),
+                    ),
+                  if (_selectedType == 'spent') const SizedBox(height: 10),
+                  if (_selectedType == 'received') const SizedBox(height: 20),
+                  Showcase(
+                    key: _tourCategoryDialog5,
+                    description:
+                        'You can add a note to the category. This can be used to add more details about the category.',
+                    disableBarrierInteraction: true,
+                    disposeOnTap: false,
+                    onTargetClick: () {},
+                    tooltipActions: [
+                      TooltipActionButton(
+                        type: TooltipDefaultActionType.previous,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      TooltipActionButton(
+                        name: 'Got it',
+                        type: TooltipDefaultActionType.next,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        textStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                        onTap: () => Navigator.of(context).pop(true),
+                      ),
+                    ],
+                    tooltipActionConfig: TooltipActionConfig(
+                      position: TooltipActionPosition.outside,
+                    ),
+                    child: Card(
+                      child: ListTile(
+                        onTap: () async {
+                          final String? note = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NoteInputPage(
+                                note: _categoryNoteController.text,
                               ),
-                            );
-
-                            if (note == null) {
-                              return;
-                            }
-
-                            if (note == 'empty') {
-                              setState(() {
-                                _categoryNoteController.text = '';
-                              });
-                            } else if (note.isNotEmpty) {
-                              setState(() {
-                                _categoryNoteController.text = note;
-                              });
-                            }
-                          },
-                          leading: Icon(Icons.notes),
-                          title: Text(
-                            _categoryNoteController.text.isEmpty
-                                ? 'Add Note'
-                                : _categoryNoteController.text
-                                        .contains('insert')
-                                    ? ParchmentDocument.fromJson(jsonDecode(
-                                            _categoryNoteController.text))
-                                        .toPlainText()
-                                    : _categoryNoteController.text
-                                        .split('\\n')[0],
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
                             ),
+                          );
+
+                          if (note == null) {
+                            return;
+                          }
+
+                          if (note == 'empty') {
+                            setState(() {
+                              _categoryNoteController.text = '';
+                            });
+                          } else if (note.isNotEmpty) {
+                            setState(() {
+                              _categoryNoteController.text = note;
+                            });
+                          }
+                        },
+                        leading: Icon(Icons.notes),
+                        title: Text(
+                          _categoryNoteController.text.isEmpty
+                              ? 'Add Note'
+                              : _categoryNoteController.text.contains('insert')
+                                  ? ParchmentDocument.fromJson(jsonDecode(
+                                          _categoryNoteController.text))
+                                      .toPlainText()
+                                  : _categoryNoteController.text
+                                      .split('\\n')[0],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

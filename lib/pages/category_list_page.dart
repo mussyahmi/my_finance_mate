@@ -1,13 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import '../models/cycle.dart';
 import '../providers/categories_provider.dart';
-import '../models/category.dart';
+import '../models/category.dart' as c;
 import '../providers/cycle_provider.dart';
 import '../providers/person_provider.dart';
 import '../services/ad_cache_service.dart';
@@ -25,21 +26,24 @@ class CategoryListPage extends StatefulWidget {
 
 class _CategoryListPageState extends State<CategoryListPage> {
   late String selectedType = 'spent'; //* Use for initialIndex
-  late AdMobService _adMobService;
-  late AdCacheService _adCacheService;
+  AdMobService? _adMobService;
+  AdCacheService? _adCacheService;
   bool isSearching = false;
   TextEditingController searchController = TextEditingController();
   final ValueNotifier<String> searchQueryNotifier = ValueNotifier('');
-  Future<List<Category>> spentCategoriesFuture = Future.value([]);
-  Future<List<Category>> receivedCategoriesFuture = Future.value([]);
-  List<Category>? _cachedSpentCategories;
-  List<Category>? _cachedReceivedCategories;
+  Future<List<c.Category>> spentCategoriesFuture = Future.value([]);
+  Future<List<c.Category>> receivedCategoriesFuture = Future.value([]);
+  List<c.Category>? _cachedSpentCategories;
+  List<c.Category>? _cachedReceivedCategories;
 
   @override
   void didChangeDependencies() async {
     super.didChangeDependencies();
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
+
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
+    }
 
     final categoriesProvider = context.read<CategoriesProvider>();
     categoriesProvider.addListener(_refreshCategories);
@@ -82,7 +86,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
     }
   }
 
-  bool _listEquals(List<Category>? a, List<Category>? b) {
+  bool _listEquals(List<c.Category>? a, List<c.Category>? b) {
     if (a == null || b == null) return false;
     if (a.length != b.length) return false;
 
@@ -193,7 +197,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                   ); //* Display a message for no categories
                 } else {
                   //* Display the list of categories
-                  final List<Category> categories = snapshot.data!;
+                  final List<c.Category> categories = snapshot.data!;
                   final filteredCategories = categories
                       .where((cat) => cat.name
                           .toLowerCase()
@@ -213,7 +217,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                   return ListView.builder(
                     itemCount: filteredCategories.length,
                     itemBuilder: (context, index) {
-                      Category category = filteredCategories[index];
+                      c.Category category = filteredCategories[index];
 
                       return Column(
                         children: [
@@ -245,14 +249,15 @@ class _CategoryListPageState extends State<CategoryListPage> {
                               ),
                             ),
                           ),
-                          if (!context.read<PersonProvider>().user!.isPremium &&
+                          if (_adCacheService != null &&
+                              !context.read<PersonProvider>().user!.isPremium &&
                               (index == 1 || index == 7 || index == 13))
                             AdContainer(
-                              adCacheService: _adCacheService,
+                              adCacheService: _adCacheService!,
                               number: index,
                               adSize: AdSize.banner,
                               adUnitId:
-                                  _adMobService.bannerCategoryListAdUnitId!,
+                                  _adMobService!.bannerCategoryListAdUnitId!,
                               height: 50.0,
                             ),
                           if (index == categories.length - 1)

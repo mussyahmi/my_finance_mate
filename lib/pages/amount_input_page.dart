@@ -70,49 +70,61 @@ class _AmountInputPageState extends State<AmountInputPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Enter Amount'),
-        centerTitle: true,
-      ),
-      body: SizedBox(
-        height: SizeConfig.screenHeight,
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Text(
-                  'RM$_amount',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                title: Text('Enter Amount'),
+                centerTitle: true,
+                scrolledUnderElevation: 9999,
+                floating: true,
+                snap: true,
+              ),
+            ],
+            body: SizedBox(
+              height: SizeConfig.screenHeight,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        'RM$_amount',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  NumberPadKeyboard(
+                    addDigit: _addDigit,
+                    backspace: _backspace,
+                    enterButtonText: 'DONE',
+                    onEnter: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.of(context).pop(_amount);
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    numberStyle: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    deleteIcon: Icon(
+                      CupertinoIcons.delete_left_fill,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    enterButtonTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
-            NumberPadKeyboard(
-              addDigit: _addDigit,
-              backspace: _backspace,
-              enterButtonText: 'DONE',
-              onEnter: () {
-                HapticFeedback.mediumImpact();
-                Navigator.of(context).pop(_amount);
-              },
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              numberStyle: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-              deleteIcon: Icon(
-                CupertinoIcons.delete_left_fill,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-              enterButtonTextStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

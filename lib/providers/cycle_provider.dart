@@ -2,7 +2,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../models/account.dart';
@@ -56,7 +58,12 @@ class CycleProvider extends ChangeNotifier {
           .read<CyclesProvider>()
           .fetchCycles(context, refresh: refresh);
 
-      if (cycle!.endDate.isBefore(now)) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final bool introSeen = prefs.getBool('intro_seen') ?? false;
+
+      if (introSeen && cycle!.endDate.isBefore(now)) {
+        EasyLoading.dismiss();
+
         //* Last cycle has ended, show confirmation dialog before creating a new cycle
         final bool? confirm = await showDialog<bool>(
           context: context,
@@ -64,11 +71,14 @@ class CycleProvider extends ChangeNotifier {
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Start New Cycle'),
-              content: const Text(
-                'Your last cycle has ended.\n\n'
-                'You can still add or edit transactions before starting a new one.\n\n'
-                'After a new cycle starts, the old one will be locked and view-only.\n\n'
-                'Start a new cycle now, or do it later from the Cycle page.',
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: const Text(
+                  'Your last cycle has ended.\n\n'
+                  'You can still add or edit transactions before starting a new one.\n\n'
+                  'After a new cycle starts, the old one will be locked and view-only.\n\n'
+                  'Start a new cycle now, or do it later from the Cycle page.',
+                ),
               ),
               actions: [
                 ElevatedButton(

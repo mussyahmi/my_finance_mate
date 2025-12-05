@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -30,8 +31,8 @@ class CycleAddPageState extends State<CycleAddPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
-  late AdMobService _adMobService;
-  late AdCacheService _adCacheService;
+  AdMobService? _adMobService;
+  AdCacheService? _adCacheService;
   bool _isAcknowledged = false;
 
   @override
@@ -72,8 +73,10 @@ class CycleAddPageState extends State<CycleAddPage> {
       });
     }
 
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
+    }
   }
 
   @override
@@ -86,147 +89,158 @@ class CycleAddPageState extends State<CycleAddPage> {
           title: const Text('Create New Cycle'),
           centerTitle: true,
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ElevatedButton(
-                        onPressed: null,
-                        child: Text(
-                          'Start Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_startDate ?? DateTime.now())}',
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _showEndDateRecommendationDialog(context);
-
-                          final selectedDate = await showDatePicker(
-                            context: context,
-                            initialDate: _endDate ?? DateTime.now(),
-                            firstDate: _startDate ?? DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 365)),
-                          );
-
-                          if (selectedDate != null) {
-                            setState(() {
-                              _endDate = selectedDate
-                                  .add(const Duration(days: 1))
-                                  .subtract(const Duration(minutes: 1));
-                            });
-                          }
-                        },
-                        child: Text(
-                          'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Focus(
-                        onFocusChange: (hasFocus) {
-                          if (hasFocus && !_isAcknowledged) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Cycle Name Info'),
-                                content: const Text(
-                                  'Enter a descriptive name for your cycle. Mentioning your salary (e.g., "Nov 2024 Salary") helps you track your finances more clearly and relate each cycle to your income period.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isAcknowledged = true;
-                                      });
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text('OK'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        },
-                        child: TextField(
-                          controller: cycleNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Name',
-                            helperText: 'Example: Nov 2024 Salary',
-                            helperStyle: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ElevatedButton(
+                            onPressed: null,
+                            child: Text(
+                              'Start Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_startDate ?? DateTime.now())}',
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: openingBalanceController,
-                        keyboardType:
-                            TextInputType.number, //* Allow only numeric input
-                        decoration: InputDecoration(
-                          labelText:
-                              '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
-                          prefixText: 'RM',
-                        ),
-                        enabled: false,
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        onPressed: () async {
-                          FocusManager.instance.primaryFocus?.unfocus();
+                          ElevatedButton(
+                            onPressed: () async {
+                              await _showEndDateRecommendationDialog(context);
 
-                          if (_isLoading) return;
+                              final selectedDate = await showDatePicker(
+                                context: context,
+                                initialDate: _endDate ?? DateTime.now(),
+                                firstDate: _startDate ?? DateTime.now(),
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365)),
+                              );
 
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          try {
-                            await _addCycle();
-                          } finally {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: _isLoading
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  strokeWidth: 2.0,
+                              if (selectedDate != null) {
+                                setState(() {
+                                  _endDate = selectedDate
+                                      .add(const Duration(days: 1))
+                                      .subtract(const Duration(minutes: 1));
+                                });
+                              }
+                            },
+                            child: Text(
+                              'End Date: ${DateFormat('EE, d MMM yyyy h:mm aa').format(_endDate ?? DateTime.now())}',
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Focus(
+                            onFocusChange: (hasFocus) {
+                              if (hasFocus && !_isAcknowledged) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Cycle Name Info'),
+                                    content: ConstrainedBox(
+                                      constraints:
+                                          BoxConstraints(maxWidth: 500),
+                                      child: const Text(
+                                        'Enter a descriptive name for your cycle. Mentioning your salary (e.g., "Nov 2024 Salary") helps you track your finances more clearly and relate each cycle to your income period.',
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isAcknowledged = true;
+                                          });
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            child: TextField(
+                              controller: cycleNameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Name',
+                                helperText: 'Example: Nov 2024 Salary',
+                                helperStyle: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
                                 ),
-                              )
-                            : const Text('Submit'),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          TextField(
+                            controller: openingBalanceController,
+                            keyboardType: TextInputType
+                                .number, //* Allow only numeric input
+                            decoration: InputDecoration(
+                              labelText:
+                                  '${widget.cycle == null ? 'Opening' : 'Previous'} Balance',
+                              prefixText: 'RM',
+                            ),
+                            enabled: false,
+                          ),
+                          const SizedBox(height: 30),
+                          ElevatedButton(
+                            onPressed: () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+
+                              if (_isLoading) return;
+
+                              setState(() {
+                                _isLoading = true;
+                              });
+
+                              try {
+                                await _addCycle();
+                              } finally {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      strokeWidth: 2.0,
+                                    ),
+                                  )
+                                : const Text('Submit'),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                if (_adMobService != null &&
+                    !context.read<PersonProvider>().user!.isPremium)
+                  AdContainer(
+                    adCacheService: _adCacheService!,
+                    number: 1,
+                    adSize: AdSize.banner,
+                    adUnitId: _adMobService!.bannerCycleAddAdUnitId!,
+                    height: 50.0,
+                  ),
+              ],
             ),
-            if (!context.read<PersonProvider>().user!.isPremium)
-              AdContainer(
-                adCacheService: _adCacheService,
-                number: 1,
-                adSize: AdSize.banner,
-                adUnitId: _adMobService.bannerCycleAddAdUnitId!,
-                height: 50.0,
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -239,9 +253,12 @@ class CycleAddPageState extends State<CycleAddPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('End Date Recommendation'),
-          content: const Text(
-            'We recommend selecting the end date as 1 day before your next salary.',
-            style: TextStyle(fontSize: 14),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: const Text(
+              'We recommend selecting the end date as 1 day before your next salary.',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
           actions: <Widget>[
             TextButton(

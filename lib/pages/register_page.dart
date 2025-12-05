@@ -1,16 +1,15 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:my_finance_mate/services/device_info_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,269 +42,212 @@ class RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        child: SizedBox(
-          height: SizeConfig.screenHeight,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.0),
-                            image: DecorationImage(
-                              image: AssetImage('assets/icon/icon.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Create your My Finance Mate account',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                          )),
-                      const SizedBox(height: 30),
-                      TextField(
-                        controller: _displayNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Display Name',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible
-                                  ? CupertinoIcons.eye_fill
-                                  : CupertinoIcons.eye_slash_fill,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: () {
-                              //* Toggle the password visibility when the button is pressed
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: !_isConfirmPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isConfirmPasswordVisible
-                                  ? CupertinoIcons.eye_fill
-                                  : CupertinoIcons.eye_slash_fill,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            onPressed: () {
-                              //* Toggle the password visibility when the button is pressed
-                              setState(() {
-                                _isConfirmPasswordVisible =
-                                    !_isConfirmPasswordVisible;
-                              });
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20.0),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_isLoading) return;
-
-                          setState(() {
-                            _isLoading = true;
-                          });
-
-                          try {
-                            await _register(
-                              _displayNameController.text.trim(),
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                              _confirmPasswordController.text.trim(),
-                            );
-                          } finally {
-                            setState(() {
-                              _isLoading = false;
-                            });
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: _isLoading
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            : const Text('Register'),
-                      ),
-                      const SizedBox(height: 10),
-                      const Row(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: SizedBox(
+              height: SizeConfig.screenHeight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Expanded(
-                              child: Divider(color: Colors.grey, height: 36)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Or sign up with'),
+                          Center(
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.0),
+                                image: DecorationImage(
+                                  image: AssetImage('assets/icon/icon.png'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
                           ),
-                          Expanded(
-                              child: Divider(color: Colors.grey, height: 36)),
+                          const SizedBox(height: 10),
+                          const Text('Create your My Finance Mate account',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                              )),
+                          const SizedBox(height: 30),
+                          TextField(
+                            controller: _displayNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Display Name',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          TextField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: !_isPasswordVisible,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? CupertinoIcons.eye_fill
+                                      : CupertinoIcons.eye_slash_fill,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: () {
+                                  //* Toggle the password visibility when the button is pressed
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16.0),
+                          TextField(
+                            controller: _confirmPasswordController,
+                            obscureText: !_isConfirmPasswordVisible,
+                            decoration: InputDecoration(
+                              labelText: 'Confirm Password',
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isConfirmPasswordVisible
+                                      ? CupertinoIcons.eye_fill
+                                      : CupertinoIcons.eye_slash_fill,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                onPressed: () {
+                                  //* Toggle the password visibility when the button is pressed
+                                  setState(() {
+                                    _isConfirmPasswordVisible =
+                                        !_isConfirmPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20.0),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (_isLoading) return;
+
+                              setState(() {
+                                _isLoading = true;
+                              });
+
+                              try {
+                                await _register(
+                                  _displayNameController.text.trim(),
+                                  _emailController.text.trim(),
+                                  _passwordController.text.trim(),
+                                  _confirmPasswordController.text.trim(),
+                                );
+                              } finally {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      strokeWidth: 2.0,
+                                    ),
+                                  )
+                                : const Text('Register'),
+                          ),
+                          const SizedBox(height: 10),
+                          const Row(
+                            children: [
+                              Expanded(
+                                  child:
+                                      Divider(color: Colors.grey, height: 36)),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text('Or sign up with'),
+                              ),
+                              Expanded(
+                                  child:
+                                      Divider(color: Colors.grey, height: 36)),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (_isLoading || _isLoading2) return;
+                              setState(() => _isLoading2 = true);
+                              try {
+                                await _signUpWithGoogle(context);
+                              } finally {
+                                setState(() => _isLoading2 = false);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isLoading2
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      strokeWidth: 2.0,
+                                    ),
+                                  )
+                                : const Text('Google'),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_isLoading || _isLoading2) return;
-                          setState(() => _isLoading2 = true);
-                          try {
-                            await _signUpWithGoogle(context);
-                          } finally {
-                            setState(() => _isLoading2 = false);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        child: _isLoading2
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                  strokeWidth: 2.0,
-                                ),
-                              )
-                            : const Text('Google'),
-                      ),
-                    ],
-                  ),
-                ),
-                PackageInfoSummary(canPress: false),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Already have an account?'),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Login'))
+                    ),
+                    PackageInfoSummary(canPress: false),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Already have an account?'),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Login'))
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  Future<String> _getDeviceInfoJson() async {
-    //* Get device information
-    String deviceInfoJson = '';
-    Map<String, dynamic> deviceInfoMap = {};
-
-    if (Platform.isAndroid) {
-      AndroidDeviceInfo deviceInfo = await DeviceInfoPlugin().androidInfo;
-
-      deviceInfoMap = {
-        'version': {
-          'baseOS': deviceInfo.version.baseOS,
-          'codename': deviceInfo.version.codename,
-          'incremental': deviceInfo.version.incremental,
-          'previewSdkInt': deviceInfo.version.previewSdkInt,
-          'release': deviceInfo.version.release,
-          'sdkInt': deviceInfo.version.sdkInt,
-          'securityPatch': deviceInfo.version.securityPatch,
-        },
-        'board': deviceInfo.board,
-        'bootloader': deviceInfo.bootloader,
-        'brand': deviceInfo.brand,
-        'device': deviceInfo.device,
-        'display': deviceInfo.display,
-        'fingerprint': deviceInfo.fingerprint,
-        'hardware': deviceInfo.hardware,
-        'host': deviceInfo.host,
-        'id': deviceInfo.id,
-        'manufacturer': deviceInfo.manufacturer,
-        'model': deviceInfo.model,
-        'product': deviceInfo.product,
-        'tags': deviceInfo.tags,
-        'type': deviceInfo.type,
-        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'serialNumber': deviceInfo.serialNumber,
-        'isLowRamDevice': deviceInfo.isLowRamDevice,
-      };
-
-      //* Convert device info to JSON
-      deviceInfoJson = jsonEncode(deviceInfoMap);
-    } else if (Platform.isIOS) {
-      IosDeviceInfo deviceInfo = await DeviceInfoPlugin().iosInfo;
-
-      deviceInfoMap = {
-        'name': deviceInfo.name,
-        'systemName': deviceInfo.systemName,
-        'systemVersion': deviceInfo.systemVersion,
-        'model': deviceInfo.model,
-        'localizedModel': deviceInfo.localizedModel,
-        'identifierForVendor': deviceInfo.identifierForVendor,
-        'isPhysicalDevice': deviceInfo.isPhysicalDevice,
-        'utsname': {
-          'sysname': deviceInfo.utsname.sysname,
-          'nodename': deviceInfo.utsname.nodename,
-          'release': deviceInfo.utsname.release,
-          'version': deviceInfo.utsname.version,
-          'machine': deviceInfo.utsname.machine,
-        },
-      };
-
-      //* Convert device info to JSON
-      deviceInfoJson = jsonEncode(deviceInfoMap);
-    }
-
-    return deviceInfoJson;
   }
 
   Future<void> _register(
@@ -337,7 +279,7 @@ class RegisterPageState extends State<RegisterPage> {
         final now = DateTime.now();
 
         //* Get device information
-        final deviceInfoJson = await _getDeviceInfoJson();
+        final deviceInfoJson = await getDeviceInfoJson();
 
         //* Add the user to the collection with UID as the document ID
         await FirebaseFirestore.instance
@@ -407,8 +349,11 @@ class RegisterPageState extends State<RegisterPage> {
 
   Future<void> _signUpWithGoogle(BuildContext context) async {
     try {
-      final GoogleSignInAccount? googleSignInAccount =
-          await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn(
+        clientId: kIsWeb
+            ? "301321629117-kde380qjnb5o7j8tap2e04q7eii5pss4.apps.googleusercontent.com"
+            : null,
+      ).signIn();
       if (googleSignInAccount == null) return; // cancelled
 
       final GoogleSignInAuthentication googleAuth =
@@ -440,7 +385,7 @@ class RegisterPageState extends State<RegisterPage> {
       }
 
       final now = DateTime.now();
-      final deviceInfoJson = await _getDeviceInfoJson();
+      final deviceInfoJson = await getDeviceInfoJson();
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'created_at': now,
@@ -541,7 +486,10 @@ class RegisterPageState extends State<RegisterPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: Text(message),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: SelectableText(message),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

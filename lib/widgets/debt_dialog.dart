@@ -58,110 +58,113 @@ class _DebtDialogState extends State<DebtDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text("${widget.action} Debt"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: "Person's Name"),
-            ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AmountInputPage(
-                      amount: amountController.text,
-                    ),
-                  ),
-                );
-
-                if (result != null && result is String) {
-                  amountController.text = result;
-                }
-              },
-              child: AbsorbPointer(
-                child: TextField(
-                  controller: amountController,
-                  keyboardType:
-                      TextInputType.number, //* Allow only numeric input
-                  decoration: InputDecoration(
-                    labelText: 'Amount',
-                    prefixText: 'RM',
-                  ),
-                ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Person's Name"),
               ),
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField(
-              dropdownColor: Theme.of(context).colorScheme.onSecondary,
-              value: selectedType,
-              decoration: const InputDecoration(
-                labelText: 'Type',
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: DebtType.iOwe,
-                  child: Text("I Owe"),
-                ),
-                DropdownMenuItem(
-                  value: DebtType.theyOweMe,
-                  child: Text("They Owe Me"),
-                ),
-              ],
-              onChanged: (DebtType? newValue) {
-                setState(() {
-                  selectedType = newValue!;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
-            Card(
-              child: ListTile(
+              const SizedBox(height: 20),
+              GestureDetector(
                 onTap: () async {
-                  final String? note = await Navigator.push(
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NoteInputPage(
-                        note: noteController.text,
+                      builder: (context) => AmountInputPage(
+                        amount: amountController.text,
                       ),
                     ),
                   );
 
-                  if (note == null) {
-                    return;
-                  }
-
-                  if (note == 'empty') {
-                    setState(() {
-                      noteController.text = '';
-                    });
-                  } else if (note.isNotEmpty) {
-                    setState(() {
-                      noteController.text = note;
-                    });
+                  if (result != null && result is String) {
+                    amountController.text = result;
                   }
                 },
-                leading: Icon(Icons.notes),
-                title: Text(
-                  noteController.text.isEmpty
-                      ? 'Add Note'
-                      : noteController.text.contains('insert')
-                          ? ParchmentDocument.fromJson(
-                                  jsonDecode(noteController.text))
-                              .toPlainText()
-                          : noteController.text.split('\\n')[0],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: const TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey,
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: amountController,
+                    keyboardType:
+                        TextInputType.number, //* Allow only numeric input
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      prefixText: 'RM',
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              DropdownButtonFormField(
+                dropdownColor: Theme.of(context).colorScheme.onSecondary,
+                value: selectedType,
+                decoration: const InputDecoration(
+                  labelText: 'Type',
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: DebtType.iOwe,
+                    child: Text("I Owe"),
+                  ),
+                  DropdownMenuItem(
+                    value: DebtType.theyOweMe,
+                    child: Text("They Owe Me"),
+                  ),
+                ],
+                onChanged: (DebtType? newValue) {
+                  setState(() {
+                    selectedType = newValue!;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              Card(
+                child: ListTile(
+                  onTap: () async {
+                    final String? note = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NoteInputPage(
+                          note: noteController.text,
+                        ),
+                      ),
+                    );
+
+                    if (note == null) {
+                      return;
+                    }
+
+                    if (note == 'empty') {
+                      setState(() {
+                        noteController.text = '';
+                      });
+                    } else if (note.isNotEmpty) {
+                      setState(() {
+                        noteController.text = note;
+                      });
+                    }
+                  },
+                  leading: Icon(Icons.notes),
+                  title: Text(
+                    noteController.text.isEmpty
+                        ? 'Add Note'
+                        : noteController.text.contains('insert')
+                            ? ParchmentDocument.fromJson(
+                                    jsonDecode(noteController.text))
+                                .toPlainText()
+                            : noteController.text.split('\\n')[0],
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

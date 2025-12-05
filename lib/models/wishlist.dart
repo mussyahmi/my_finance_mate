@@ -33,99 +33,102 @@ class Wishlist {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return CustomDraggableScrollableSheet(
-          initialSize: 0.45,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Wishlist Details',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              Row(
-                children: [
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result = await _deleteHandler(context, id);
-
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: const Icon(
-                      CupertinoIcons.delete_solid,
-                      color: Colors.red,
-                    ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      final result =
-                          await showWishlistDialog(context, 'Edit', wish: this);
-
-                      if (result) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    icon: Icon(
-                      CupertinoIcons.pencil,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          contents: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'ID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SelectableText(id),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Name:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(name),
-                ],
-              ),
-              if (note.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: CustomDraggableScrollableSheet(
+            initialSize: 0.45,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Wishlist Details',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Row(
                   children: [
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Note:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    FleatherEditor(
-                      controller: FleatherController(
-                        document: ParchmentDocument.fromJson(
-                          note.contains('insert')
-                              ? jsonDecode(note)
-                              : [
-                                  {"insert": "$note\n"}
-                                ],
-                        ),
-                      ),
-                      showCursor: false,
-                      readOnly: true,
-                      onLaunchUrl: (url) {
-                        launchUrl(Uri.parse(url!));
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await _deleteHandler(context, id);
+
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
                       },
+                      icon: const Icon(
+                        CupertinoIcons.delete_solid,
+                        color: Colors.red,
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        final result = await showWishlistDialog(context, 'Edit',
+                            wish: this);
+
+                        if (result) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: Icon(
+                        CupertinoIcons.pencil,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),
-            ],
+              ],
+            ),
+            contents: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'ID:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SelectableText(id),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Name:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(name),
+                  ],
+                ),
+                if (note.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Note:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      FleatherEditor(
+                        controller: FleatherController(
+                          document: ParchmentDocument.fromJson(
+                            note.contains('insert')
+                                ? jsonDecode(note)
+                                : [
+                                    {"insert": "$note\n"}
+                                  ],
+                          ),
+                        ),
+                        showCursor: false,
+                        readOnly: true,
+                        onLaunchUrl: (url) {
+                          launchUrl(Uri.parse(url!));
+                        },
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -139,8 +142,11 @@ class Wishlist {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this wish?'),
-          actions: <Widget>[
+          content: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: const Text('Are you sure you want to delete this wish?'),
+          ),
+          actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);

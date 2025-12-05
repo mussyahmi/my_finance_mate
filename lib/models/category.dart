@@ -60,219 +60,222 @@ class Category {
     await showModalBottomSheet(
       context: context,
       builder: (context) {
-        return CustomDraggableScrollableSheet(
-          initialSize: 0.45,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Category Details',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              Row(
-                children: [
-                  if (cycle.isLastCycle)
-                    Row(
-                      children: [
-                        IconButton.filledTonal(
-                          onPressed: () async {
-                            final result = await _deleteHandler(context);
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: CustomDraggableScrollableSheet(
+            initialSize: 0.45,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Category Details',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Row(
+                  children: [
+                    if (cycle.isLastCycle)
+                      Row(
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final result = await _deleteHandler(context);
 
-                            if (result) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: const Icon(
-                            CupertinoIcons.delete_solid,
-                            color: Colors.red,
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: const Icon(
+                              CupertinoIcons.delete_solid,
+                              color: Colors.red,
+                            ),
                           ),
-                        ),
-                        IconButton.filledTonal(
-                          onPressed: () async {
-                            final result = await showCategoryDialog(
-                              context,
-                              'Edit',
-                              category: this,
-                            );
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final result = await showCategoryDialog(
+                                context,
+                                'Edit',
+                                category: this,
+                              );
 
-                            if (result) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: Icon(
-                            CupertinoIcons.pencil,
-                            color: Theme.of(context).colorScheme.primary,
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: Icon(
+                              CupertinoIcons.pencil,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
-                        ),
-                        IconButton.filledTonal(
-                          onPressed: () async {
-                            final bool? result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ShowCaseWidget(
-                                  builder: (showcaseContext) =>
-                                      TransactionFormPage(
-                                    action: 'Add',
-                                    selectedCategoryId: id,
-                                    isTourMode: false,
-                                    showcaseContext: context,
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final bool? result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ShowCaseWidget(
+                                    builder: (showcaseContext) =>
+                                        TransactionFormPage(
+                                      action: 'Add',
+                                      selectedCategoryId: id,
+                                      isTourMode: false,
+                                      showcaseContext: context,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
+                              );
 
-                            if (result == null) {
-                              return;
-                            }
+                              if (result == null) {
+                                return;
+                              }
 
-                            if (result) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: Icon(
-                            Icons.format_list_bulleted_add,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TransactionListPage(
-                              type: selectedType, categoryId: id),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.format_list_bulleted,
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
-          contents: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'ID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SelectableText(id),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Name:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(name),
-                ],
-              ),
-              if (type == 'spent')
-                Column(
-                  children: [
-                    const SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Sub Type:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Tag(title: subType),
-                      ],
-                    ),
-                  ],
-                ),
-              if (budget.isNotEmpty && budget != '0.00')
-                Column(
-                  children: [
-                    const SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Budget:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text('RM$budget'),
-                      ],
-                    ),
-                  ],
-                ),
-              if (totalAmount != '0.00')
-                Column(
-                  children: [
-                    const SizedBox(height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${type.capitalize()}:',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        Text('RM$totalAmount'),
-                      ],
-                    ),
-                    if (budget.isNotEmpty && budget != '0.00')
-                      Column(
-                        children: [
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                double.parse(amountBalance()) < 0
-                                    ? 'Exceed:'
-                                    : 'Balance:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'RM${double.parse(amountBalance()).abs().toStringAsFixed(2)}',
-                              ),
-                            ],
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: Icon(
+                              Icons.format_list_bulleted_add,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ],
                       ),
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransactionListPage(
+                                type: selectedType, categoryId: id),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.format_list_bulleted,
+                      ),
+                    ),
                   ],
-                ),
-              if (note.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                )
+              ],
+            ),
+            contents: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(height: 5),
                     const Text(
-                      'Note:',
+                      'ID:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    FleatherEditor(
-                      controller: FleatherController(
-                        document: ParchmentDocument.fromJson(
-                          note.isNotEmpty && note.contains('insert')
-                              ? jsonDecode(note)
-                              : [
-                                  {"insert": "$note\n"}
-                                ],
-                        ),
-                      ),
-                      showCursor: false,
-                      readOnly: true,
-                      onLaunchUrl: (url) {
-                        launchUrl(Uri.parse(url!));
-                      },
-                    ),
+                    SelectableText(id),
                   ],
                 ),
-            ],
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Name:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(name),
+                  ],
+                ),
+                if (type == 'spent')
+                  Column(
+                    children: [
+                      const SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Sub Type:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Tag(title: subType),
+                        ],
+                      ),
+                    ],
+                  ),
+                if (budget.isNotEmpty && budget != '0.00')
+                  Column(
+                    children: [
+                      const SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Budget:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text('RM$budget'),
+                        ],
+                      ),
+                    ],
+                  ),
+                if (totalAmount != '0.00')
+                  Column(
+                    children: [
+                      const SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${type.capitalize()}:',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text('RM$totalAmount'),
+                        ],
+                      ),
+                      if (budget.isNotEmpty && budget != '0.00')
+                        Column(
+                          children: [
+                            const SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  double.parse(amountBalance()) < 0
+                                      ? 'Exceed:'
+                                      : 'Balance:',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'RM${double.parse(amountBalance()).abs().toStringAsFixed(2)}',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                if (note.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Note:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      FleatherEditor(
+                        controller: FleatherController(
+                          document: ParchmentDocument.fromJson(
+                            note.isNotEmpty && note.contains('insert')
+                                ? jsonDecode(note)
+                                : [
+                                    {"insert": "$note\n"}
+                                  ],
+                          ),
+                        ),
+                        showCursor: false,
+                        readOnly: true,
+                        onLaunchUrl: (url) {
+                          launchUrl(Uri.parse(url!));
+                        },
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -293,8 +296,11 @@ class Category {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Cannot Delete Category'),
-            content: const Text(
-                'There are transactions associated with this category in the current cycle. You cannot delete it.'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: const Text(
+                  'There are transactions associated with this category in the current cycle. You cannot delete it.'),
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -313,8 +319,11 @@ class Category {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Confirm Delete'),
-            content:
-                const Text('Are you sure you want to delete this category?'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child:
+                  const Text('Are you sure you want to delete this category?'),
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

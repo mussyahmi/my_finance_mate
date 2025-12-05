@@ -29,7 +29,10 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             builder: (context) {
               return AlertDialog(
                 title: const Text('Exit Confirmation'),
-                content: const Text('Are you sure you want to exit the app?'),
+                content: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: const Text('Are you sure you want to exit the app?'),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),

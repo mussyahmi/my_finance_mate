@@ -69,52 +69,56 @@ class _ProfileImageState extends State<ProfileImage> {
                         'Choose Option',
                         textAlign: TextAlign.center,
                       ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
-                            ),
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              final result =
-                                  await FilePicker.platform.pickFiles(
-                                type: FileType.image,
-                              );
-                              if (result != null) {
-                                PlatformFile file = result.files.first;
+                      content: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 500),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                );
+                                if (result != null) {
+                                  PlatformFile file = result.files.first;
 
-                                await _checkFileSize(file, file.size);
-                              }
-                            },
-                            child: const Text('Pick from Gallery'),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
+                                  await _checkFileSize(file, file.size);
+                                }
+                              },
+                              child: const Text('Pick from Gallery'),
                             ),
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              final file = await ImagePicker().pickImage(
-                                source: ImageSource.camera,
-                                imageQuality: 50,
-                              );
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                              ),
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final file = await ImagePicker().pickImage(
+                                  source: ImageSource.camera,
+                                  imageQuality: 50,
+                                );
 
-                              if (file != null) {
-                                await _checkFileSize(file, await file.length());
-                              }
-                            },
-                            child: const Text('Take a Photo'),
-                          ),
-                        ],
+                                if (file != null) {
+                                  await _checkFileSize(
+                                      file, await file.length());
+                                }
+                              },
+                              child: const Text('Take a Photo'),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -147,8 +151,11 @@ class _ProfileImageState extends State<ProfileImage> {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('File Size Limit Exceeded'),
-            content: Text(
-                'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: Text(
+                  'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+            ),
             actions: <Widget>[
               TextButton(
                 child: const Text('OK'),

@@ -1,0 +1,43 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "my-finance-mate",
+          "appId": "1:301321629117:android:72b6ad18b362277cf376d4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "my-finance-mate",
+          "appId": "1:301321629117:ios:7a3349c0d82f26d5f376d4",
+          "uploadDebugSymbols": true,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "my-finance-mate",
+          "configurations": {
+            "android": "1:301321629117:android:72b6ad18b362277cf376d4",
+            "ios": "1:301321629117:ios:7a3349c0d82f26d5f376d4",
+            "web": "1:301321629117:web:67b7383f97617d73f376d4"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "site": "my-finance-mate-mobile",
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "asia-east1"
+    }
+  }
+}

@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -15,7 +16,7 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/account.dart';
-import '../models/category.dart';
+import '../models/category.dart' as c;
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../providers/accounts_provider.dart';
@@ -50,7 +51,7 @@ class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
   AdMobService? _adMobService;
-  late AdCacheService _adCacheService;
+  AdCacheService? _adCacheService;
   AppOpenAd? _appOpenAd;
   RewardedAd? _rewardedAd;
   bool _showPremiumEnded = false;
@@ -68,44 +69,49 @@ class _DashboardPageState extends State<DashboardPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    quickActions.setShortcutItems(<ShortcutItem>[
-      // NOTE: This second action icon will only work on Android.
-      // In a real world project keep the same file name for both platforms.
-      const ShortcutItem(
-        type: 'kwsp_withdrawal_planner',
-        localizedTitle: 'KWSP Withdrawal Planner',
-        icon: 'kwsp_withdrawal_planner_icon',
-      ),
-      const ShortcutItem(
-        type: 'kwsp_growth_calculator',
-        localizedTitle: 'KWSP Growth Calculator',
-        icon: 'kwsp_growth_calculator_icon',
-      ),
-      const ShortcutItem(
-        type: 'qada_prayer_tracker',
-        localizedTitle: 'Qada Prayer Tracker',
-        icon: 'qada_prayer_tracker_icon',
-      ),
-      const ShortcutItem(
-        type: 'add_transaction',
-        localizedTitle: 'Add Transaction',
-        icon: 'add_transaction_icon',
-      ),
-    ]);
+    if (!kIsWeb) {
+      quickActions.setShortcutItems(<ShortcutItem>[
+        // NOTE: This second action icon will only work on Android.
+        // In a real world project keep the same file name for both platforms.
+        const ShortcutItem(
+          type: 'kwsp_withdrawal_planner',
+          localizedTitle: 'KWSP Withdrawal Planner',
+          icon: 'kwsp_withdrawal_planner_icon',
+        ),
+        const ShortcutItem(
+          type: 'kwsp_growth_calculator',
+          localizedTitle: 'KWSP Growth Calculator',
+          icon: 'kwsp_growth_calculator_icon',
+        ),
+        const ShortcutItem(
+          type: 'qada_prayer_tracker',
+          localizedTitle: 'Qada Prayer Tracker',
+          icon: 'qada_prayer_tracker_icon',
+        ),
+        const ShortcutItem(
+          type: 'add_transaction',
+          localizedTitle: 'Add Transaction',
+          icon: 'add_transaction_icon',
+        ),
+      ]);
+    }
   }
 
   Future<void> _addTransactionHandler(Person user) async {
     if (context.read<AccountsProvider>().accounts!.isEmpty) {
       EasyLoading.showInfo('No accounts? Let\'s fix that—add one to begin!');
-    } else if (!user.isPremium && user.dailyTransactionsMade >= 5) {
+    } else if (!kIsWeb && !user.isPremium && user.dailyTransactionsMade >= 5) {
       await showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) {
           return AlertDialog(
             title: const Text('Daily Transaction Cap Reached!'),
-            content: const Text(
-                'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: const Text(
+                  'Your daily transaction limit has been reached. You can reset it by watching a quick ad, or unlock unlimited daily transactions by upgrading to Premium!'),
+            ),
             actions: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -176,7 +182,10 @@ class _DashboardPageState extends State<DashboardPage>
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text("Take a quick tour?"),
-        content: Text("We'll highlight key features to help you get started."),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: Text("We'll highlight key features to help you get started."),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -211,22 +220,23 @@ class _DashboardPageState extends State<DashboardPage>
 
     final Person user = context.read<PersonProvider>().user!;
 
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (!user.isPremium) {
+        _createAppOpenAd();
 
-    if (!user.isPremium) {
-      _createAppOpenAd();
-
-      if (user.dailyTransactionsMade >= 5) {
-        _createRewardedAd();
+        if (user.dailyTransactionsMade >= 5) {
+          _createRewardedAd();
+        }
       }
     }
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     _showPremiumEnded = prefs.getBool('show_premium_ended') ?? false;
 
-    if (!_quickActionsInitialized) {
+    if (!kIsWeb && !_quickActionsInitialized) {
       _quickActionsInitialized = true;
       quickActions.initialize((String shortcutType) {
         if (shortcutType == 'kwsp_withdrawal_planner') {
@@ -258,7 +268,7 @@ class _DashboardPageState extends State<DashboardPage>
 
     final Person user = context.read<PersonProvider>().user!;
 
-    if (!user.isPremium) {
+    if (!kIsWeb && !user.isPremium) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       int? pauseCounter = prefs.getInt('pause_counter');
 
@@ -267,7 +277,8 @@ class _DashboardPageState extends State<DashboardPage>
         pauseCounter = 0;
       }
 
-      if (state == AppLifecycleState.paused) {
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.inactive) {
         pauseCounter++;
         await prefs.setInt('pause_counter', pauseCounter);
       } else if (state == AppLifecycleState.resumed && pauseCounter >= 5) {
@@ -306,7 +317,10 @@ class _DashboardPageState extends State<DashboardPage>
           builder: (context) {
             return AlertDialog(
               title: const Text('Exit Confirmation'),
-              content: const Text('Are you sure you want to exit the app?'),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 500),
+                child: const Text('Are you sure you want to exit the app?'),
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
@@ -326,420 +340,446 @@ class _DashboardPageState extends State<DashboardPage>
         );
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: [
-            cycle != null ? const AccountListPage() : Container(),
-            NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                SliverAppBar(
-                  title: Text(cycle != null ? cycle.cycleName : 'Dashboard'),
-                  centerTitle: true,
-                  scrolledUnderElevation: 9999,
-                  floating: true,
-                  snap: true,
-                  actions: [
-                    if (cycle != null)
-                      IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CyclePage(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(CupertinoIcons.calendar))
-                  ],
-                ),
-              ],
-              body: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    if (!user.isPremium && _showPremiumEnded)
-                      Column(
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Card(
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    title: Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: const Text(
-                                        'Premium Access Ended',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20),
-                                      ),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: const Text(
-                                          'Your premium access has ended. Upgrade to continue enjoying premium features!'),
-                                    ),
-                                  ),
-                                  const Divider(),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 16.0,
-                                      right: 16.0,
-                                      bottom: 8.0,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        TextButton(
-                                          onPressed: () async {
-                                            SharedPreferences prefs =
-                                                await SharedPreferences
-                                                    .getInstance();
-
-                                            prefs.setBool(
-                                                'show_premium_ended', false);
-
-                                            setState(() {
-                                              _showPremiumEnded = false;
-                                            });
-                                          },
-                                          child: const Text('Later'),
-                                        ),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            surfaceTintColor: Colors.orange,
-                                            foregroundColor:
-                                                Colors.orangeAccent,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const PremiumSubscriptionPage(),
-                                              ),
-                                            );
-                                          },
-                                          child:
-                                              const Text('Upgrade to Premium'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    const MonthlyExpenses(),
-                    const SizedBox(height: 20),
-                    if (_adMobService != null && !user.isPremium)
-                      Column(
-                        children: [
-                          AdContainer(
-                            adCacheService: _adCacheService,
-                            number: 1,
-                            adSize: AdSize.mediumRectangle,
-                            adUnitId: _adMobService!.bannerDasboardAdUnitId!,
-                            height: 250.0,
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    const PinnedWishlist(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Latest Transactions',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          TextButton(
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 500),
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                cycle != null ? const AccountListPage() : Container(),
+                NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverAppBar(
+                      title:
+                          Text(cycle != null ? cycle.cycleName : 'Dashboard'),
+                      centerTitle: true,
+                      scrolledUnderElevation: 9999,
+                      floating: true,
+                      snap: true,
+                      actions: [
+                        if (cycle != null)
+                          IconButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => TransactionListPage(
-                                      addTransactionHandler:
-                                          _addTransactionHandler,
-                                    ),
+                                    builder: (context) => const CyclePage(),
                                   ),
                                 );
                               },
-                              child: const Text('See all'))
-                        ],
-                      ),
+                              icon: const Icon(CupertinoIcons.calendar))
+                      ],
                     ),
-                    FutureBuilder(
-                      future: context
-                          .watch<TransactionsProvider>()
-                          .getLatestTransactions(context),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            cycle == null) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: CircularProgressIndicator(),
-                          ); //* Display a loading indicator
-                        } else if (snapshot.hasError) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: SelectableText(
-                              'Error: ${snapshot.error}',
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              'No transactions found.',
-                              textAlign: TextAlign.center,
-                            ),
-                          ); //* Display a message for no transactions
-                        } else {
-                          //* Display the list of transactions
-                          final transactions = snapshot.data!;
-                          return Column(
-                            children: transactions
-                                .asMap()
-                                .entries
-                                .map<Widget>((entry) {
-                              int index = entry.key;
-                              t.Transaction transaction =
-                                  entry.value as t.Transaction;
-
-                              late t.Transaction prevTransaction;
-
-                              if (index > 0) {
-                                if (transactions[index - 1] is t.Transaction) {
-                                  prevTransaction =
-                                      transactions[index - 1] as t.Transaction;
-                                } else {
-                                  prevTransaction =
-                                      transactions[index - 2] as t.Transaction;
-                                }
-                              }
-
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Column(
-                                      children: [
-                                        if (index == 0 ||
-                                            DateTime(
-                                                    transaction.dateTime.year,
-                                                    transaction.dateTime.month,
-                                                    transaction.dateTime.day,
-                                                    0,
-                                                    0) !=
-                                                DateTime(
-                                                    prevTransaction
-                                                        .dateTime.year,
-                                                    prevTransaction
-                                                        .dateTime.month,
-                                                    prevTransaction
-                                                        .dateTime.day,
-                                                    0,
-                                                    0))
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              transaction.dateTime
-                                                  .getDateText(),
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey),
-                                            ),
+                  ],
+                  body: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        if (!kIsWeb && !user.isPremium && _showPremiumEnded)
+                          Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0),
+                                child: Card(
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        title: Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: const Text(
+                                            'Premium Access Ended',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20),
                                           ),
-                                        Card(
-                                          child: ListTile(
-                                            title: transaction.type ==
-                                                    'transfer'
-                                                ? FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                          ),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0,
-                                                                  vertical:
-                                                                      2.0),
-                                                          child: Text(
-                                                            transaction
-                                                                .accountName,
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 14,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0),
-                                                          child: Icon(
-                                                            CupertinoIcons
-                                                                .arrow_right_arrow_left,
-                                                            color: Colors.grey,
-                                                            size: 16,
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            border: Border.all(
-                                                              color:
-                                                                  Colors.grey,
-                                                              width: 1.0,
-                                                            ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8.0),
-                                                          ),
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal:
-                                                                      4.0,
-                                                                  vertical:
-                                                                      2.0),
-                                                          child: Text(
-                                                            transaction
-                                                                .accountToName,
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 14,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Text(
-                                                      transaction.categoryName,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 16),
-                                                    ),
+                                        ),
+                                        subtitle: Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: const Text(
+                                              'Your premium access has ended. Upgrade to continue enjoying premium features!'),
+                                        ),
+                                      ),
+                                      const Divider(),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 16.0,
+                                          right: 16.0,
+                                          bottom: 8.0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            TextButton(
+                                              onPressed: () async {
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+
+                                                prefs.setBool(
+                                                    'show_premium_ended',
+                                                    false);
+
+                                                setState(() {
+                                                  _showPremiumEnded = false;
+                                                });
+                                              },
+                                              child: const Text('Later'),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                surfaceTintColor: Colors.orange,
+                                                foregroundColor:
+                                                    Colors.orangeAccent,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const PremiumSubscriptionPage(),
                                                   ),
-                                            subtitle: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  transaction.note
-                                                          .contains('insert')
-                                                      ? ParchmentDocument
-                                                              .fromJson(
+                                                );
+                                              },
+                                              child: const Text(
+                                                  'Upgrade to Premium'),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        const MonthlyExpenses(),
+                        const SizedBox(height: 20),
+                        if (_adMobService != null && !user.isPremium)
+                          Column(
+                            children: [
+                              AdContainer(
+                                adCacheService: _adCacheService!,
+                                number: 1,
+                                adSize: AdSize.mediumRectangle,
+                                adUnitId:
+                                    _adMobService!.bannerDasboardAdUnitId!,
+                                height: 250.0,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                        const PinnedWishlist(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Latest Transactions',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TransactionListPage(
+                                          addTransactionHandler:
+                                              _addTransactionHandler,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('See all'))
+                            ],
+                          ),
+                        ),
+                        FutureBuilder(
+                          future: context
+                              .watch<TransactionsProvider>()
+                              .getLatestTransactions(context),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                    ConnectionState.waiting ||
+                                cycle == null) {
+                              return const Padding(
+                                padding: EdgeInsets.only(bottom: 16.0),
+                                child: CircularProgressIndicator(),
+                              ); //* Display a loading indicator
+                            } else if (snapshot.hasError) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
+                                child: SelectableText(
+                                  'Error: ${snapshot.error}',
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.only(bottom: 16.0),
+                                child: Text(
+                                  'No transactions found.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ); //* Display a message for no transactions
+                            } else {
+                              //* Display the list of transactions
+                              final transactions = snapshot.data!;
+                              return Column(
+                                children: transactions
+                                    .asMap()
+                                    .entries
+                                    .map<Widget>((entry) {
+                                  int index = entry.key;
+                                  t.Transaction transaction =
+                                      entry.value as t.Transaction;
+
+                                  late t.Transaction prevTransaction;
+
+                                  if (index > 0) {
+                                    if (transactions[index - 1]
+                                        is t.Transaction) {
+                                      prevTransaction = transactions[index - 1]
+                                          as t.Transaction;
+                                    } else {
+                                      prevTransaction = transactions[index - 2]
+                                          as t.Transaction;
+                                    }
+                                  }
+
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: Column(
+                                          children: [
+                                            if (index == 0 ||
+                                                DateTime(
+                                                        transaction
+                                                            .dateTime.year,
+                                                        transaction
+                                                            .dateTime.month,
+                                                        transaction
+                                                            .dateTime.day,
+                                                        0,
+                                                        0) !=
+                                                    DateTime(
+                                                        prevTransaction
+                                                            .dateTime.year,
+                                                        prevTransaction
+                                                            .dateTime.month,
+                                                        prevTransaction
+                                                            .dateTime.day,
+                                                        0,
+                                                        0))
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                  transaction.dateTime
+                                                      .getDateText(),
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.grey),
+                                                ),
+                                              ),
+                                            Card(
+                                              child: ListTile(
+                                                title: transaction.type ==
+                                                        'transfer'
+                                                    ? FittedBox(
+                                                        fit: BoxFit.scaleDown,
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Row(
+                                                          children: [
+                                                            Container(
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                  color: Colors
+                                                                      .grey,
+                                                                  width: 1.0,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8.0),
+                                                              ),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          4.0,
+                                                                      vertical:
+                                                                          2.0),
+                                                              child: Text(
+                                                                transaction
+                                                                    .accountName,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 14,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          4.0),
+                                                              child: Icon(
+                                                                CupertinoIcons
+                                                                    .arrow_right_arrow_left,
+                                                                color:
+                                                                    Colors.grey,
+                                                                size: 16,
+                                                              ),
+                                                            ),
+                                                            Container(
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                  color: Colors
+                                                                      .grey,
+                                                                  width: 1.0,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8.0),
+                                                              ),
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          4.0,
+                                                                      vertical:
+                                                                          2.0),
+                                                              child: Text(
+                                                                transaction
+                                                                    .accountToName,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 14,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    : FittedBox(
+                                                        fit: BoxFit.scaleDown,
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        child: Text(
+                                                          transaction
+                                                              .categoryName,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 16),
+                                                        ),
+                                                      ),
+                                                subtitle: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      transaction.note.contains(
+                                                              'insert')
+                                                          ? ParchmentDocument.fromJson(
                                                                   jsonDecode(
                                                                       transaction
                                                                           .note))
-                                                          .toPlainText()
-                                                      : transaction.note
-                                                          .split('\\n')[0],
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontStyle:
-                                                          FontStyle.italic,
-                                                      color: Colors.grey),
+                                                              .toPlainText()
+                                                          : transaction.note
+                                                              .split('\\n')[0],
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                      style: const TextStyle(
+                                                          fontSize: 12,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                          color: Colors.grey),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
+                                                trailing: Text(
+                                                  '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
+                                                  style: TextStyle(
+                                                      fontSize: 16,
+                                                      color: transaction.type ==
+                                                              'transfer'
+                                                          ? Colors.grey
+                                                          : transaction.type ==
+                                                                  'spent'
+                                                              ? Colors.red
+                                                              : Colors.green),
+                                                ),
+                                                onTap: () {
+                                                  //* Show the transaction summary dialog when tapped
+                                                  transaction
+                                                      .showTransactionDetails(
+                                                          context, cycle);
+                                                },
+                                              ),
                                             ),
-                                            trailing: Text(
-                                              '${transaction.type == 'spent' ? '-' : ''}RM${transaction.amount}',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: transaction.type ==
-                                                          'transfer'
-                                                      ? Colors.grey
-                                                      : transaction.type ==
-                                                              'spent'
-                                                          ? Colors.red
-                                                          : Colors.green),
-                                            ),
-                                            onTap: () {
-                                              //* Show the transaction summary dialog when tapped
-                                              transaction
-                                                  .showTransactionDetails(
-                                                      context, cycle);
-                                            },
-                                          ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (!user.isPremium &&
-                                      (index == 1 || index == 7 || index == 13))
-                                    AdContainer(
-                                      adCacheService: _adCacheService,
-                                      number: index,
-                                      adSize: AdSize.banner,
-                                      adUnitId: _adMobService!
-                                          .bannerTransactionLatestAdUnitId!,
-                                      height: 50.0,
-                                    )
-                                ],
+                                      ),
+                                      if (_adMobService != null &&
+                                          !user.isPremium &&
+                                          (index == 1 ||
+                                              index == 7 ||
+                                              index == 13))
+                                        AdContainer(
+                                          adCacheService: _adCacheService!,
+                                          number: index,
+                                          adSize: AdSize.banner,
+                                          adUnitId: _adMobService!
+                                              .bannerTransactionLatestAdUnitId!,
+                                          height: 50.0,
+                                        )
+                                    ],
+                                  );
+                                }).toList(),
                               );
-                            }).toList(),
-                          );
-                        }
-                      },
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 80),
+                      ],
                     ),
-                    const SizedBox(height: 80),
-                  ],
+                  ),
                 ),
-              ),
+                cycle != null ? CategoryListPage() : Container(),
+                cycle != null
+                    ? ProfilePage(askToStartTutorial: _askToStartTutorial)
+                    : Container(),
+              ],
             ),
-            cycle != null ? CategoryListPage() : Container(),
-            cycle != null
-                ? ProfilePage(askToStartTutorial: _askToStartTutorial)
-                : Container(),
-          ],
+          ),
         ),
         floatingActionButton: _selectedIndex != 3 &&
                 cycle != null &&
@@ -811,8 +851,11 @@ class _DashboardPageState extends State<DashboardPage>
                         builder: (context) {
                           return AlertDialog(
                             title: const Text('Tour Completed!'),
-                            content: const Text(
-                                'You have completed the tour. Enjoy using My Finance Mate!'),
+                            content: ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 500),
+                              child: const Text(
+                                  'You have completed the tour. Enjoy using My Finance Mate!'),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -824,7 +867,7 @@ class _DashboardPageState extends State<DashboardPage>
                           );
                         });
                   } else if (_selectedIndex == 2) {
-                    await Category.showCategoryDialog(
+                    await c.Category.showCategoryDialog(
                       context,
                       'Add',
                       isTourMode: true,
@@ -847,81 +890,99 @@ class _DashboardPageState extends State<DashboardPage>
                     } else if (_selectedIndex == 1) {
                       _addTransactionHandler(user);
                     } else if (_selectedIndex == 2) {
-                      Category.showCategoryDialog(context, 'Add');
+                      c.Category.showCategoryDialog(context, 'Add');
                     }
                   },
                   child: const Icon(CupertinoIcons.add),
                 ),
               )
             : null,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _selectedIndex,
-          destinations: [
-            Showcase(
-              key: _tourAccountList1,
-              description: 'Tap here to view your accounts.',
-              disableBarrierInteraction: true,
-              disposeOnTap: false,
-              onTargetClick: () async {
-                setState(() => _selectedIndex = 0);
-                await Future.delayed(Duration(milliseconds: 600));
-                ShowCaseWidget.of(context).startShowCase([_tourAccountList2]);
-              },
-              child: NavigationDestination(
-                icon: Icon(CupertinoIcons.creditcard),
-                selectedIcon: Icon(CupertinoIcons.creditcard_fill),
-                label: 'Account List',
+        bottomNavigationBar: LayoutBuilder(builder: (context, constraints) {
+          final double maxWidth =
+              constraints.maxWidth < 500 ? constraints.maxWidth : 500;
+
+          return Row(
+            children: [
+              Spacer(),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: NavigationBar(
+                  selectedIndex: _selectedIndex,
+                  destinations: [
+                    Showcase(
+                      key: _tourAccountList1,
+                      description: 'Tap here to view your accounts.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () async {
+                        setState(() => _selectedIndex = 0);
+                        await Future.delayed(Duration(milliseconds: 600));
+                        ShowCaseWidget.of(context)
+                            .startShowCase([_tourAccountList2]);
+                      },
+                      child: NavigationDestination(
+                        icon: Icon(CupertinoIcons.creditcard),
+                        selectedIcon: Icon(CupertinoIcons.creditcard_fill),
+                        label: 'Account List',
+                      ),
+                    ),
+                    Showcase(
+                      key: _tourTransactionList1,
+                      description:
+                          'Next, let\'s explore how to add transactions. Tap here to go to the dashboard.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () async {
+                        setState(() => _selectedIndex = 1);
+                        await Future.delayed(Duration(milliseconds: 600));
+                        ShowCaseWidget.of(context)
+                            .startShowCase([_tourTransactionList2]);
+                      },
+                      child: NavigationDestination(
+                        icon: Icon(CupertinoIcons.square_grid_2x2),
+                        selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
+                        label: 'Dashboard',
+                      ),
+                    ),
+                    Showcase(
+                      key: _tourCategoryList1,
+                      description:
+                          'Next, let\'s explore categories. Tap here to view your categories.',
+                      disableBarrierInteraction: true,
+                      disposeOnTap: false,
+                      onTargetClick: () async {
+                        setState(() => _selectedIndex = 2);
+                        await Future.delayed(Duration(milliseconds: 600));
+                        ShowCaseWidget.of(context)
+                            .startShowCase([_tourCategoryList2]);
+                      },
+                      child: NavigationDestination(
+                        icon: Icon(CupertinoIcons.rectangle_grid_1x2),
+                        selectedIcon:
+                            Icon(CupertinoIcons.rectangle_grid_1x2_fill),
+                        label: 'Category List',
+                      ),
+                    ),
+                    NavigationDestination(
+                      icon: Icon(CupertinoIcons.person),
+                      selectedIcon: Icon(CupertinoIcons.person_fill),
+                      label: 'Profile',
+                    ),
+                  ],
+                  onDestinationSelected: (value) async {
+                    setState(() {
+                      _selectedIndex = value;
+                    });
+                  },
+                  elevation: 9999,
+                  labelBehavior:
+                      NavigationDestinationLabelBehavior.onlyShowSelected,
+                ),
               ),
-            ),
-            Showcase(
-              key: _tourTransactionList1,
-              description:
-                  'Next, let\'s explore how to add transactions. Tap here to go to the dashboard.',
-              disableBarrierInteraction: true,
-              disposeOnTap: false,
-              onTargetClick: () async {
-                setState(() => _selectedIndex = 1);
-                await Future.delayed(Duration(milliseconds: 600));
-                ShowCaseWidget.of(context)
-                    .startShowCase([_tourTransactionList2]);
-              },
-              child: NavigationDestination(
-                icon: Icon(CupertinoIcons.square_grid_2x2),
-                selectedIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
-                label: 'Dashboard',
-              ),
-            ),
-            Showcase(
-              key: _tourCategoryList1,
-              description:
-                  'Next, let\'s explore categories. Tap here to view your categories.',
-              disableBarrierInteraction: true,
-              disposeOnTap: false,
-              onTargetClick: () async {
-                setState(() => _selectedIndex = 2);
-                await Future.delayed(Duration(milliseconds: 600));
-                ShowCaseWidget.of(context).startShowCase([_tourCategoryList2]);
-              },
-              child: NavigationDestination(
-                icon: Icon(CupertinoIcons.rectangle_grid_1x2),
-                selectedIcon: Icon(CupertinoIcons.rectangle_grid_1x2_fill),
-                label: 'Category List',
-              ),
-            ),
-            NavigationDestination(
-              icon: Icon(CupertinoIcons.person),
-              selectedIcon: Icon(CupertinoIcons.person_fill),
-              label: 'Profile',
-            ),
-          ],
-          onDestinationSelected: (value) async {
-            setState(() {
-              _selectedIndex = value;
-            });
-          },
-          elevation: 9999,
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        ),
+              Spacer(),
+            ],
+          );
+        }),
       ),
     );
   }
@@ -1001,8 +1062,11 @@ class _DashboardPageState extends State<DashboardPage>
             builder: (context) {
               return AlertDialog(
                 title: const Text('Reward Granted!'),
-                content: const Text(
-                    'You\'re good to go! Daily transactions reset. 🚀'),
+                content: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: const Text(
+                      'You\'re good to go! Daily transactions reset. 🚀'),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () {

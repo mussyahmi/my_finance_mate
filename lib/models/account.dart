@@ -41,140 +41,143 @@ class Account {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return CustomDraggableScrollableSheet(
-          initialSize: 0.55,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Account Details',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              Row(
-                children: [
-                  if (cycle.isLastCycle)
-                    Row(
-                      children: [
-                        IconButton.filledTonal(
-                          onPressed: () async {
-                            final result = await _deleteHandler(context);
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: CustomDraggableScrollableSheet(
+            initialSize: 0.55,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Account Details',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                Row(
+                  children: [
+                    if (cycle.isLastCycle)
+                      Row(
+                        children: [
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final result = await _deleteHandler(context);
 
-                            if (result) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: const Icon(
-                            CupertinoIcons.delete_solid,
-                            color: Colors.red,
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: const Icon(
+                              CupertinoIcons.delete_solid,
+                              color: Colors.red,
+                            ),
                           ),
-                        ),
-                        IconButton.filledTonal(
-                          onPressed: () async {
-                            final result = await showAccountDialog(
-                              context,
-                              cycle,
-                              'Edit',
-                              account: this,
-                            );
+                          IconButton.filledTonal(
+                            onPressed: () async {
+                              final result = await showAccountDialog(
+                                context,
+                                cycle,
+                                'Edit',
+                                account: this,
+                              );
 
-                            if (result) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: Icon(
-                            CupertinoIcons.pencil,
-                            color: Theme.of(context).colorScheme.primary,
+                              if (result) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            icon: Icon(
+                              CupertinoIcons.pencil,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TransactionListPage(accountId: id),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.format_list_bulleted,
+                      ),
                     ),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              TransactionListPage(accountId: id),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.format_list_bulleted,
+                  ],
+                ),
+              ],
+            ),
+            contents: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'ID:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          contents: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'ID:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  SelectableText(id),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Name:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(name),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Net Balance:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                      '${double.parse(amountBalance) < 0 ? '-' : ''}RM${amountBalance.replaceFirst('-', '')}'),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Opening Balance:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('RM$openingBalance'),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Amount Received:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('RM$amountReceived'),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Amount Spent:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text('RM$amountSpent'),
-                ],
-              ),
-            ],
+                    SelectableText(id),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Name:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(name),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Net Balance:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                        '${double.parse(amountBalance) < 0 ? '-' : ''}RM${amountBalance.replaceFirst('-', '')}'),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Opening Balance:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('RM$openingBalance'),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Amount Received:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('RM$amountReceived'),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Amount Spent:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('RM$amountSpent'),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -195,8 +198,11 @@ class Account {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Cannot Delete Account'),
-            content: const Text(
-                'There are transactions associated with this account in the current cycle. You cannot delete it.'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child: const Text(
+                  'There are transactions associated with this account in the current cycle. You cannot delete it.'),
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -215,8 +221,11 @@ class Account {
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Confirm Delete'),
-            content:
-                const Text('Are you sure you want to delete this account?'),
+            content: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 500),
+              child:
+                  const Text('Are you sure you want to delete this account?'),
+            ),
             actions: <Widget>[
               TextButton(
                 onPressed: () {

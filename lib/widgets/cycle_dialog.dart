@@ -29,7 +29,6 @@ class CycleDialog extends StatefulWidget {
 class _CycleDialogState extends State<CycleDialog> {
   final MessageService messageService = MessageService();
   final TextEditingController _cycleNameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
   late DateTime _cycleEndDate;
 
   @override
@@ -51,45 +50,47 @@ class _CycleDialogState extends State<CycleDialog> {
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: AlertDialog(
         title: Text('Edit ${widget.title}'),
-        content: SingleChildScrollView(
-          child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.title == 'Cycle Name')
-                    TextFormField(
-                      controller: _cycleNameController,
-                      decoration: InputDecoration(
-                        labelText: widget.title,
-                      ),
+        content: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.title == 'Cycle Name')
+                  TextFormField(
+                    controller: _cycleNameController,
+                    decoration: InputDecoration(
+                      labelText: widget.title,
                     ),
-                  if (widget.title == 'End Date')
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedDate = await showDatePicker(
-                          context: context,
-                          initialDate: _cycleEndDate,
-                          firstDate: DateTime.now(),
-                          lastDate:
-                              DateTime.now().add(const Duration(days: 365)),
-                        );
+                  ),
+                if (widget.title == 'End Date')
+                  ElevatedButton(
+                    onPressed: () async {
+                      final selectedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _cycleEndDate.isBefore(DateTime.now())
+                            ? DateTime.now()
+                            : _cycleEndDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
 
-                        if (selectedDate != null) {
-                          setState(() {
-                            _cycleEndDate = selectedDate
-                                .add(const Duration(days: 1))
-                                .subtract(const Duration(minutes: 1));
-                          });
-                        }
-                      },
-                      child: Text(
-                        DateFormat('EE, d MMM yyyy h:mm aa')
-                            .format(_cycleEndDate),
-                      ),
+                      if (selectedDate != null) {
+                        setState(() {
+                          _cycleEndDate = selectedDate
+                              .add(const Duration(days: 1))
+                              .subtract(const Duration(minutes: 1));
+                        });
+                      }
+                    },
+                    child: Text(
+                      DateFormat('EE, d MMM yyyy h:mm aa')
+                          .format(_cycleEndDate),
                     ),
-                ],
-              )),
+                  ),
+              ],
+            ),
+          ),
         ),
         actions: [
           TextButton(

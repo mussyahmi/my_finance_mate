@@ -29,36 +29,48 @@ class _NoteInputPageState extends State<NoteInputPage> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Enter Note'),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (jsonEncode(controller.document.toJson()) ==
-                  '[{"insert":"\\n"}]') {
-                Navigator.of(context).pop('empty');
-                return;
-              }
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                title: Text('Enter Note'),
+                centerTitle: true,
+                scrolledUnderElevation: 9999,
+                floating: true,
+                snap: true,
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      if (jsonEncode(controller.document.toJson()) ==
+                          '[{"insert":"\\n"}]') {
+                        Navigator.of(context).pop('empty');
+                        return;
+                      }
 
-              Navigator.of(context)
-                  .pop(jsonEncode(controller.document.toJson()));
-            },
-            child: Text('DONE'),
-          )
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: FleatherEditor(
-              controller: controller,
-              padding: const EdgeInsets.all(16),
-              autofocus: true,
+                      Navigator.of(context)
+                          .pop(jsonEncode(controller.document.toJson()));
+                    },
+                    child: Text('DONE'),
+                  )
+                ],
+              ),
+            ],
+            body: Column(
+              children: [
+                Expanded(
+                  child: FleatherEditor(
+                    controller: controller,
+                    padding: const EdgeInsets.all(16),
+                    autofocus: true,
+                  ),
+                ),
+                FleatherToolbar.basic(controller: controller),
+              ],
             ),
           ),
-          FleatherToolbar.basic(controller: controller),
-        ],
+        ),
       ),
     );
   }

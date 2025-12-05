@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../models/cycle.dart';
@@ -20,8 +21,8 @@ class AttachmentListFromCycle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    const desiredItemWidth = 180.0; // You can tweak this
+    final screenWidth = kIsWeb ? 500 : MediaQuery.of(context).size.width;
+    const desiredItemWidth = 180.0;
     final crossAxisCount = (screenWidth / desiredItemWidth).floor().clamp(1, 6);
 
     return Column(
@@ -34,7 +35,8 @@ class AttachmentListFromCycle extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: (transactions.length / crossAxisCount).ceil() * 250,
+          height: (transactions.length / crossAxisCount).ceil() *
+              (kIsWeb ? 350 : 250),
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(), // disables scroll
             itemCount: transactions.length,

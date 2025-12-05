@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -74,8 +75,8 @@ class ProfilePageState extends State<ProfilePage> {
   late SharedPreferences prefs;
   AdaptiveThemeMode? savedThemeMode;
   Color themeColor = Colors.teal;
-  late AdMobService _adMobService;
-  late AdCacheService _adCacheService;
+  AdMobService? _adMobService;
+  AdCacheService? _adCacheService;
   RewardedAd? _rewardedAd;
   int customizeThemeColor = 0;
   SystemUiMode systemUiMode = SystemUiMode.edgeToEdge;
@@ -89,13 +90,16 @@ class ProfilePageState extends State<ProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _adMobService = context.read<AdMobService>();
-    _adCacheService = context.read<AdCacheService>();
 
-    final Person user = context.read<PersonProvider>().user!;
+    if (!kIsWeb) {
+      _adMobService = context.read<AdMobService>();
+      _adCacheService = context.read<AdCacheService>();
 
-    if (!user.isPremium) {
-      _createRewardedAd();
+      final Person user = context.read<PersonProvider>().user!;
+
+      if (!user.isPremium) {
+        _createRewardedAd();
+      }
     }
   }
 
@@ -209,98 +213,104 @@ class ProfilePageState extends State<ProfilePage> {
                     card(user, 'Display Name'),
                     card(user, 'Email'),
                     const SizedBox(height: 30),
-                    if (!user.isPremium)
+                    if (_adMobService != null && !user.isPremium)
                       Column(
                         children: [
                           AdContainer(
-                            adCacheService: _adCacheService,
+                            adCacheService: _adCacheService!,
                             number: 1,
                             adSize: AdSize.largeBanner,
-                            adUnitId: _adMobService.bannerProfileAdUnitId!,
+                            adUnitId: _adMobService!.bannerProfileAdUnitId!,
                             height: 100.0,
                           ),
                           const SizedBox(height: 30),
                         ],
                       ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text(
-                        'Premium Access',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                    Card(
-                      surfaceTintColor: Colors.orange,
-                      child: ListTile(
-                        title: const Text(
-                          'Upgrade to Premium',
-                          style: TextStyle(
-                            color: Colors.orangeAccent,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: const Icon(
-                          CupertinoIcons.star_circle_fill,
-                          color: Colors.orangeAccent,
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const PremiumSubscriptionPage()),
-                          );
-                        },
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Purchase History'),
-                        trailing: const Icon(Icons.receipt_long),
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PurchaseHistoryPage(),
+                    if (!kIsWeb)
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: const Text(
+                              'Premium Access',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
-                          );
-                        },
+                          ),
+                          Card(
+                            surfaceTintColor: Colors.orange,
+                            child: ListTile(
+                              title: const Text(
+                                'Upgrade to Premium',
+                                style: TextStyle(
+                                  color: Colors.orangeAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                CupertinoIcons.star_circle_fill,
+                                color: Colors.orangeAccent,
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const PremiumSubscriptionPage()),
+                                );
+                              },
+                            ),
+                          ),
+                          Card(
+                            child: ListTile(
+                              title: const Text('Purchase History'),
+                              trailing: const Icon(Icons.receipt_long),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PurchaseHistoryPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          Card(
+                            child: ListTile(
+                              title: const Text('Order History'),
+                              trailing: const Icon(Icons.history),
+                              onTap: () {
+                                if (Platform.isAndroid) {
+                                  launchUrl(Uri.parse(
+                                      'https://play.google.com/store/account/orderhistory'));
+                                } else {
+                                  // TODO: Implement iOS order history
+                                  Navigator.pop(context);
+                                }
+                              },
+                            ),
+                          ),
+                          Card(
+                            child: ListTile(
+                              title: const Text('Manage Subscriptions'),
+                              trailing: const Icon(CupertinoIcons.creditcard),
+                              onTap: () {
+                                if (Platform.isAndroid) {
+                                  launchUrl(Uri.parse(
+                                      'https://play.google.com/store/account/subscriptions'));
+                                } else {
+                                  // TODO: Implement iOS subscriptions
+                                  Navigator.pop(context);
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                        ],
                       ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Order History'),
-                        trailing: const Icon(Icons.history),
-                        onTap: () {
-                          if (Platform.isAndroid) {
-                            launchUrl(Uri.parse(
-                                'https://play.google.com/store/account/orderhistory'));
-                          } else {
-                            // TODO: Implement iOS order history
-                            Navigator.pop(context);
-                          }
-                        },
-                      ),
-                    ),
-                    Card(
-                      child: ListTile(
-                        title: const Text('Manage Subscriptions'),
-                        trailing: const Icon(CupertinoIcons.creditcard),
-                        onTap: () {
-                          if (Platform.isAndroid) {
-                            launchUrl(Uri.parse(
-                                'https://play.google.com/store/account/subscriptions'));
-                          } else {
-                            // TODO: Implement iOS subscriptions
-                            Navigator.pop(context);
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: const Text(
@@ -582,67 +592,69 @@ class ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
-                    Card(
-                      child: ListTile(
-                        title: Text('System UI Mode'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Control status bar & navigation visibility',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
-                                  children: [
-                                    ...{
-                                      SystemUiMode.edgeToEdge:
-                                          'Default (Visible)',
-                                      SystemUiMode.immersiveSticky:
-                                          'Fullscreen (Sticky)',
-                                    }.entries.map((entry) {
-                                      final mode = entry.key;
-                                      final label = entry.value;
-
-                                      return Row(
-                                        children: [
-                                          ChoiceChip(
-                                            label: Text(label),
-                                            selected: systemUiMode == mode,
-                                            onSelected: (bool selected) async {
-                                              if (selected) {
-                                                setState(() {
-                                                  systemUiMode = mode;
-                                                });
-                                                await SystemChrome
-                                                    .setEnabledSystemUIMode(
-                                                        mode);
-                                                await prefs.setString(
-                                                    'system_ui_mode',
-                                                    mode.toString());
-                                              }
-                                            },
-                                          ),
-                                          const SizedBox(width: 8),
-                                        ],
-                                      );
-                                    }),
-                                  ],
+                    if (!kIsWeb)
+                      Card(
+                        child: ListTile(
+                          title: Text('System UI Mode'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Control status bar & navigation visibility',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
                                 ),
                               ),
-                            ),
-                          ],
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Row(
+                                    children: [
+                                      ...{
+                                        SystemUiMode.edgeToEdge:
+                                            'Default (Visible)',
+                                        SystemUiMode.immersiveSticky:
+                                            'Fullscreen (Sticky)',
+                                      }.entries.map((entry) {
+                                        final mode = entry.key;
+                                        final label = entry.value;
+
+                                        return Row(
+                                          children: [
+                                            ChoiceChip(
+                                              label: Text(label),
+                                              selected: systemUiMode == mode,
+                                              onSelected:
+                                                  (bool selected) async {
+                                                if (selected) {
+                                                  setState(() {
+                                                    systemUiMode = mode;
+                                                  });
+                                                  await SystemChrome
+                                                      .setEnabledSystemUIMode(
+                                                          mode);
+                                                  await prefs.setString(
+                                                      'system_ui_mode',
+                                                      mode.toString());
+                                                }
+                                              },
+                                            ),
+                                            const SizedBox(width: 8),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                     const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -704,8 +716,11 @@ class ProfilePageState extends State<ProfilePage> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Confirm Delete'),
-                              content: const Text(
-                                  'Are you sure you want to delete your account? This action is permanent.'),
+                              content: ConstrainedBox(
+                                constraints: BoxConstraints(maxWidth: 500),
+                                child: const Text(
+                                    'Are you sure you want to delete your account? This action is permanent.'),
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -766,6 +781,53 @@ class ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                     ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Give Feedback'),
+                        trailing: const Icon(Icons.feedback),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Before You Continue'),
+                              content: const Text(
+                                'Posts on Insighto cannot be edited after they are published.\n'
+                                'If you want to give feedback or request improvements, you can do so below.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                  onPressed: () {
+                                    launchUrl(Uri.parse(
+                                        "https://insigh.to/b/my-finance-mate"));
+                                  },
+                                  child: const Text('Open Feedback Board'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Card(
+                      child: ListTile(
+                        title: const Text('Buy Me a Coffee'),
+                        trailing: const Icon(Icons.coffee),
+                        onTap: () {
+                          launchUrl(Uri.parse(
+                              "https://buymeacoffee.com/mustafasyahmi"));
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -823,15 +885,18 @@ class ProfilePageState extends State<ProfilePage> {
   }) {
     return GestureDetector(
       onTap: () async {
-        if (!user.isPremium && customizeThemeColor == 0) {
+        if (!kIsWeb && !user.isPremium && customizeThemeColor == 0) {
           return showDialog(
             context: context,
             barrierDismissible: false,
             builder: (context) {
               return AlertDialog(
                 title: const Text('Change Your Look!'),
-                content: const Text(
-                    'Want to customize your theme color? You can try it up to 3 times by watching a quick ad, or unlock unlimited access by upgrading to Premium!'),
+                content: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: const Text(
+                      'Want to customize your theme color? You can try it up to 3 times by watching a quick ad, or unlock unlimited access by upgrading to Premium!'),
+                ),
                 actions: [
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -935,7 +1000,7 @@ class ProfilePageState extends State<ProfilePage> {
 
   void _createRewardedAd() {
     RewardedAd.load(
-      adUnitId: _adMobService.rewardedCustomizeThemeColorAdUnitId!,
+      adUnitId: _adMobService!.rewardedCustomizeThemeColorAdUnitId!,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
@@ -979,8 +1044,11 @@ class ProfilePageState extends State<ProfilePage> {
             builder: (context) {
               return AlertDialog(
                 title: const Text('Reward Granted!'),
-                content: const Text(
-                    'You\'re good to go! Choose any color you like and give your look a fresh update! 🚀'),
+                content: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: const Text(
+                      'You\'re good to go! Choose any color you like and give your look a fresh update! 🚀'),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () {
