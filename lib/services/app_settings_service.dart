@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class AppSettingsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,7 @@ class AppSettingsService {
         return {'status': false}; //* Default fallback
       }
     } catch (e) {
-      print('Error fetching app settings: $e');
+      if (!kReleaseMode) print('Error fetching app settings: $e');
       return {'status': false}; //* Fallback in case of errors
     }
   }

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +25,7 @@ class WishlistProvider extends ChangeNotifier {
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
-    print('fetchWishlist: ${wishlistSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchWishlist: ${wishlistSnapshot.docs.length}');
 
     wishlist = wishlistSnapshot.docs.map((doc) {
       return Wishlist(
@@ -97,7 +98,7 @@ class WishlistProvider extends ChangeNotifier {
       await fetchWishlist(context);
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
-      print('Error $action wishlist: $e');
+      if (!kReleaseMode) print('Error $action wishlist: $e');
     }
   }
 

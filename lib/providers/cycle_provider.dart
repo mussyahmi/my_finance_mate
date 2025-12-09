@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +35,7 @@ class CycleProvider extends ChangeNotifier {
         .orderBy('cycle_no', descending: true)
         .limit(1);
     final cycleSnapshot = await cycleQuery.getSavy(refresh: refresh);
-    print('fetchCycle: ${cycleSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchCycle: ${cycleSnapshot.docs.length}');
 
     if (cycleSnapshot.docs.isNotEmpty) {
       final cycleDoc = cycleSnapshot.docs.first;
@@ -186,7 +187,10 @@ class CycleProvider extends ChangeNotifier {
         .collection('categories')
         .where('deleted_at', isNull: true)
         .getSavy();
-    print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
+
+    if (!kReleaseMode) {
+      print('copyCategoriesFromLastCycle: ${categoriesSnapshot.docs.length}');
+    }
 
     for (var doc in categoriesSnapshot.docs) {
       final categoryData = doc.data();
@@ -218,7 +222,10 @@ class CycleProvider extends ChangeNotifier {
         .collection('accounts')
         .where('deleted_at', isNull: true)
         .getSavy();
-    print('_copyAccountsFromLastCycle: ${accountsSnapshot.docs.length}');
+
+    if (!kReleaseMode) {
+      print('_copyAccountsFromLastCycle: ${accountsSnapshot.docs.length}');
+    }
 
     for (var doc in accountsSnapshot.docs) {
       final accountData = doc.data();
@@ -330,7 +337,7 @@ class CycleProvider extends ChangeNotifier {
     }
 
     final newAmount = double.parse(amount);
-    print(newAmount);
+    if (!kReleaseMode) print(newAmount);
 
     double updatedOpeningBalance = cycleOpeningBalance;
     double updatedAmountBalance = cycleAmountBalance;
@@ -380,7 +387,7 @@ class CycleProvider extends ChangeNotifier {
     if ((cycleOpeningBalance + cycleAmountReceived - cycleAmountSpent)
             .toStringAsFixed(2) ==
         cycle.amountBalance) {
-      print('Cycle amounts are already up to date.');
+      if (!kReleaseMode) print('Cycle amounts are already up to date.');
       return false;
     } else {
       await FirebaseFirestore.instance
@@ -401,7 +408,7 @@ class CycleProvider extends ChangeNotifier {
 
       notifyListeners();
 
-      print('Cycle amounts updated successfully.');
+      if (!kReleaseMode) print('Cycle amounts updated successfully.');
       return true;
     }
   }

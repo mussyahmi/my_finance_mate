@@ -871,9 +871,9 @@ class ProfilePageState extends State<ProfilePage> {
 
       await GoogleSignIn().signOut();
       await FirebaseAuth.instance.signOut();
-      print('Sign Out Successful');
+      if (!kReleaseMode) print('Sign Out Successful');
     } catch (error) {
-      print('Sign Out Error: $error');
+      if (!kReleaseMode) print('Sign Out Error: $error');
     }
   }
 

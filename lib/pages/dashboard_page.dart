@@ -285,7 +285,7 @@ class _DashboardPageState extends State<DashboardPage>
         _showAppOpenAd(prefs);
       }
 
-      print('Pause counter: $pauseCounter');
+      if (!kReleaseMode) print('Pause counter: $pauseCounter');
     }
   }
 

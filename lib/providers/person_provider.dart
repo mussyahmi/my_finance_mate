@@ -7,6 +7,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -98,7 +99,7 @@ class PersonProvider extends ChangeNotifier {
         }
         break;
       default:
-        print("Unknown product ID: ${product.id}");
+        if (!kReleaseMode) print("Unknown product ID: ${product.id}");
         return;
     }
 
@@ -122,7 +123,8 @@ class PersonProvider extends ChangeNotifier {
 
     DateTime premiumEndDate = premiumStartDate.add(subscriptionDuration);
 
-    print('Activating premium access: $premiumStartDate to $premiumEndDate');
+    if (!kReleaseMode)
+      print('Activating premium access: $premiumStartDate to $premiumEndDate');
 
     // 🔥 Update user premium status
     await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
@@ -228,12 +230,21 @@ class PersonProvider extends ChangeNotifier {
         .ref()
         .child('${user!.uid}/profile_image/$fileName');
 
-    UploadTask uploadTask = storageReference.putFile(File(file.path!));
+    UploadTask uploadTask;
+
+    if (kIsWeb) {
+      uploadTask = storageReference.putData(
+        file.bytes!,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+    } else {
+      uploadTask = storageReference.putFile(File(file.path!));
+    }
 
     await uploadTask.whenComplete(() async {
-      print('File Uploaded');
+      if (!kReleaseMode) print('File Uploaded');
       String downloadURL = await storageReference.getDownloadURL();
-      print('Download URL: $downloadURL');
+      if (!kReleaseMode) print('Download URL: $downloadURL');
 
       await FirebaseFirestore.instance
           .collection('users')

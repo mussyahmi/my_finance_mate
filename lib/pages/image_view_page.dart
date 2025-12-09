@@ -55,13 +55,9 @@ class _ImageViewPageState extends State<ImageViewPage> {
   }
 
   Future<void> _downloadImage() async {
-    final currentFile = widget.files[_currentIndex];
-    final type = currentFile is String ? 'url' : 'file';
-    final imageSource = type == 'url' ? currentFile : currentFile.path;
-
-    if (type != 'url') return;
-
     try {
+      final currentFile = widget.files[_currentIndex];
+
       EasyLoading.show(
         dismissOnTap: false,
         status: 'Checking permissions...',
@@ -99,7 +95,7 @@ class _ImageViewPageState extends State<ImageViewPage> {
       final dio = Dio();
 
       await dio.download(
-        imageSource,
+        currentFile,
         savePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
@@ -168,83 +164,102 @@ class _ImageViewPageState extends State<ImageViewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          if (widget.files[_currentIndex] is String)
-            IconButton(
-              icon: Icon(Icons.download),
-              onPressed: _downloadImage,
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 500),
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                title: Text('Attachments'),
+                centerTitle: true,
+                scrolledUnderElevation: 9999,
+                floating: true,
+                snap: true,
+                actions: [
+                  if (!kIsWeb && widget.files[_currentIndex] is String)
+                    IconButton(
+                      icon: Icon(Icons.download),
+                      onPressed: _downloadImage,
+                    ),
+                ],
+              ),
+            ],
+            body: Column(
               children: [
-                Positioned.fill(
-                  child: PhotoViewGallery.builder(
-                    pageController: _pageController,
-                    itemCount: widget.files.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
-                    builder: (context, index) {
-                      final file = widget.files[index];
-                      final type = file is String ? 'url' : 'file';
-                      final imageSource = type == 'url' ? file : file.path;
+                Expanded(
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: PhotoViewGallery.builder(
+                          pageController: _pageController,
+                          itemCount: widget.files.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
+                          builder: (context, index) {
+                            final file = widget.files[index];
+                            final isUrl = file is String;
+                            final isWebFile = !isUrl && kIsWeb;
 
-                      return PhotoViewGalleryPageOptions.customChild(
-                        child: type == 'url'
-                            ? CachedNetworkImage(
-                                imageUrl: imageSource,
-                                placeholder: (context, url) => Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                              )
-                            : Image.file(File(imageSource)),
-                        initialScale: PhotoViewComputedScale.contained,
-                        minScale: PhotoViewComputedScale.contained * 0.8,
-                        maxScale: PhotoViewComputedScale.covered * 1.8,
-                      );
-                    },
+                            return PhotoViewGalleryPageOptions.customChild(
+                              child: isUrl
+                                  ? CachedNetworkImage(
+                                      imageUrl: file,
+                                      placeholder: (context, url) => Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                    )
+                                  : isWebFile
+                                      ? Image.memory(
+                                          file.bytes!, // Web uses bytes
+                                          fit: BoxFit.contain,
+                                        )
+                                      : Image.file(File(file.path)),
+                              initialScale: PhotoViewComputedScale.contained,
+                              minScale: PhotoViewComputedScale.contained * 0.8,
+                              maxScale: PhotoViewComputedScale.covered * 1.8,
+                            );
+                          },
+                        ),
+                      ),
+                      if (widget.files.length > 1)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${_currentIndex + 1} / ${widget.files.length} attachments',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 10),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                if (widget.files.length > 1)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_currentIndex + 1} / ${widget.files.length} attachments',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ),
+                if (_adMobService != null &&
+                    !context.read<PersonProvider>().user!.isPremium)
+                  AdContainer(
+                    adCacheService: _adCacheService!,
+                    number: 1,
+                    adSize: AdSize.banner,
+                    adUnitId: _adMobService!.bannerImageViewAdUnitId!,
+                    height: 50.0,
                   ),
               ],
             ),
           ),
-          if (_adMobService != null &&
-              !context.read<PersonProvider>().user!.isPremium)
-            AdContainer(
-              adCacheService: _adCacheService!,
-              number: 1,
-              adSize: AdSize.banner,
-              adUnitId: _adMobService!.bannerImageViewAdUnitId!,
-              height: 50.0,
-            ),
-        ],
+        ),
       ),
     );
   }

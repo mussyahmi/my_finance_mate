@@ -1,9 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/person.dart';
 import '../pages/image_view_page.dart';
@@ -51,7 +53,7 @@ class _ProfileImageState extends State<ProfileImage> {
                   image: user.imageUrl.isNotEmpty
                       ? NetworkImage(user.imageUrl)
                       : AssetImage('assets/icon/icon.png') as ImageProvider,
-                  fit: BoxFit.contain,
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
@@ -61,6 +63,20 @@ class _ProfileImageState extends State<ProfileImage> {
             bottom: 0,
             child: IconButton.filledTonal(
               onPressed: () async {
+                if (kIsWeb) {
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.image,
+                    withData: true,
+                  );
+                  if (result != null) {
+                    PlatformFile file = result.files.first;
+
+                    await _checkFileSize(file, file.size);
+                  }
+
+                  return;
+                }
+
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
@@ -153,8 +169,27 @@ class _ProfileImageState extends State<ProfileImage> {
             title: const Text('File Size Limit Exceeded'),
             content: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 500),
-              child: Text(
-                  'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'The file ${file.name} exceeds 5MB and cannot be uploaded.',
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () async {
+                      await launchUrl(
+                        Uri.parse('https://www.iloveimg.com/compress-image'),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                    child: const Text(
+                      'Click here to compress your image.',
+                    ),
+                  )
+                ],
+              ),
             ),
             actions: <Widget>[
               TextButton(

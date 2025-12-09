@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../extensions/firestore_extensions.dart';
@@ -25,7 +26,7 @@ class PurchasesProvider extends ChangeNotifier {
         .where('user_id', isEqualTo: user.uid)
         .orderBy('premium_start_date', descending: true)
         .getSavy(refresh: refresh);
-    print('fetchPurchases: ${purchasesSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchPurchases: ${purchasesSnapshot.docs.length}');
 
     purchases = purchasesSnapshot.docs.map((doc) {
       return Purchase(

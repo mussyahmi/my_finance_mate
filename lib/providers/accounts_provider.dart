@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,7 @@ class AccountsProvider extends ChangeNotifier {
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
-    print('fetchAccounts: ${accountsSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchAccounts: ${accountsSnapshot.docs.length}');
 
     accounts = accountsSnapshot.docs.map((doc) {
       return Account(
@@ -141,7 +142,7 @@ class AccountsProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
-      print('Error $action account: $e');
+      if (!kReleaseMode) print('Error $action account: $e');
     }
   }
 
@@ -406,7 +407,7 @@ class AccountsProvider extends ChangeNotifier {
         .where('date_time', isLessThanOrEqualTo: cycle.endDate)
         .orderBy('date_time', descending: true)
         .getSavy();
-    print('migrateAccountFeature: ${transactionSnapshot.docs.length}');
+    if (!kReleaseMode) print('migrateAccountFeature: ${transactionSnapshot.docs.length}');
 
     //* Iterate over each transaction and add the new "account_id" field
     for (var doc in transactionSnapshot.docs) {

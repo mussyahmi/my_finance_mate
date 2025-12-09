@@ -5,13 +5,14 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
 import '../models/account.dart';
-import '../models/category.dart';
+import '../models/category.dart' as c;
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
@@ -41,7 +42,10 @@ class TransactionsProvider extends ChangeNotifier {
 
     final transactionSnapshot =
         await transactionQuery.getSavy(refresh: refresh);
-    print('fetchTransactions: ${transactionSnapshot.docs.length}');
+
+    if (!kReleaseMode) {
+      print('fetchTransactions: ${transactionSnapshot.docs.length}');
+    }
 
     final futureTransactions = transactionSnapshot.docs.map((doc) async {
       final data = doc.data();
@@ -156,7 +160,10 @@ class TransactionsProvider extends ChangeNotifier {
       }
 
       final transactionSnapshot = await transactionQuery.getSavy();
-      print('fetchFilteredTransactions: ${transactionSnapshot.docs.length}');
+
+      if (!kReleaseMode) {
+        print('fetchFilteredTransactions: ${transactionSnapshot.docs.length}');
+      }
 
       for (var doc in transactionSnapshot.docs) {
         final data = doc.data();
@@ -428,7 +435,7 @@ class TransactionsProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       //* Handle any errors that occur during the Firestore operation
-      print('Error $action transaction: $e');
+      if (!kReleaseMode) print('Error $action transaction: $e');
       //* You can show an error message to the user if needed
     }
   }
@@ -451,12 +458,21 @@ class TransactionsProvider extends ChangeNotifier {
             .ref()
             .child('${user.uid}/transactions/$fileName');
 
-        UploadTask uploadTask = storageReference.putFile(File(file.path!));
+        UploadTask uploadTask;
+
+        if (kIsWeb) {
+          uploadTask = storageReference.putData(
+            file.bytes!,
+            SettableMetadata(contentType: 'image/jpeg'),
+          );
+        } else {
+          uploadTask = storageReference.putFile(File(file.path!));
+        }
 
         await uploadTask.whenComplete(() async {
-          print('File Uploaded');
+          if (!kReleaseMode) print('File Uploaded');
           String downloadURL = await storageReference.getDownloadURL();
-          print('Download URL: $downloadURL');
+          if (!kReleaseMode) print('Download URL: $downloadURL');
           downloadURLs = [...downloadURLs, downloadURL];
         });
       } else {
@@ -566,12 +582,15 @@ class TransactionsProvider extends ChangeNotifier {
             descending: true);
 
     final transactionSnapshot = await transactionQuery.getSavy(refresh: true);
-    print('fetchTransactions: ${transactionSnapshot.docs.length}');
+    
+    if (!kReleaseMode) {
+      print('fetchTransactions: ${transactionSnapshot.docs.length}');
+    }
 
     final futureTransactions = transactionSnapshot.docs.map((doc) async {
       final data = doc.data();
 
-      Category? category;
+      c.Category? category;
       Account? account;
       Account? accountTo;
 

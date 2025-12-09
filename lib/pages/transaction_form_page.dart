@@ -17,6 +17,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/category.dart' as c;
 import '../models/cycle.dart';
@@ -791,12 +792,19 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                                   fit: BoxFit.contain,
                                                 )
                                               else
-                                                Image.file(
-                                                  File(files[index].path!),
-                                                  height:
-                                                      100, //* Adjust the height as needed
-                                                  fit: BoxFit.contain,
-                                                ),
+                                                kIsWeb
+                                                    ? Image.memory(
+                                                        files[index].bytes!,
+                                                        height: 100,
+                                                        fit: BoxFit.contain,
+                                                      )
+                                                    : Image.file(
+                                                        File(
+                                                            files[index].path!),
+                                                        height:
+                                                            100, //* Adjust the height as needed
+                                                        fit: BoxFit.contain,
+                                                      ),
                                               Positioned(
                                                 top: 0,
                                                 right: 0,
@@ -983,6 +991,21 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                 }
                               }
 
+                              if (kIsWeb) {
+                                final result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                  withData: true,
+                                );
+                                if (result != null) {
+                                  PlatformFile file = result.files.first;
+
+                                  await _checkFileSize(file, file.size);
+                                }
+
+                                return;
+                              }
+
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -1024,42 +1047,39 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                                             child:
                                                 const Text('Pick from Gallery'),
                                           ),
-                                          if (!kIsWeb)
-                                            Column(
-                                              children: [
-                                                const SizedBox(height: 10),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary,
-                                                    foregroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .onPrimary,
-                                                  ),
-                                                  onPressed: () async {
-                                                    Navigator.of(context).pop();
-                                                    final file =
-                                                        await ImagePicker()
-                                                            .pickImage(
-                                                      source:
-                                                          ImageSource.camera,
-                                                      imageQuality: 50,
-                                                    );
-
-                                                    if (file != null) {
-                                                      await _checkFileSize(file,
-                                                          await file.length());
-                                                    }
-                                                  },
-                                                  child: const Text(
-                                                      'Take a Photo'),
+                                          Column(
+                                            children: [
+                                              const SizedBox(height: 10),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .primary,
+                                                  foregroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimary,
                                                 ),
-                                              ],
-                                            ),
+                                                onPressed: () async {
+                                                  Navigator.of(context).pop();
+                                                  final file =
+                                                      await ImagePicker()
+                                                          .pickImage(
+                                                    source: ImageSource.camera,
+                                                    imageQuality: 50,
+                                                  );
+
+                                                  if (file != null) {
+                                                    await _checkFileSize(file,
+                                                        await file.length());
+                                                  }
+                                                },
+                                                child:
+                                                    const Text('Take a Photo'),
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -1136,7 +1156,9 @@ class TransactionFormPageState extends State<TransactionFormPage> {
                               await prefs.setInt('transaction_action_counter',
                                   transactionActionCounter);
 
-                              print(transactionActionCounter);
+                              if (!kReleaseMode) {
+                                print(transactionActionCounter);
+                              }
 
                               if (!kIsWeb &&
                                   transactionActionCounter >= 3 &&
@@ -1261,8 +1283,27 @@ class TransactionFormPageState extends State<TransactionFormPage> {
             title: const Text('File Size Limit Exceeded'),
             content: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 500),
-              child: Text(
-                  'The file ${file.name} exceeds 5MB and cannot be uploaded.'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'The file ${file.name} exceeds 5MB and cannot be uploaded.',
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () async {
+                      await launchUrl(
+                        Uri.parse('https://www.iloveimg.com/compress-image'),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                    child: const Text(
+                      'Click here to compress your image.',
+                    ),
+                  )
+                ],
+              ),
             ),
             actions: <Widget>[
               TextButton(

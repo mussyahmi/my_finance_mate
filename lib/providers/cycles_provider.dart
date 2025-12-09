@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +26,7 @@ class CyclesProvider extends ChangeNotifier {
         .collection('cycles')
         .orderBy('cycle_no', descending: true)
         .getSavy(refresh: refresh);
-    print('fetchCycles: ${cyclesSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchCycles: ${cyclesSnapshot.docs.length}');
 
     final futureCycles = cyclesSnapshot.docs.map((doc) async {
       final data = doc.data();

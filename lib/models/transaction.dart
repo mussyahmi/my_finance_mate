@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fleather/fleather.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -395,9 +396,9 @@ class Transaction {
 
     try {
       await storageReference.delete();
-      print('File deleted successfully.');
+      if (!kReleaseMode) print('File deleted successfully.');
     } catch (e) {
-      print('Error deleting file: $e');
+      if (!kReleaseMode) print('Error deleting file: $e');
     }
   }
 }

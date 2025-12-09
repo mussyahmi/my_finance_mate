@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -26,7 +27,7 @@ class QadaPrayerProvider with ChangeNotifier {
         .collection('qada_prayer')
         .getSavy(refresh: refresh);
 
-    print('fetchQadaPrayers: ${qadaPrayersSnapshot.docs.length}');
+    if (!kReleaseMode) print('fetchQadaPrayers: ${qadaPrayersSnapshot.docs.length}');
 
     if (qadaPrayersSnapshot.docs.isEmpty) {
       await initializeQadaPrayers(user.uid);
@@ -113,7 +114,7 @@ class QadaPrayerProvider with ChangeNotifier {
       "updated_at": now,
     });
 
-    print("✅ Initialized qada_prayer for user: $userId");
+    if (!kReleaseMode) print("✅ Initialized qada_prayer for user: $userId");
   }
 
   Future<void> updatePrayerCount(

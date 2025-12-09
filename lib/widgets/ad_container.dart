@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -42,10 +43,10 @@ class _AdContainerState extends State<AdContainer> {
       adSize: widget.adSize,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          print('Ad loaded successfully');
+          if (!kReleaseMode) print('Ad loaded successfully');
         },
         onAdFailedToLoad: (ad, error) {
-          print('Ad failed to load: $error');
+          if (!kReleaseMode) print('Ad failed to load: $error');
           ad.dispose();
         },
       ),

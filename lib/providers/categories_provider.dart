@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../extensions/firestore_extensions.dart';
-import '../models/category.dart';
+import '../models/category.dart' as c;
 import '../models/cycle.dart';
 import '../models/person.dart';
 import '../models/transaction.dart' as t;
@@ -14,7 +15,7 @@ import 'transactions_provider.dart';
 import 'person_provider.dart';
 
 class CategoriesProvider extends ChangeNotifier {
-  List<Category>? categories;
+  List<c.Category>? categories;
 
   CategoriesProvider({this.categories});
 
@@ -31,12 +32,15 @@ class CategoriesProvider extends ChangeNotifier {
         .where('deleted_at', isNull: true)
         .orderBy('name')
         .getSavy(refresh: refresh);
-    print('fetchCategories: ${categorySnapshot.docs.length}');
+
+    if (!kReleaseMode) {
+      print('fetchCategories: ${categorySnapshot.docs.length}');
+    }
 
     final futureCategories = categorySnapshot.docs.map((doc) async {
       final data = doc.data();
 
-      return Category(
+      return c.Category(
         id: doc.id,
         name: data['name'],
         type: data['type'],
@@ -53,10 +57,10 @@ class CategoriesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<Category>> getBudgets(BudgetFilter currentFilter) async {
+  Future<List<c.Category>> getBudgets(c.BudgetFilter currentFilter) async {
     if (categories == null) return [];
 
-    List<Category> budgets = categories!.where((category) {
+    List<c.Category> budgets = categories!.where((category) {
       if (category.type == 'spent' && category.budget != '0.00') {
         return true;
       } else {
@@ -68,24 +72,24 @@ class CategoriesProvider extends ChangeNotifier {
     budgets.sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
 
     //* Filter categories based on the selected filter
-    List<Category> filteredBudgets;
+    List<c.Category> filteredBudgets;
     switch (currentFilter) {
-      case BudgetFilter.ongoing:
+      case c.BudgetFilter.ongoing:
         filteredBudgets = budgets
             .where((budget) => double.parse(budget.amountBalance()) > 0)
             .toList();
         break;
-      case BudgetFilter.exceeded:
+      case c.BudgetFilter.exceeded:
         filteredBudgets = budgets
             .where((budget) => double.parse(budget.amountBalance()) < 0)
             .toList();
         break;
-      case BudgetFilter.completed:
+      case c.BudgetFilter.completed:
         filteredBudgets = budgets
             .where((budget) => double.parse(budget.amountBalance()) <= 0)
             .toList();
         break;
-      case BudgetFilter.all:
+      case c.BudgetFilter.all:
         filteredBudgets = budgets;
         break;
     }
@@ -93,9 +97,9 @@ class CategoriesProvider extends ChangeNotifier {
     return filteredBudgets;
   }
 
-  Future<List<Category>> getCategories(
+  Future<List<c.Category>> getCategories(
       BuildContext context, String? type, String fromPage) async {
-    List<Category> filteredCategories = [];
+    List<c.Category> filteredCategories = [];
 
     if (type != null) {
       filteredCategories =
@@ -117,7 +121,7 @@ class CategoriesProvider extends ChangeNotifier {
       BuildContext context) async {
     final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
-    final List<Category> categories =
+    final List<c.Category> categories =
         context.read<CategoriesProvider>().categories!;
     final List<t.Transaction> transactions =
         context.read<TransactionsProvider>().transactions!;
@@ -129,13 +133,16 @@ class CategoriesProvider extends ChangeNotifier {
         .doc(cycle.id)
         .collection('categories')
         .getSavy();
-    print(
-        'recalculateCategoryAndCycleTotalAmount - categoriesSnapshot: ${categoriesSnapshot.docs.length}');
+
+    if (!kReleaseMode) {
+      print(
+          'recalculateCategoryAndCycleTotalAmount - categoriesSnapshot: ${categoriesSnapshot.docs.length}');
+    }
 
     //* Get current timestamp
     final now = DateTime.now();
 
-    print('initiate recalculateCategoryTotalAmount');
+    if (!kReleaseMode) print('initiate recalculateCategoryTotalAmount');
 
     double totalAmountSpent = 0;
     double totalAmountReceived = 0;
@@ -168,7 +175,8 @@ class CategoriesProvider extends ChangeNotifier {
         'total_amount': totalAmount.toStringAsFixed(2),
         'updated_at': now,
       });
-      if (totalAmount > 0) {
+
+      if (totalAmount > 0 && !kReleaseMode) {
         print('${category.name}: ${totalAmount.toStringAsFixed(2)}');
       }
     }
@@ -189,14 +197,14 @@ class CategoriesProvider extends ChangeNotifier {
       'updated_at': now,
     });
 
-    print('done recalculateCategoryTotalAmount');
+    if (!kReleaseMode) print('done recalculateCategoryTotalAmount');
   }
 
-  Category getCategoryById(categoryId) {
+  c.Category getCategoryById(categoryId) {
     return categories!.firstWhere((category) => category.id == categoryId);
   }
 
-  Category getCategoryByName(type, categoryName) {
+  c.Category getCategoryByName(type, categoryName) {
     return categories!.firstWhere(
         (category) => category.type == type && category.name == categoryName);
   }
@@ -210,7 +218,7 @@ class CategoriesProvider extends ChangeNotifier {
       bool isBudgetEnabled,
       String categoryBudget,
       String categoryNote,
-      {Category? category}) async {
+      {c.Category? category}) async {
     final Person user = context.read<PersonProvider>().user!;
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
@@ -265,7 +273,7 @@ class CategoriesProvider extends ChangeNotifier {
       }
     } catch (e) {
       //* Handle any errors that occur during the Firebase operation
-      print('Error $action category: $e');
+      if (!kReleaseMode) print('Error $action category: $e');
     }
   }
 
@@ -282,7 +290,7 @@ class CategoriesProvider extends ChangeNotifier {
     final Cycle cycle = context.read<CycleProvider>().cycle!;
 
     double prevTotalAmount = 0;
-    late Category prevCategory;
+    late c.Category prevCategory;
 
     if (action != 'Add' && transaction!.type != 'transfer') {
       //* Update previous category's data
@@ -307,7 +315,7 @@ class CategoriesProvider extends ChangeNotifier {
 
     if (action != 'Delete' && type != 'transfer') {
       //* Update new category's data
-      final Category newCategory = getCategoryById(categoryId);
+      final c.Category newCategory = getCategoryById(categoryId);
 
       double newTotalAmount = prevTotalAmount + double.parse(amount);
 
@@ -356,7 +364,7 @@ class CategoriesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Category> fetchCategoryByIdFromCycle(
+  Future<c.Category> fetchCategoryByIdFromCycle(
       BuildContext context, Cycle cycle, String categoryId) async {
     final Person user = context.read<PersonProvider>().user!;
 
@@ -371,7 +379,7 @@ class CategoriesProvider extends ChangeNotifier {
 
     final data = categorySnapshot.data()!;
 
-    return Category(
+    return c.Category(
       id: categorySnapshot.id,
       name: data['name'],
       type: data['type'],

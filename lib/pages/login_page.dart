@@ -340,7 +340,7 @@ class _LoginPageState extends State<LoginPage> {
           .collection('users')
           .doc(authResult.user!.uid)
           .getSavy(refresh: true);
-      print('_signInWithEmailAndPassword - userDoc: 1');
+      if (!kReleaseMode) print('_signInWithEmailAndPassword - userDoc: 1');
 
       if (userDoc.exists) {
         if (_isRememberMeChecked) {
@@ -389,7 +389,7 @@ class _LoginPageState extends State<LoginPage> {
 
         context.read<PersonProvider>().setUser(newUser: person);
 
-        print('Email/Password Sign-In Successful');
+        if (!kReleaseMode) print('Email/Password Sign-In Successful');
 
         if (!authResult.user!.emailVerified) {
           await authResult.user!.sendEmailVerification();
@@ -501,7 +501,7 @@ class _LoginPageState extends State<LoginPage> {
             .collection('users')
             .doc(authResult.user!.uid)
             .getSavy(refresh: true);
-        print('_signInWithGoogle - userDoc: 1');
+        if (!kReleaseMode) print('_signInWithGoogle - userDoc: 1');
 
         //* Get current timestamp
         final now = DateTime.now();
@@ -549,7 +549,7 @@ class _LoginPageState extends State<LoginPage> {
             .collection('users')
             .doc(authResult.user!.uid)
             .getSavy(refresh: true);
-        print('_signInWithGoogle - userDoc: 1');
+        if (!kReleaseMode) print('_signInWithGoogle - userDoc: 1');
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('last_login_with', 'google');
@@ -576,11 +576,11 @@ class _LoginPageState extends State<LoginPage> {
 
         context.read<PersonProvider>().setUser(newUser: person);
 
-        print('Google Sign-In Successful');
+        if (!kReleaseMode) print('Google Sign-In Successful');
 
         await context.read<PersonProvider>().fetchData(context);
       } else {
-        print('Google Sign-In Cancelled');
+        if (!kReleaseMode) print('Google Sign-In Cancelled');
       }
     } catch (e, stackTrace) {
       if (!kIsWeb) {

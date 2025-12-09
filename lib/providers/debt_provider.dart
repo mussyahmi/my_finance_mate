@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +25,7 @@ class DebtProvider with ChangeNotifier {
         .where('deleted_at', isNull: true)
         .getSavy(refresh: refresh);
 
-    print('fetchDebts: ${snapshot.docs.length}');
+    if (!kReleaseMode) print('fetchDebts: ${snapshot.docs.length}');
 
     debts =
         snapshot.docs.map((doc) => Debt.fromMap(doc.id, doc.data())).toList();

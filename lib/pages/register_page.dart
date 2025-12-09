@@ -325,7 +325,7 @@ class RegisterPageState extends State<RegisterPage> {
             .collection('users')
             .doc(authResult.user!.uid)
             .getSavy(refresh: true);
-        print('register - userDoc: 1');
+        if (!kReleaseMode) print('register - userDoc: 1');
 
         final Person person = Person(
           uid: userDoc.id,

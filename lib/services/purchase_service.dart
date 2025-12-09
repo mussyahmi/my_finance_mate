@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -43,7 +44,7 @@ class PurchaseService {
           _subscription?.cancel();
         },
         onError: (error) {
-          print("Purchase Error: $error");
+          if (!kReleaseMode) print("Purchase Error: $error");
         },
       );
     }
@@ -55,7 +56,7 @@ class PurchaseService {
     if (response.error == null) {
       _products = response.productDetails;
     } else {
-      print("Error fetching products: ${response.error}");
+      if (!kReleaseMode) print("Error fetching products: ${response.error}");
     }
   }
 
