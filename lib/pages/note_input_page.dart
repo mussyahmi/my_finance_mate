@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:fleather/fleather.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class NoteInputPage extends StatefulWidget {
@@ -16,6 +17,8 @@ class NoteInputPage extends StatefulWidget {
 }
 
 class _NoteInputPageState extends State<NoteInputPage> {
+  final FocusNode _focusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     final controller = FleatherController(
@@ -60,10 +63,16 @@ class _NoteInputPageState extends State<NoteInputPage> {
             body: Column(
               children: [
                 Expanded(
-                  child: FleatherEditor(
-                    controller: controller,
-                    padding: const EdgeInsets.all(16),
-                    autofocus: true,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (kIsWeb) _focusNode.requestFocus();
+                    },
+                    child: FleatherEditor(
+                      controller: controller,
+                      focusNode: _focusNode,
+                      padding: const EdgeInsets.all(16),
+                      autofocus: true,
+                    ),
                   ),
                 ),
                 FleatherToolbar.basic(controller: controller),
