@@ -635,9 +635,10 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
 
-    if (!kIsWeb) await _checkCurrentVersion();
-
-    _autoLogin();
+    if (!kIsWeb) {
+      await _checkCurrentVersion();
+      _autoLogin();
+    }
   }
 
   int _getExtendedVersionNumber(String version) {
