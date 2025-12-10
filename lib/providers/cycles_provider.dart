@@ -26,6 +26,7 @@ class CyclesProvider extends ChangeNotifier {
         .collection('cycles')
         .orderBy('cycle_no', descending: true)
         .getSavy(refresh: refresh);
+
     if (!kReleaseMode) print('fetchCycles: ${cyclesSnapshot.docs.length}');
 
     final futureCycles = cyclesSnapshot.docs.map((doc) async {
